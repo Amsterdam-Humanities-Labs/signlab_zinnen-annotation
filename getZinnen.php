@@ -3,6 +3,7 @@ header('Content-Type: application/json');
 
 // Include the MySQL configuration file
 include '../mysql_config.php';
+require_once __DIR__ . '/mocapFiles.php';
 
 //disable php warnings
 error_reporting(E_ERROR | E_PARSE);
@@ -130,6 +131,9 @@ switch ($action) {
         break;
     case 'listVideosWithoutMocap':
         listVideosWithoutMocap($conn);
+        break;
+    case 'listMocapFiles':
+        listMocapFiles($conn);
         break;
     case 'saveSubtitlesAndEAFFiles':
         saveSubtitlesAndEAFFiles($conn);
@@ -4000,6 +4004,32 @@ function sendSSE($data) {
 
     // Give the server a moment to send
     usleep(1000); // 1ms
+}
+
+/**
+ * List zin videos with their latest mocap take, baked GLB and gloss SRT,
+ * filtered by the MCP status columns. See mocapFiles.php for the join.
+ */
+function listMocapFiles($conn) {
+    header('Content-Type: application/json; charset=utf-8');
+
+    $force = ($_GET['refreshIndex'] ?? '') === '1';
+    $index = mocap_get_index(MOCAP_CACHE, MOCAP_FBX_DIR, MOCAP_GLB_DIR, MOCAP_CACHE_TTL, $force);
+
+    $result = mocap_file_list($conn, $index, [
+        'mcpStatusTijdAnnotatie'    => $_GET['mcpStatusTijdAnnotatie'] ?? null,
+        'mcpStatusTijdAnnotatieGvg' => $_GET['mcpStatusTijdAnnotatieGvg'] ?? null,
+        'mcpStatusPostprocessing'   => $_GET['mcpStatusPostprocessing'] ?? null,
+        'baked'                     => $_GET['baked'] ?? null,
+        'hasGloss'                  => $_GET['hasGloss'] ?? null,
+        'search'                    => $_GET['search'] ?? null,
+        'page'                      => $_GET['page'] ?? 1,
+        'limit'                     => $_GET['limit'] ?? 100,
+    ]);
+
+    $result['success'] = !isset($result['error']);
+    echo json_encode($result, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    exit();
 }
 
 /**
