@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Action Statistics - ZIN Project</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#1F2937',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+        }
+        .loading {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Action Statistics</h1>
+                    <p class="text-gray-600 mt-1">ZIN Project Activity Dashboard</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="refreshBtn" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Refresh
+                    </button>
+                    <div class="text-sm text-gray-500" id="lastUpdated">
+                        Last updated: Loading...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Overview Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="stat-card bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Total Actions</p>
+                        <p class="text-3xl font-bold text-gray-900" id="totalActions">
+                            <span class="loading bg-gray-200 rounded w-16 h-8 block"></span>
+                        </p>
+                    </div>
+                    <div class="bg-blue-100 p-3 rounded-full">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-sm text-gray-500">All time activity</span>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Unique Users</p>
+                        <p class="text-3xl font-bold text-gray-900" id="uniqueUsers">
+                            <span class="loading bg-gray-200 rounded w-16 h-8 block"></span>
+                        </p>
+                    </div>
+                    <div class="bg-green-100 p-3 rounded-full">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-sm text-gray-500">By IP address</span>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Today's Actions</p>
+                        <p class="text-3xl font-bold text-gray-900" id="todayActions">
+                            <span class="loading bg-gray-200 rounded w-16 h-8 block"></span>
+                        </p>
+                    </div>
+                    <div class="bg-yellow-100 p-3 rounded-full">
+                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-sm text-success font-medium" id="todayChange">+0%</span>
+                    <span class="text-sm text-gray-500 ml-1">vs yesterday</span>
+                </div>
+            </div>
+
+            <div class="stat-card bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Top Action</p>
+                        <p class="text-lg font-bold text-gray-900" id="topAction">
+                            <span class="loading bg-gray-200 rounded w-20 h-6 block"></span>
+                        </p>
+                    </div>
+                    <div class="bg-purple-100 p-3 rounded-full">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <span class="text-sm text-gray-500" id="topActionCount">0 times</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Time Period Selector -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-8 border border-gray-100">
+            <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4 lg:mb-0">Activity Timeline</h2>
+                <div class="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4">
+                    <!-- Action Filter -->
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-600 font-medium">Filter Actions:</span>
+                        <button id="selectAllActions" class="text-xs text-primary hover:text-blue-700">Select All</button>
+                        <button id="deselectAllActions" class="text-xs text-gray-500 hover:text-gray-700">Deselect All</button>
+                    </div>
+                    <!-- Period Selector -->
+                    <div class="flex space-x-2">
+                        <button class="period-btn active bg-primary text-white px-4 py-2 rounded-lg text-sm" data-period="daily">Daily</button>
+                        <button class="period-btn bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200" data-period="weekly">Weekly</button>
+                        <button class="period-btn bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200" data-period="monthly">Monthly</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Filter Checkboxes -->
+            <div id="actionFilters" class="mb-4 p-4 bg-gray-50 rounded-lg border">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3" id="actionCheckboxes">
+                    <!-- Checkboxes will be dynamically generated -->
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="timelineChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Action Distribution and Recent Activity -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Action Type Distribution -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Action Distribution</h2>
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="actionChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
+                <div class="space-y-3" id="recentActivity">
+                    <div class="loading bg-gray-200 rounded h-4 w-full"></div>
+                    <div class="loading bg-gray-200 rounded h-4 w-3/4"></div>
+                    <div class="loading bg-gray-200 rounded h-4 w-5/6"></div>
+                    <div class="loading bg-gray-200 rounded h-4 w-2/3"></div>
+                    <div class="loading bg-gray-200 rounded h-4 w-4/5"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Users -->
+        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Most Active Users</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="border-b border-gray-200">
+                            <th class="text-left py-3 px-4 font-medium text-gray-600">Rank</th>
+                            <th class="text-left py-3 px-4 font-medium text-gray-600">IP Address</th>
+                            <th class="text-left py-3 px-4 font-medium text-gray-600">Actions</th>
+                            <th class="text-left py-3 px-4 font-medium text-gray-600">Last Activity</th>
+                            <th class="text-left py-3 px-4 font-medium text-gray-600">Most Common Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topUsers">
+                        <tr class="border-b border-gray-100">
+                            <td class="py-3 px-4"><div class="loading bg-gray-200 rounded w-8 h-4"></div></td>
+                            <td class="py-3 px-4"><div class="loading bg-gray-200 rounded w-24 h-4"></div></td>
+                            <td class="py-3 px-4"><div class="loading bg-gray-200 rounded w-12 h-4"></div></td>
+                            <td class="py-3 px-4"><div class="loading bg-gray-200 rounded w-20 h-4"></div></td>
+                            <td class="py-3 px-4"><div class="loading bg-gray-200 rounded w-16 h-4"></div></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let timelineChart = null;
+        let actionChart = null;
+        let currentPeriod = 'daily';
+        let availableActions = [];
+        let selectedActions = new Set();
+        let allTimelineData = null;
+
+        async function fetchStats(period = 'daily') {
+            try {
+                const response = await fetch(`getZinnen.php?action=fetchActionStats&period=${period}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to fetch statistics');
+                }
+                return data.data;
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+                showError('Failed to load statistics. Please try again.');
+                return null;
+            }
+        }
+
+        function showError(message) {
+            // Create error notification
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            errorDiv.textContent = message;
+            document.body.appendChild(errorDiv);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+
+        function updateOverviewStats(stats) {
+            document.getElementById('totalActions').textContent = stats.overview.totalActions.toLocaleString();
+            document.getElementById('uniqueUsers').textContent = stats.overview.uniqueUsers.toLocaleString();
+            document.getElementById('todayActions').textContent = stats.overview.todayActions.toLocaleString();
+            document.getElementById('topAction').textContent = stats.overview.topAction;
+            document.getElementById('topActionCount').textContent = `${stats.overview.topActionCount} times`;
+            
+            const todayChange = stats.overview.todayChange;
+            const changeElement = document.getElementById('todayChange');
+            changeElement.textContent = `${todayChange >= 0 ? '+' : ''}${todayChange}%`;
+            changeElement.className = `text-sm font-medium ml-1 ${todayChange >= 0 ? 'text-success' : 'text-danger'}`;
+        }
+
+        function createActionFilters(timelineData) {
+            // Extract unique actions from timeline data
+            const actions = [...new Set(timelineData.map(item => item.action))].sort();
+            
+            // If this is the first load, select all actions
+            if (availableActions.length === 0) {
+                availableActions = actions;
+                selectedActions = new Set(actions);
+            } else {
+                // Update available actions but keep existing selections
+                availableActions = actions;
+                // Remove any selected actions that are no longer available
+                selectedActions = new Set([...selectedActions].filter(action => actions.includes(action)));
+            }
+            
+            const container = document.getElementById('actionCheckboxes');
+            container.innerHTML = '';
+            
+            // Color palette for consistency with chart
+            const colors = [
+                '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+                '#06B6D4', '#84CC16', '#F97316', '#EC4899', '#6B7280',
+                '#14B8A6', '#F472B6', '#A855F7', '#22C55E', '#F97316'
+            ];
+            
+            actions.forEach((action, index) => {
+                const checkbox = document.createElement('div');
+                checkbox.className = 'flex items-center space-x-2 p-2 rounded hover:bg-white transition-colors';
+                
+                const color = colors[index % colors.length];
+                const isChecked = selectedActions.has(action);
+                
+                checkbox.innerHTML = `
+                    <input type="checkbox" id="action_${action}" ${isChecked ? 'checked' : ''} 
+                           class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary focus:ring-2">
+                    <div class="w-3 h-3 rounded-full" style="background-color: ${color}"></div>
+                    <label for="action_${action}" class="text-sm text-gray-700 cursor-pointer select-none hover:text-gray-900">
+                        ${action}
+                    </label>
+                `;
+                
+                const checkboxInput = checkbox.querySelector('input');
+                checkboxInput.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        selectedActions.add(action);
+                    } else {
+                        selectedActions.delete(action);
+                    }
+                    updateTimelineChart({ timeline: allTimelineData });
+                });
+                
+                // Add hover effects
+                checkbox.addEventListener('mouseenter', () => {
+                    highlightChartLine(action);
+                });
+                
+                checkbox.addEventListener('mouseleave', () => {
+                    resetChartHighlight();
+                });
+                
+                container.appendChild(checkbox);
+            });
+        }
+
+        function highlightChartLine(targetAction) {
+            if (!timelineChart) return;
+            
+            timelineChart.data.datasets.forEach((dataset, index) => {
+                if (dataset.label === targetAction) {
+                    dataset.borderWidth = 4;
+                    dataset.pointRadius = 5;
+                    dataset.pointHoverRadius = 8;
+                } else {
+                    dataset.borderColor = dataset.borderColor.replace(/[^,]+(?=\))/, '0.3'); // Make transparent
+                    dataset.backgroundColor = dataset.backgroundColor.replace(/[^,]+(?=\))/, '0.1');
+                    dataset.borderWidth = 1;
+                    dataset.pointRadius = 1;
+                }
+            });
+            
+            timelineChart.update('none'); // Update without animation
+        }
+
+        function resetChartHighlight() {
+            if (!timelineChart) return;
+            
+            const colors = [
+                '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+                '#06B6D4', '#84CC16', '#F97316', '#EC4899', '#6B7280',
+                '#14B8A6', '#F472B6', '#A855F7', '#22C55E', '#F97316'
+            ];
+            
+            timelineChart.data.datasets.forEach((dataset, index) => {
+                const color = colors[index % colors.length];
+                dataset.borderColor = color;
+                dataset.backgroundColor = color + '20';
+                dataset.borderWidth = 2.5;
+                dataset.pointRadius = 3;
+                dataset.pointHoverRadius = 6;
+            });
+            
+            timelineChart.update('none');
+        }
+
+        function updateTimelineChart(stats) {
+            const ctx = document.getElementById('timelineChart').getContext('2d');
+            
+            if (timelineChart) {
+                timelineChart.destroy();
+            }
+
+            const timeData = stats.timeline;
+            allTimelineData = timeData; // Store for filtering
+            
+            // Filter data based on selected actions
+            const filteredData = timeData.filter(item => selectedActions.has(item.action));
+            
+            // Group data by action type
+            const actionGroups = {};
+            const allDates = new Set();
+            
+            filteredData.forEach(item => {
+                if (!actionGroups[item.action]) {
+                    actionGroups[item.action] = {};
+                }
+                actionGroups[item.action][item.date] = item.count;
+                allDates.add(item.date);
+            });
+            
+            // Sort dates
+            const sortedDates = Array.from(allDates).sort();
+            
+            // Create labels
+            const labels = sortedDates.map(date => {
+                if (currentPeriod === 'daily') {
+                    return new Date(date).toLocaleDateString('nl-NL', { month: 'short', day: 'numeric' });
+                } else if (currentPeriod === 'weekly') {
+                    const weekMatch = date.match(/(\d+)-W(\d+)/);
+                    return weekMatch ? `Week ${parseInt(weekMatch[2])}` : date;
+                } else {
+                    return new Date(date).toLocaleDateString('nl-NL', { month: 'short', year: 'numeric' });
+                }
+            });
+            
+            // Color palette for different action types
+            const colors = [
+                '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+                '#06B6D4', '#84CC16', '#F97316', '#EC4899', '#6B7280',
+                '#14B8A6', '#F472B6', '#A855F7', '#22C55E', '#F97316'
+            ];
+            
+            // Get the original action index for consistent coloring
+            const allActions = [...new Set(timeData.map(item => item.action))].sort();
+            
+            // Create datasets for each selected action type
+            const datasets = Object.keys(actionGroups).map((action) => {
+                const actionIndex = allActions.indexOf(action);
+                const data = sortedDates.map(date => actionGroups[action][date] || 0);
+                
+                return {
+                    label: action,
+                    data: data,
+                    borderColor: colors[actionIndex % colors.length],
+                    backgroundColor: colors[actionIndex % colors.length] + '20',
+                    borderWidth: 2.5,
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 3,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: colors[actionIndex % colors.length],
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2
+                };
+            });
+
+            timelineChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return Number.isInteger(value) ? value : '';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#1f2937',
+                            bodyColor: '#1f2937',
+                            borderColor: 'rgba(0, 0, 0, 0.1)',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: true,
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    return tooltipItems[0].label;
+                                },
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y} actions`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateActionChart(stats) {
+            const ctx = document.getElementById('actionChart').getContext('2d');
+            
+            if (actionChart) {
+                actionChart.destroy();
+            }
+
+            const colors = [
+                '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+                '#06B6D4', '#84CC16', '#F97316', '#EC4899', '#6B7280'
+            ];
+
+            actionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: stats.actionTypes.map(item => item.action),
+                    datasets: [{
+                        data: stats.actionTypes.map(item => item.count),
+                        backgroundColor: colors.slice(0, stats.actionTypes.length),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateRecentActivity(stats) {
+            const container = document.getElementById('recentActivity');
+            container.innerHTML = '';
+
+            stats.recentActivity.forEach(activity => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0';
+                
+                const date = new Date(activity.datetime);
+                const timeAgo = formatTimeAgo(date);
+                
+                item.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="w-2 h-2 bg-primary rounded-full"></div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">${activity.action}</p>
+                            <p class="text-xs text-gray-500">${activity.ip_address}</p>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500">${timeAgo}</div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function updateTopUsers(stats) {
+            const tbody = document.getElementById('topUsers');
+            tbody.innerHTML = '';
+
+            stats.topUsers.forEach((user, index) => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-100';
+                
+                const lastActivity = new Date(user.lastActivity);
+                const timeAgo = formatTimeAgo(lastActivity);
+                
+                row.innerHTML = `
+                    <td class="py-3 px-4">
+                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full ${
+                            index === 0 ? 'bg-yellow-100 text-yellow-800' :
+                            index === 1 ? 'bg-gray-100 text-gray-800' :
+                            index === 2 ? 'bg-orange-100 text-orange-800' :
+                            'bg-blue-100 text-blue-800'
+                        } text-xs font-medium">
+                            ${index + 1}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 font-mono text-sm">${user.ip_address}</td>
+                    <td class="py-3 px-4 font-semibold">${user.actionCount}</td>
+                    <td class="py-3 px-4 text-sm text-gray-600">${timeAgo}</td>
+                    <td class="py-3 px-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            ${user.topAction}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function formatTimeAgo(date) {
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            if (diffInSeconds < 60) return 'just now';
+            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+            return `${Math.floor(diffInSeconds / 86400)}d ago`;
+        }
+
+        async function loadStats() {
+            const stats = await fetchStats(currentPeriod);
+            if (!stats) return;
+
+            updateOverviewStats(stats);
+            createActionFilters(stats.timeline);
+            updateTimelineChart(stats);
+            updateActionChart(stats);
+            updateRecentActivity(stats);
+            updateTopUsers(stats);
+            
+            document.getElementById('lastUpdated').textContent = 
+                `Last updated: ${new Date().toLocaleTimeString('nl-NL')}`;
+        }
+
+        // Event listeners
+        document.getElementById('refreshBtn').addEventListener('click', loadStats);
+
+        // Select/Deselect all action filters
+        document.getElementById('selectAllActions').addEventListener('click', () => {
+            selectedActions = new Set(availableActions);
+            document.querySelectorAll('#actionCheckboxes input[type="checkbox"]').forEach(cb => {
+                cb.checked = true;
+            });
+            if (allTimelineData) {
+                updateTimelineChart({ timeline: allTimelineData });
+            }
+        });
+
+        document.getElementById('deselectAllActions').addEventListener('click', () => {
+            selectedActions.clear();
+            document.querySelectorAll('#actionCheckboxes input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+            if (allTimelineData) {
+                updateTimelineChart({ timeline: allTimelineData });
+            }
+        });
+
+        document.querySelectorAll('.period-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                document.querySelectorAll('.period-btn').forEach(b => {
+                    b.classList.remove('active', 'bg-primary', 'text-white');
+                    b.classList.add('bg-gray-100', 'text-gray-700');
+                });
+                
+                e.target.classList.add('active', 'bg-primary', 'text-white');
+                e.target.classList.remove('bg-gray-100', 'text-gray-700');
+                
+                currentPeriod = e.target.dataset.period;
+                await loadStats();
+            });
+        });
+
+        // Auto-refresh every 5 minutes
+        setInterval(loadStats, 5 * 60 * 1000);
+
+        // Initial load
+        loadStats();
+    </script>
+</body>
+</html>

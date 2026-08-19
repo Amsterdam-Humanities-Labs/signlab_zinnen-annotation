@@ -1,0 +1,10 @@
+# Disable output buffering for SSE streaming
+php_flag output_buffering Off
+php_flag implicit_flush On
+php_value zlib.output_compression Off
+
+# Set proper headers for SSE
+<FilesMatch "\.php$">
+    Header set X-Accel-Buffering "no"
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+</FilesMatch>

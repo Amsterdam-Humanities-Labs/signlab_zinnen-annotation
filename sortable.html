@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glos/Zinnen Opnemen</title>
+    <!-- Bootstrap 5 CSS -->
+    <title>Camera Control</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+   crossorigin="anonymous">    <style>
+        /* Add any custom styles here */
+        .output_canvas {
+            position: absolute;
+            left: 0px;
+            top: 0px;
+        }
+        #videoRow {
+            display: none;
+        }
+        #selectUsers .container {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="position-relative overflow-hidden">
+        <div class="d-flex min-vh-100" lc-helper="video-bg">
+            <video id="webcam" autoplay preload muted playsinline></video>
+            <canvas class="output_canvas" id="output_canvas"></canvas>
+            <div style="position: relative;">
+                <p id="gesture_output" class="output"></p>
+            </div>
+            <div style="z-index:2" class="align-self-center text-center text-light" id="headBox">
+                <div class="lc-block mb-4">
+                    <div editable="rich">
+                        <button type="button" class="btn btn-primary" onclick="openOpnameView()">Overzicht al opgenomen/niet opgenomen</button>
+                        <p id="nogTeGaan"></p>
+                        <div class="p-5 mb-4 lc-block" style="backdrop-filter: blur(6px) saturate(102%); -webkit-backdrop-filter: blur(6px) saturate(102%); background-color: rgba(255, 255, 255, 0.45); border-radius: 12px; border: 1px solid rgba(209, 213, 219, 0.3);">
+                            <div class="lc-block">
+                                <div editable="rich">
+                                    <h2 class="fw-bolder display-3">
+                                        <div id="bodyText">Wachtend op signaal...</div>
+                                        <div id="cameraText"></div>
+                                        <div id="videoPlayingText"></div>
+                                        <div id="woordId"></div>
+                                        <div id="filmId">
+                                            <div class="videoRow" id="videoRow">
+                                                <div class="col-md-6 shadow p-4 m-4 bg-body rounded d-flex2 justify-content-center align-items-center" id="officeVideoDiv">
+                                                    <video id="officeVideo" class="videoClass" controls muted></video>
+                                                </div>
+                                                <div class="col-md-6 shadow p-4 m-4 bg-body rounded d-flex2 justify-content-center align-items-center" id="signbankVideoDiv">
+                                                    <video id="signbankVideo" class="videoClass" controls muted autoplay></video>
+                                                </div>
+                                                <div class="col-md-6 shadow p-4 m-4 bg-body rounded d-flex2 justify-content-center align-items-center" id="CharucoBoardDiv">
+                                                    Charuco board calibration in progress. Press B to start capturing.
+                                                </div>
+                                            </div>
+                                            <div class="container-fluid" id="videoContainer">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <video id="myVideo1" width="100%" controls autoplay loop muted="muted"></video>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <video id="myVideo2" width="100%" controls autoplay loop muted="muted"></video>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <button onclick="prevCapture(glosId)" id="prevButton">Vorige</button>
+                                            <button onclick="nextCapture(glosId)" id="nextButton">Volgende</button>
+                                        </div>
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Selecting Type, User, and Thema -->
+    <div class="modal fade bd-example-modal-lg" id="selectUsers" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 100%;">
+            <div class="modal-content">
+                <div class="container">
+                    <h2>Glos of Zin opnemen?</h2>
+                    <button type="button" class="btn btn-primary" onclick="selectType('Zin')">Zin</button>
+                    <button type="button" class="btn btn-primary" onclick="selectType('Glos')">Glos</button>
+                </div>
+                <div class="container">
+                    <h2>Welke gebruiker ben je?</h2>
+                    <select class="form-select" aria-label="Select Menu" id="selectUsersMenu">
+                        <!-- User options will be dynamically loaded -->
+                    </select>
+                </div>
+                <div class="container">
+                    <h2>Welke thema wil je opnemen?</h2>
+                    <select class="form-select" aria-label="Select Menu" id="selectThemaMenu">
+                        <!-- Thema options will be dynamically loaded -->
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="startCalibration()">Calibratie Charuco Board</button>
+                    <button type="button" class="btn btn-primary" onclick="ophalenData()">Beginnen</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+countOpnames = 0;
+let thema = "test";
+let userId = 0;
+
+$(document).ready(function(){
+
+$("#selectUsers").modal({
+
+
+
+});
+//  $("#selectUsers").modal('show');
+
+ophalenData("0", 0)
+});
+
+        let selectedType = 'Zin'; // Default to Zin
+
+        function selectType(type) {
+            selectedType = type;
+        }
+
+        function ophalenData(userId, glosId) {
+            $("#signbankVideoDiv").css("width", "75%");
+            $("#selectUsers").modal('hide');
+            $("#myVideo1").hide();
+
+            userId = parseInt($("#selectUsersMenu").val(), 10);
+            // let thema = encodeURIComponent($("#selectThemaMenu").val());
+
+            if (selectedType === 'Glos') {
+                fetchGlosData(userId, glosId, thema);
+            } else if (selectedType === 'Zin') {
+                fetchZinnenData(userId, glosId, thema);
+            }
+        }
+
+        function fetchGlosData(userId, glosId, thema) {
+            fetch(`../fetch_all.php?limit=1000&offset=0&thema=${thema}&handle=themaFilter`)
+                .then(response => response.text())
+                .then(data => {
+                    console.log(data);
+                    let stopLoop = false;
+
+                    data.forEach(item => {
+                        if (stopLoop) return;
+
+                        if (glosId) {
+                            if (item.id.toString() === glosId.toString()) {
+                                handleItem(item); 
+                                stopLoop = true;
+                            }
+                        } else {
+                            try {
+                                videoTop = JSON.parse(item.videoTop) || [];
+                                if (!Array.isArray(videoTop)) videoTop = [];
+                            } catch {
+                                videoTop = [];
+                            }
+
+                            if (videoTop.length === 0) {
+                                handleItem(item);
+                                stopLoop = true;
+                            }
+                        }
+                    });
+
+                    camerasReconnectStartupRunning = 0;
+                    // countOpnames(data);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function fetchZinnenData(userId, glosId, thema) {
+            fetch(`getRows.php?&filterThema=${thema}`)
+                .then(response => response.json())
+                .then(data => {
+                    let stopLoop = false;
+
+                    data.rows.forEach(item => {
+                        if (stopLoop) return;
+
+                        if (glosId) {
+                            if (item.ID.toString() === glosId.toString()) {
+                                handleItem(item); 
+                                stopLoop = true;
+                            }
+                        } else {
+                            try {
+                                videoTop = JSON.parse(item.videoTop) || [];
+                                if (!Array.isArray(videoTop)) videoTop = [];
+                            } catch {
+                                videoTop = [];
+                            }
+
+                            if (videoTop.length === 0) {
+                                handleItem(item);
+                                stopLoop = true;
+                            }
+                        }
+                    });
+
+                    camerasReconnectStartupRunning = 0;
+                    // countOpnames(data.rows);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function handleItem(item) {
+    $("#woordId").text(item.zinArray ? item.zinArray.join(' ') : item.glos);
+    glosId = item.ID || item.id;
+
+    if (selectedType === 'Zin') {
+        // Fetch updated data from getRows.php if it's a Zin
+        fetch(`getRows.php?id=${glosId}`)
+            .then(response => response.json())
+            .then(data => {
+                const glosArray = data.glosArray;
+                const sortArray = data.sortArray;
+                console.log(glosId, glosArray, sortArray)
+                updateVideoPlaylist(glosId, glosArray, sortArray);
+
+            })
+            .catch(error => console.error('Error fetching zin data:', error));
+    } else {
+        // Handle Glos type
+        let zelfopname;
+        if (!item.zelfopname || item.zelfopname === "[]") {
+            zelfopname = `${item.zinArray ? item.zinArray[0] : item.glos}.mp4`;
+        } else {
+            try {
+                zelfopname = JSON.parse(item.zelfopname);
+                if (Array.isArray(zelfopname) && zelfopname.length > 0) {
+                    zelfopname = zelfopname[0];
+                } else {
+                    zelfopname = `${item.zinArray ? item.zinArray[0] : item.glos}.mp4`;
+                }
+            } catch {
+                zelfopname = `${item.zinArray ? item.zinArray[0] : item.glos}.mp4`;
+            }
+        }
+
+   
+
+        let videoElement = document.getElementById('signbankVideo');
+        videoElement.src = `../uploads/${zelfopname}`;
+        videoElement.load();
+        videoElement.play();
+        // checkAudioFile(glosId);
+    }
+
+    $("#videoContainer").hide();
+        $("#officeVideoDiv").hide();
+        $("#videoRow").show();
+
+    let prevButton = document.getElementById('prevButton');
+    let nextButton = document.getElementById('nextButton');
+
+    prevButton.onclick = function() {
+        prevCapture(glosId);
+    };
+    nextButton.onclick = function() {
+        nextCapture(glosId);
+    };
+}
+
+function updateVideoPlaylist(rowId, glosArray, sortArray) {
+    const videoElement = document.getElementById('signbankVideo'); // Updated to use the main video element
+    const wordDisplay = document.getElementById('videoPlayingText'); // Display current playing video in this element
+    
+    if (!sortArray) {
+        // Create a default sortArray based on the length of glosArray
+        sortArray = Array.from({ length: glosArray.length }, (_, i) => i.toString());
+    }
+    if (videoElement) {
+        videoElement.innerHTML = ''; // Clear existing sources
+
+        // Create an array to hold the video sources in the correct order
+        const playlist = [];
+        let currentIndex = 0;
+
+        // Fetch all video URLs first based on the sortArray order
+        const fetchPromises = sortArray.map((sortIndex, index) => {
+            const glosID = glosArray[sortIndex]; // Map sortArray index to the corresponding glosArray element
+            if (glosID) {
+                return fetch(`https://leffe.science.uva.nl:8043/zin/getSenses.php?glosid=${glosID}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const videoSource = data[0]?.video;
+                        if (videoSource) {
+                            playlist[index] = {
+                                videoSource: videoSource,
+                                word: data[0]?.glos
+                            }; // Place the video in the correct position
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching video for glosID:', error);
+                    });
+            }
+        });
+
+        // Once all videos are fetched, set up the playlist
+        Promise.all(fetchPromises).then(() => {
+            const filteredPlaylist = playlist.filter(item => item !== undefined);
+            if (filteredPlaylist.length > 0) {
+                loadVideo(currentIndex);
+
+                videoElement.addEventListener('ended', () => {
+                    currentIndex++;
+                    if (currentIndex >= filteredPlaylist.length) {
+                        currentIndex = 0; // Reset to the first video
+                    }
+                    loadVideo(currentIndex);
+                });
+            }
+
+            function loadVideo(index) {
+                videoElement.src = filteredPlaylist[index].videoSource;
+                wordDisplay.innerText = `${filteredPlaylist[index].word}`;
+                videoElement.load();
+                videoElement.play(); // Auto play the video
+            }
+        });
+    }
+}
+
+
+
+        function nextCapture(glosId) {
+            console.log(glosId)
+            console.log(thema);
+
+            let fetchUrl = selectedType === 'Glos' 
+                ? `fetch_all.php?limit=500&offset=0&thema=${thema}&handle=themaFilter`
+                : `getRows.php?filterThema=${thema}`;
+
+            fetch(fetchUrl)
+                .then(response => response.json())
+                .then(data => {
+                    let rows = selectedType === 'Glos' ? data : data.rows;
+                    let keyNumber = -1;
+
+                    console.log(rows)
+
+                    for (let i = 0; i < rows.length; i++) {
+                        if ((rows[i].ID || rows[i].id).toString() === glosId.toString()) {
+                            keyNumber = i;
+                            break;
+                        }
+                    }
+
+                    if (keyNumber >= 0 && keyNumber < rows.length - 1) {
+                        let nextKey = keyNumber + 1;
+                        ophalenData(userId, rows[nextKey].ID || rows[nextKey].id);
+                    } else {
+                        return null;
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function prevCapture(glosId) {
+            let thema = encodeURIComponent($("#selectThemaMenu").val());
+
+            let fetchUrl = selectedType === 'Glos' 
+                ? `fetch_all.php?limit=500&offset=0&thema=${thema}&handle=themaFilter`
+                : `getRows.php?limit=500&offset=0&thema=${thema}`;
+
+            fetch(fetchUrl)
+                .then(response => response.json())
+                .then(data => {
+                    let rows = selectedType === 'Glos' ? data : data.rows;
+                    let keyNumber = -1;
+
+                    for (let i = 0; i < rows.length; i++) {
+                        if ((rows[i].ID || rows[i].id).toString() === glosId.toString()) {
+                            keyNumber = i;
+                            break;
+                        }
+                    }
+
+                    if (keyNumber > 0) {
+                        let previousKey = keyNumber - 1;
+                        ophalenData(userId, rows[previousKey].ID || rows[previousKey].id);
+                    } else {
+                        return null;
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function startCalibration() {
+            // Calibration code goes here
+            console.log('Calibration started');
+        }
+
+        function openOpnameView() {
+            // Open opname view code goes here
+            console.log('Opening opname view');
+        }
+    </script>
+</body>
+</html>

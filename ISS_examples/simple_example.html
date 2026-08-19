@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISS Server - Simple Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #output {
+            background: #f5f5f5;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>ISS Server - Minimal Example</h1>
+    <p>Click a button to test the ISS Server with a simple example.</p>
+
+    <button onclick="testWebSocket()">Test WebSocket</button>
+    <button onclick="testHTTP()">Test HTTP + SSE</button>
+
+    <div id="output">Output will appear here...</div>
+
+    <script>
+        const output = document.getElementById('output');
+
+        function log(msg) {
+            output.textContent += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function testWebSocket() {
+            output.textContent = '';
+            log('Testing WebSocket...');
+
+            const ws = new WebSocket('ws://localhost:9102/ws');
+
+            ws.onopen = () => {
+                log('✓ Connected');
+                ws.send(JSON.stringify({
+                    type: 'inference_request',
+                    request_id: 'test-' + Date.now(),
+                    hamer_path: '/path/to/file.hamer',
+                    fps: 60
+                }));
+                log('Request sent');
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                log(`← ${data.type}: ${JSON.stringify(data, null, 2)}`);
+
+                if (data.type === 'result' || data.type === 'error') {
+                    ws.close();
+                }
+            };
+
+            ws.onerror = () => log('✗ Connection error');
+            ws.onclose = () => log('Connection closed');
+        }
+
+        async function testHTTP() {
+            output.textContent = '';
+            log('Testing HTTP + SSE...');
+
+            try {
+                // Submit request
+                log('Submitting request...');
+                const response = await fetch('http://localhost:9102/inference', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        hamer_path: '/path/to/file.hamer',
+                        fps: 60
+                    })
+                });
+
+                const data = await response.json();
+                log(`✓ Request ID: ${data.request_id}`);
+
+                // Monitor via SSE
+                log('Connecting to SSE...');
+                const es = new EventSource(`http://localhost:9102/progress/${data.request_id}`);
+
+                es.addEventListener('ack', (e) => {
+                    const d = JSON.parse(e.data);
+                    log(`← ack: ${d.message}`);
+                });
+
+                es.addEventListener('progress', (e) => {
+                    const d = JSON.parse(e.data);
+                    log(`← progress: ${d.stage} ${d.percentage}%`);
+                });
+
+                es.addEventListener('result', (e) => {
+                    const d = JSON.parse(e.data);
+                    log(`← result: ${JSON.stringify(d.metadata, null, 2)}`);
+                    es.close();
+                });
+
+                es.addEventListener('error', (e) => {
+                    const d = JSON.parse(e.data);
+                    log(`✗ error: ${d.message}`);
+                    es.close();
+                });
+
+                es.onerror = () => {
+                    log('✗ SSE connection error');
+                    es.close();
+                };
+
+            } catch (error) {
+                log(`✗ Error: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html>

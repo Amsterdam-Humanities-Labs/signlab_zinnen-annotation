@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verwijderde video's terugzetten — ZIN</title>
+<style>
+  :root{
+    --bg:#0f1216; --panel:#171c22; --panel-2:#1f262e; --line:#2a323c;
+    --text:#e6edf3; --muted:#8b97a5; --accent:#3fb950; --accent-d:#2ea043;
+    --danger:#f85149; --chip:#243; --gloss:#ffd866;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       background:var(--bg);color:var(--text);}
+  header{position:sticky;top:0;z-index:20;background:rgba(15,18,22,.92);backdrop-filter:blur(8px);
+         border-bottom:1px solid var(--line);padding:14px 20px;}
+  .head-row{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;}
+  h1{font-size:18px;margin:0;font-weight:650;letter-spacing:.2px;}
+  h1 .sub{color:var(--muted);font-weight:400;font-size:13px;margin-left:8px;}
+  .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  input[type=search]{background:var(--panel-2);border:1px solid var(--line);color:var(--text);
+       border-radius:8px;padding:8px 12px;width:240px;font-size:14px;}
+  input[type=search]::placeholder{color:var(--muted);}
+  label.toggle{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:13px;cursor:pointer;user-select:none;}
+  .pill{background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-size:12px;color:var(--muted);}
+  .pill b{color:var(--text);}
+  main{max-width:1500px;margin:0 auto;padding:20px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:18px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;
+        display:flex;flex-direction:column;transition:opacity .35s,transform .35s;}
+  .card.removing{opacity:0;transform:scale(.96);}
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:12px 14px 8px;}
+  .zin{font-size:15px;font-weight:600;line-height:1.35;}
+  .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+  .chip{font-size:11px;padding:2px 8px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line);color:var(--muted);}
+  .chip.thema{color:#a5d6ff;}
+  .chip.nogloss{color:#ffb86b;border-color:#5a4326;background:#231a10;}
+  .chip.gloss{color:#9fe0a0;border-color:#27482b;background:#16241a;}
+  .vid-wrap{position:relative;background:#000;aspect-ratio:16/11;}
+  video{width:100%;height:100%;display:block;object-fit:contain;background:#000;}
+  .vid-wrap .placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+        color:var(--muted);font-size:13px;}
+  .gloss-panel{padding:8px 14px;max-height:128px;overflow:auto;border-top:1px solid var(--line);background:var(--panel-2);}
+  .gloss-panel h4{margin:0 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);}
+  .cue{display:flex;gap:8px;font-size:12.5px;padding:2px 4px;border-radius:5px;cursor:pointer;line-height:1.4;}
+  .cue:hover{background:#2b3440;}
+  .cue .t{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .cue .g{color:var(--gloss);font-weight:600;}
+  .gloss-empty{color:var(--muted);font-size:12.5px;font-style:italic;}
+  .card-actions{display:flex;gap:8px;padding:10px 14px 14px;margin-top:auto;}
+  button{font:inherit;border:none;border-radius:8px;padding:9px 14px;cursor:pointer;font-weight:600;font-size:13.5px;}
+  .btn-undelete{background:var(--accent);color:#04260c;flex:1;}
+  .btn-undelete:hover{background:var(--accent-d);color:#fff;}
+  .btn-undelete:disabled{opacity:.6;cursor:default;}
+  .btn-ghost{background:var(--panel-2);color:var(--muted);border:1px solid var(--line);}
+  .btn-ghost:hover{color:var(--text);}
+  #loadmore-wrap{text-align:center;padding:26px 0;}
+  #loadmore{background:var(--panel-2);border:1px solid var(--line);color:var(--text);padding:11px 26px;}
+  #loadmore:hover{border-color:var(--accent);}
+  .status{color:var(--muted);font-size:13px;padding:8px 0;}
+  .empty{text-align:center;color:var(--muted);padding:60px 0;}
+  /* toast */
+  #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);
+         background:var(--panel-2);border:1px solid var(--line);color:var(--text);padding:11px 18px;
+         border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:50;
+         box-shadow:0 8px 30px rgba(0,0,0,.5);}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  #toast.err{border-color:var(--danger);color:#ffc4c0;}
+  video::cue{background:rgba(0,0,0,.78);color:var(--gloss);font-weight:700;}
+</style>
+</head>
+<body>
+<header>
+  <div class="head-row">
+    <h1>Verwijderde video's <span class="sub">controleer &amp; zet terug</span></h1>
+    <div class="controls">
+      <input type="search" id="search" placeholder="Zoek in zin…" autocomplete="off">
+      <label class="toggle"><input type="checkbox" id="onlyGloss"> alleen mét glossen</label>
+      <span class="pill">terug te zetten: <b id="remaining">…</b></span>
+      <span class="pill">geladen: <b id="loaded">0</b>/<b id="total">…</b></span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="grid" id="grid"></div>
+  <div class="status" id="status">Laden…</div>
+  <div id="loadmore-wrap" style="display:none">
+    <button id="loadmore">Meer laden</button>
+  </div>
+</main>
+
+<div id="toast"></div>
+
+<script>
+const API = 'getZinnen.php';
+const LIMIT = 30;
+
+let page = 0;
+let total = null;
+let loadedCount = 0;
+let restoredCount = 0;
+let loading = false;
+let done = false;
+const seen = new Set();
+
+const grid       = document.getElementById('grid');
+const statusEl   = document.getElementById('status');
+const loadmore   = document.getElementById('loadmore');
+const loadmoreWrap = document.getElementById('loadmore-wrap');
+const searchEl   = document.getElementById('search');
+const onlyGlossEl= document.getElementById('onlyGloss');
+
+/* ---------- SRT helpers (same-origin fetch → WebVTT for native captions) ---------- */
+function srtToVtt(srt){
+  const body = srt.replace(/\r+/g,'').trim()
+    .replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2'); // comma → dot in timestamps
+  return 'WEBVTT\n\n' + body;
+}
+function tcToSec(t){
+  const m = t.replace(',', '.').match(/(\d+):(\d+):(\d+)\.(\d+)/);
+  if(!m) return 0;
+  return (+m[1])*3600 + (+m[2])*60 + (+m[3]) + (+m[4])/1000;
+}
+function parseSrt(srt){
+  const cues=[];
+  const blocks = srt.replace(/\r/g,'').trim().split(/\n\s*\n/);
+  for(const blk of blocks){
+    const lines = blk.split('\n');
+    if(lines.length < 2) continue;
+    const tcIdx = /-->/.test(lines[0]) ? 0 : 1;
+    const m = lines[tcIdx] && lines[tcIdx].match(/(\d{2}:\d{2}:\d{2}[,.]\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}[,.]\d{3})/);
+    if(!m) continue;
+    const text = lines.slice(tcIdx+1).join(' ').trim();
+    if(text) cues.push({start: tcToSec(m[1]), end: tcToSec(m[2]), text});
+  }
+  return cues;
+}
+function fmt(sec){
+  const mm = Math.floor(sec/60), ss = (sec%60);
+  return mm + ':' + ss.toFixed(1).padStart(4,'0');
+}
+
+/* ---------- Lazy media + subtitle loading ---------- */
+const io = new IntersectionObserver((entries)=>{
+  for(const e of entries){
+    if(!e.isIntersecting) continue;
+    const card = e.target;
+    io.unobserve(card);
+    hydrate(card);
+  }
+}, {rootMargin:'400px 0px'});
+
+async function hydrate(card){
+  const v = card.querySelector('video');
+  const src = card.dataset.src;
+  if(src && !v.dataset.loaded){
+    v.src = src;
+    v.dataset.loaded = '1';
+    const ph = card.querySelector('.placeholder');
+    if(ph) ph.textContent = '▶ klik om af te spelen';
+  }
+  const glossUrl = card.dataset.gloss;
+  const panel = card.querySelector('.gloss-panel');
+  if(!glossUrl || card.dataset.glossLoaded) return;
+  card.dataset.glossLoaded = '1';
+  try{
+    const res = await fetch(glossUrl, {cache:'force-cache'});
+    if(!res.ok) throw new Error(res.status);
+    const srt = await res.text();
+    // attach native <track> built from VTT blob
+    const vtt = srtToVtt(srt);
+    const blobUrl = URL.createObjectURL(new Blob([vtt], {type:'text/vtt'}));
+    const track = document.createElement('track');
+    track.kind = 'subtitles'; track.label = 'Signbank glossen'; track.srclang = 'nl';
+    track.src = blobUrl; track.default = true;
+    v.appendChild(track);
+    track.addEventListener('load', ()=>{ if(v.textTracks[0]) v.textTracks[0].mode = 'showing'; });
+    // build seekable gloss list
+    const cues = parseSrt(srt);
+    if(cues.length){
+      panel.querySelector('.gloss-body').innerHTML =
+        cues.map(c=>`<div class="cue" data-t="${c.start}"><span class="t">${fmt(c.start)}</span><span class="g">${escapeHtml(c.text)}</span></div>`).join('');
+      panel.querySelectorAll('.cue').forEach(el=>{
+        el.addEventListener('click',()=>{ v.currentTime = parseFloat(el.dataset.t); v.play().catch(()=>{}); });
+      });
+    } else {
+      panel.querySelector('.gloss-body').innerHTML = '<div class="gloss-empty">Glossbestand leeg.</div>';
+    }
+  }catch(err){
+    panel.querySelector('.gloss-body').innerHTML = '<div class="gloss-empty">Glossen niet geladen.</div>';
+  }
+}
+
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+/* ---------- Card rendering ---------- */
+function makeCard(v){
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.dataset.id = v.video_id;
+  card.dataset.src = v.m_url || '';
+  card.dataset.gloss = v.gloss_srt_url || '';
+  card.dataset.zin = (v.zin||'').toLowerCase();
+  card.dataset.hasgloss = v.has_gloss ? '1':'0';
+
+  const glossChip = v.has_gloss
+    ? '<span class="chip gloss">● glossen</span>'
+    : '<span class="chip nogloss">geen glossen</span>';
+
+  card.innerHTML = `
+    <div class="card-top">
+      <div>
+        <div class="zin">${escapeHtml(v.zin || '(geen zin)')}</div>
+        <div class="meta">
+          <span class="chip thema">${escapeHtml(v.thema||'')}</span>
+          ${glossChip}
+          <span class="chip">video #${v.video_id}</span>
+        </div>
+      </div>
+    </div>
+    <div class="vid-wrap">
+      <div class="placeholder">video laden…</div>
+      <video controls preload="none" playsinline crossorigin="anonymous"></video>
+    </div>
+    <div class="gloss-panel">
+      <h4>Signbank ID glossen</h4>
+      <div class="gloss-body">${v.has_gloss ? '<div class="gloss-empty">glossen laden…</div>' : '<div class="gloss-empty">Geen glossbestand voor deze video.</div>'}</div>
+    </div>
+    <div class="card-actions">
+      <button class="btn-undelete">↩ Terugzetten</button>
+    </div>`;
+
+  card.querySelector('.btn-undelete').addEventListener('click', ()=>undelete(card));
+  // reveal placeholder hint once video has the src
+  const v0 = card.querySelector('video');
+  v0.addEventListener('loadeddata', ()=>{ const ph=card.querySelector('.placeholder'); if(ph) ph.remove(); });
+  io.observe(card);
+  return card;
+}
+
+function applyFilters(){
+  const q = searchEl.value.trim().toLowerCase();
+  const og = onlyGlossEl.checked;
+  let shown = 0;
+  for(const card of grid.children){
+    const ok = (!q || card.dataset.zin.includes(q)) && (!og || card.dataset.hasgloss==='1');
+    card.style.display = ok ? '' : 'none';
+    if(ok) shown++;
+  }
+  return shown;
+}
+
+/* ---------- Undelete ---------- */
+async function undelete(card){
+  const id = card.dataset.id;
+  const btn = card.querySelector('.btn-undelete');
+  btn.disabled = true; btn.textContent = 'Bezig…';
+  try{
+    const fd = new FormData();
+    fd.append('action','restoreVideo');
+    fd.append('videoId', id);
+    const res = await fetch(API, {method:'POST', body:fd});
+    const data = await res.json();
+    if(data.success){
+      card.classList.add('removing');
+      setTimeout(()=>{ card.remove(); }, 350);
+      restoredCount++;
+      updateCounters();
+      toast('Video #'+id+' teruggezet ✓');
+    } else {
+      throw new Error(data.error || 'onbekende fout');
+    }
+  }catch(err){
+    btn.disabled = false; btn.textContent = '↩ Terugzetten';
+    toast('Terugzetten mislukt: '+err.message, true);
+  }
+}
+
+/* ---------- Paged loading ---------- */
+async function loadPage(){
+  if(loading || done) return;
+  loading = true;
+  loadmore.disabled = true;
+  statusEl.textContent = 'Laden…';
+  page++;
+  try{
+    const res = await fetch(`${API}?action=fetchDeletedVideos&page=${page}&limit=${LIMIT}`);
+    const data = await res.json();
+    if(!data.success) throw new Error(data.error||'fout');
+    total = data.total;
+    const frag = document.createDocumentFragment();
+    let added = 0;
+    for(const v of data.videos){
+      if(seen.has(v.video_id)) continue;   // guard against shifting offsets after restores
+      seen.add(v.video_id);
+      frag.appendChild(makeCard(v));
+      added++;
+    }
+    grid.appendChild(frag);
+    loadedCount += added;
+    updateCounters();
+    applyFilters();
+    if(data.videos.length < LIMIT || loadedCount >= total){
+      done = true;
+      loadmoreWrap.style.display = 'none';
+      statusEl.textContent = loadedCount ? `Alle ${loadedCount} video's geladen.` : '';
+    } else {
+      loadmoreWrap.style.display = '';
+      statusEl.textContent = '';
+    }
+    if(!grid.children.length){
+      statusEl.innerHTML = '<div class="empty">Geen verwijderde video\'s gevonden.</div>';
+    }
+  }catch(err){
+    statusEl.textContent = 'Fout bij laden: '+err.message;
+    page--; // allow retry
+  }finally{
+    loading = false;
+    loadmore.disabled = false;
+  }
+}
+
+function updateCounters(){
+  document.getElementById('total').textContent     = total ?? '…';
+  document.getElementById('loaded').textContent    = loadedCount;
+  document.getElementById('remaining').textContent = (total!=null) ? (total - restoredCount) : '…';
+}
+
+/* ---------- Infinite scroll sentinel ---------- */
+const sentinel = document.createElement('div');
+document.querySelector('main').appendChild(sentinel);
+new IntersectionObserver((e)=>{ if(e[0].isIntersecting) loadPage(); }, {rootMargin:'600px'}).observe(sentinel);
+
+loadmore.addEventListener('click', loadPage);
+let searchT;
+searchEl.addEventListener('input', ()=>{ clearTimeout(searchT); searchT=setTimeout(applyFilters,150); });
+onlyGlossEl.addEventListener('change', applyFilters);
+
+let toastT;
+function toast(msg, err){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show' + (err?' err':'');
+  clearTimeout(toastT); toastT = setTimeout(()=>{ t.className=''; }, 2600);
+}
+
+loadPage();
+</script>
+</body>
+</html>

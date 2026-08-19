@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+</head>
+<body>
+  
+  <canvas id="canvasEl" style="max-height:600px;"></canvas>
+  <br>
+  <input type="file" accept="video/mp4" onchange="start(this.files[0])">
+  <input type="range" id="frameSlider" min="0" value="0" disabled>
+  <script type="module">
+    import getVideoFrames from "https://deno.land/x/get_video_frames@v0.0.9/mod.js"
+    
+    let frameCount = 0;
+    const frames = [];
+    
+    function drawFrame(index) {
+      let ctx = canvasEl.getContext("2d");
+      ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+      ctx.drawImage(frames[index], 0, 0, canvasEl.width, canvasEl.height);
+    }
+    
+    frameSlider.addEventListener("input", (e) => {
+      drawFrame(parseInt(e.target.value));
+    });
+    
+    window.start = async function(file) {
+      let ctx = canvasEl.getContext("2d"); 
+
+      let videoUrl = URL.createObjectURL(file);
+      
+      await getVideoFrames({
+        videoUrl,
+        async onFrame(frame) {
+          const img = await createImageBitmap(frame);
+          frames.push(img);
+          frameCount++;
+          frameSlider.max = frames.length - 1;
+          if(frameSlider.disabled) { 
+            frameSlider.disabled = false;
+          }
+          if(frames.length === 1) {
+            drawFrame(0);
+          }
+          frame.close();
+        },
+        onConfig(config) {
+          canvasEl.width = config.codedWidth;
+          canvasEl.height = config.codedHeight;
+        },
+        onFinish() {
+          console.log("finished!");
+          console.log("frameCount", frameCount);
+        },
+      });
+
+      URL.revokeObjectURL(file);
+    }
+  </script> 
+
+</body>
+</html>

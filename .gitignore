@@ -1,0 +1,33 @@
+# --- credentials: never commit ---
+.env
+.env.*
+!.env.example
+mysql_config.php
+mysql_config_test.php
+mysql_config.example.php.keep
+config.php
+config.php.backup*
+*.pem
+*.key
+
+# --- dependencies ---
+node_modules/
+vendor/
+
+# --- logs, caches, os cruft ---
+*.log
+logs/
+.DS_Store
+Thumbs.db
+
+# --- large assets excluded from git (GitHub rejects >100MB) ---
+eaf/
+record3D/
+backups/
+/dutch_words.jsonl
+/PalmerPolo1024uastc.glb
+/form_data (18).sql
+db_credentials.py
+db_credentials.php
+__pycache__/
+*.pyc

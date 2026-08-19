@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Dimension Checker — ZIN Project</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f5f6fa; }
+        .stat-card { border-radius: 12px; padding: 1.5rem; color: #fff; }
+        .stat-card.total { background: #3b82f6; }
+        .stat-card.issues { background: #ef4444; }
+        .stat-card.conforming { background: #22c55e; }
+        .stat-card.errors { background: #f59e0b; }
+        .stat-card h2 { font-size: 2.5rem; font-weight: 700; margin: 0; }
+        .stat-card small { opacity: 0.85; }
+        .thumb-img { width: 80px; height: 92px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 2px solid #dee2e6; transition: border-color .15s; }
+        .thumb-img:hover { border-color: #3b82f6; }
+        .badge-ratio { font-size: 0.85rem; padding: 0.35em 0.65em; }
+        .badge-error { background: #f59e0b; }
+        #search { max-width: 350px; }
+        .table > tbody > tr > td { vertical-align: middle; }
+        .camera-badge { font-size: 0.75rem; text-transform: uppercase; }
+        .pagination .page-link { cursor: pointer; }
+        .modal-video { width: 100%; max-height: 80vh; }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid py-4 px-4">
+    <h1 class="mb-1">Video Dimension Checker</h1>
+    <p class="text-muted mb-4">ZIN Project — Expected aspect ratio <strong>1.15 : 1</strong> (width : height)</p>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-3 text-muted">Loading dimension_issues.json...</p>
+    </div>
+
+    <!-- Error -->
+    <div id="load-error" class="alert alert-danger d-none"></div>
+
+    <!-- Content -->
+    <div id="content" class="d-none">
+        <!-- Stats -->
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="stat-card total">
+                    <small>Total Checked</small>
+                    <h2 id="stat-total">—</h2>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="stat-card issues">
+                    <small>Wrong Ratio</small>
+                    <h2 id="stat-issues">—</h2>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="stat-card conforming">
+                    <small>Conforming</small>
+                    <h2 id="stat-conforming">—</h2>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="stat-card errors">
+                    <small>Errors</small>
+                    <h2 id="stat-errors">—</h2>
+                </div>
+            </div>
+        </div>
+
+        <p class="text-muted small" id="generated-at"></p>
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-3" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-issues" type="button">
+                    Wrong Ratio <span class="badge bg-danger ms-1" id="tab-issues-count"></span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-errors" type="button">
+                    Errors <span class="badge bg-warning text-dark ms-1" id="tab-errors-count"></span>
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- Issues Tab -->
+            <div class="tab-pane fade show active" id="tab-issues">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                    <input type="text" id="search" class="form-control" placeholder="Filter by sentence ID or text...">
+                    <div class="text-muted small" id="showing-count"></div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Sentence ID</th>
+                                <th>Sentence Text</th>
+                                <th>Camera</th>
+                                <th>Thumbnail</th>
+                                <th>Dimensions</th>
+                                <th>Ratio (w/h)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="issues-body"></tbody>
+                    </table>
+                </div>
+
+                <nav id="pagination-nav">
+                    <ul class="pagination justify-content-center" id="pagination"></ul>
+                </nav>
+            </div>
+
+            <!-- Errors Tab -->
+            <div class="tab-pane fade" id="tab-errors">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Sentence ID</th>
+                                <th>Sentence Text</th>
+                                <th>Camera</th>
+                                <th>Video URL</th>
+                                <th>Error</th>
+                            </tr>
+                        </thead>
+                        <tbody id="errors-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Video Modal -->
+<div class="modal fade" id="videoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="videoModalLabel"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center p-0">
+                <video id="modalVideo" class="modal-video" controls></video>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const PER_PAGE = 20;
+let data = null;
+let filteredIssues = [];
+let currentPage = 1;
+
+async function init() {
+    try {
+        const resp = await fetch('dimension_issues.json');
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+        data = await resp.json();
+        render();
+    } catch (e) {
+        document.getElementById('loading').classList.add('d-none');
+        const el = document.getElementById('load-error');
+        el.classList.remove('d-none');
+        el.textContent = `Failed to load dimension_issues.json: ${e.message}. Run check_dimensions.py first.`;
+    }
+}
+
+function render() {
+    document.getElementById('loading').classList.add('d-none');
+    document.getElementById('content').classList.remove('d-none');
+
+    const conforming = data.total_videos_checked - data.total_issues - (data.total_errors || 0);
+    document.getElementById('stat-total').textContent = data.total_videos_checked.toLocaleString();
+    document.getElementById('stat-issues').textContent = data.total_issues.toLocaleString();
+    document.getElementById('stat-conforming').textContent = conforming.toLocaleString();
+    document.getElementById('stat-errors').textContent = (data.total_errors || 0).toLocaleString();
+    document.getElementById('tab-issues-count').textContent = data.total_issues;
+    document.getElementById('tab-errors-count').textContent = data.total_errors || 0;
+    document.getElementById('generated-at').textContent = `Generated: ${new Date(data.generated_at).toLocaleString()}`;
+
+    filteredIssues = data.issues;
+    renderIssuesPage();
+    renderErrors();
+
+    document.getElementById('search').addEventListener('input', onSearch);
+}
+
+function onSearch(e) {
+    const q = e.target.value.trim().toLowerCase();
+    if (!q) {
+        filteredIssues = data.issues;
+    } else {
+        filteredIssues = data.issues.filter(i =>
+            String(i.sentence_id).includes(q) ||
+            (i.zinString && i.zinString.toLowerCase().includes(q))
+        );
+    }
+    currentPage = 1;
+    renderIssuesPage();
+}
+
+function renderIssuesPage() {
+    const totalPages = Math.max(1, Math.ceil(filteredIssues.length / PER_PAGE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    const start = (currentPage - 1) * PER_PAGE;
+    const pageItems = filteredIssues.slice(start, start + PER_PAGE);
+
+    document.getElementById('showing-count').textContent =
+        `Showing ${start + 1}–${start + pageItems.length} of ${filteredIssues.length}`;
+
+    const tbody = document.getElementById('issues-body');
+    tbody.innerHTML = '';
+
+    pageItems.forEach((item, idx) => {
+        const ratio = item.actual_ratio != null ? item.actual_ratio.toFixed(4) : '—';
+        const dim = (item.width && item.height) ? `${item.width} × ${item.height}` : '—';
+        const cameraColors = { left: 'primary', center: 'success', right: 'info' };
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="text-muted">${start + idx + 1}</td>
+            <td><strong>${item.sentence_id}</strong></td>
+            <td>${escHtml(item.zinString || '')}</td>
+            <td><span class="badge bg-${cameraColors[item.camera] || 'secondary'} camera-badge">${item.camera}</span></td>
+            <td><img src="${escAttr(item.thumbnail_url)}" class="thumb-img" loading="lazy"
+                     onerror="this.style.display='none'"
+                     data-video="${escAttr(item.video_url)}"
+                     data-label="Sentence ${item.sentence_id} — ${item.camera}"
+                     onclick="openVideo(this)"></td>
+            <td>${dim}</td>
+            <td><span class="badge bg-danger badge-ratio">${ratio}</span>
+                <small class="text-muted ms-1">(expect ${data.target_ratio})</small></td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+    const ul = document.getElementById('pagination');
+    ul.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    const addPage = (label, page, disabled, active) => {
+        const li = document.createElement('li');
+        li.className = `page-item${disabled ? ' disabled' : ''}${active ? ' active' : ''}`;
+        const a = document.createElement('a');
+        a.className = 'page-link';
+        a.textContent = label;
+        if (!disabled && !active) a.onclick = () => { currentPage = page; renderIssuesPage(); };
+        li.appendChild(a);
+        ul.appendChild(li);
+    };
+
+    addPage('«', 1, currentPage === 1);
+    addPage('‹', currentPage - 1, currentPage === 1);
+
+    // Show window of pages around current
+    let startP = Math.max(1, currentPage - 3);
+    let endP = Math.min(totalPages, currentPage + 3);
+    if (startP > 1) { addPage('1', 1); if (startP > 2) addPage('...', 0, true); }
+    for (let p = startP; p <= endP; p++) addPage(p, p, false, p === currentPage);
+    if (endP < totalPages) { if (endP < totalPages - 1) addPage('...', 0, true); addPage(totalPages, totalPages); }
+
+    addPage('›', currentPage + 1, currentPage === totalPages);
+    addPage('»', totalPages, currentPage === totalPages);
+}
+
+function renderErrors() {
+    const tbody = document.getElementById('errors-body');
+    tbody.innerHTML = '';
+    const errors = data.errors || [];
+    errors.forEach((item, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="text-muted">${idx + 1}</td>
+            <td><strong>${item.sentence_id}</strong></td>
+            <td>${escHtml(item.zinString || '')}</td>
+            <td><span class="badge bg-secondary camera-badge">${item.camera}</span></td>
+            <td class="small text-break">${escHtml(item.video_url)}</td>
+            <td><span class="badge bg-warning text-dark">${escHtml(item.error || 'Unknown')}</span></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function openVideo(img) {
+    const url = img.dataset.video;
+    const label = img.dataset.label;
+    document.getElementById('videoModalLabel').textContent = label;
+    const video = document.getElementById('modalVideo');
+    video.src = url;
+    new bootstrap.Modal(document.getElementById('videoModal')).show();
+}
+
+// Clean up video on modal close
+document.getElementById('videoModal').addEventListener('hidden.bs.modal', () => {
+    const video = document.getElementById('modalVideo');
+    video.pause();
+    video.src = '';
+});
+
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function escAttr(s) { return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+init();
+</script>
+</body>
+</html>

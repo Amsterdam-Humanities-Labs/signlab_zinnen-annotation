@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Chunked Video Loader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        
+        .main-layout {
+            display: flex;
+            gap: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .log-panel {
+            width: 350px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 15px;
+            height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+        }
+        
+        .log-content {
+            flex: 1;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            padding: 10px;
+            background: #1a1a1a;
+            border-radius: 4px;
+        }
+        
+        .log-entry {
+            margin-bottom: 6px;
+            padding: 4px;
+            border-left: 3px solid #444;
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .log-entry.info { border-left-color: #4CAF50; }
+        .log-entry.warning { border-left-color: #ffa500; }
+        .log-entry.error { border-left-color: #ff4444; }
+        .log-entry.success { border-left-color: #00ff00; }
+        
+        .log-timestamp {
+            color: #888;
+            font-size: 11px;
+        }
+        
+        .log-message {
+            color: #e0e0e0;
+            margin-top: 2px;
+        }
+        
+        .container {
+            flex: 1;
+        }
+        
+        h1 {
+            color: #fff;
+            margin-bottom: 20px;
+        }
+        
+        .section {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #e0e0e0;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        
+        .canvas-container {
+            text-align: center;
+            margin-bottom: 20px;
+            background: #000;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #444;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            padding: 10px;
+            background: #1a1a1a;
+            border-radius: 4px;
+            text-align: center;
+        }
+        
+        .info-label {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #1a1a1a;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #4CAF50;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+        
+        .big-button {
+            font-size: 18px;
+            padding: 15px 30px;
+            margin: 10px;
+            background: #ff6b35;
+        }
+        
+        .big-button:hover {
+            background: #e55a2b;
+        }
+        
+        select {
+            padding: 8px;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-layout">
+        <!-- Log Panel -->
+        <div class="log-panel">
+            <div style="color: #fff; font-weight: bold; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #444;">
+                📋 Activity Log
+                <button onclick="clearLog()" style="float: right; padding: 2px 8px; font-size: 10px;">Clear</button>
+            </div>
+            <div class="log-content" id="logContent"></div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="container">
+            <h1>🎬 Simple Chunked Video Loader</h1>
+            
+            <!-- URL Input -->
+            <div class="section">
+                <div class="input-group">
+                    <input type="text" id="videoUrl" placeholder="Enter video URL" />
+                    <button onclick="loadVideo()">Load Video</button>
+                </div>
+                <div class="input-group">
+                    <label>Frames per chunk:</label>
+                    <select id="chunkSize">
+                        <option value="300">300 frames (5s)</option>
+                        <option value="600" selected>600 frames (10s)</option>
+                        <option value="900">900 frames (15s)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Info -->
+            <div class="section">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Status</div>
+                        <div class="info-value" id="status">Ready</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Frames Loaded</div>
+                        <div class="info-value" id="framesLoaded">0</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Current Frame</div>
+                        <div class="info-value" id="currentFrame">0</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Memory Usage</div>
+                        <div class="info-value" id="memoryUsage">0 MB</div>
+                    </div>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress" style="width: 0%">0%</div>
+                </div>
+            </div>
+            
+            <!-- Video -->
+            <div class="section">
+                <div class="canvas-container">
+                    <canvas id="canvas" width="800" height="600"></canvas>
+                </div>
+                
+                <div class="controls">
+                    <button onclick="togglePlay()">▶️ Play</button>
+                    <button onclick="prevFrame()">⏮️</button>
+                    <button onclick="nextFrame()">⏭️</button>
+                    <button onclick="setSpeed(0.5)">0.5x</button>
+                    <button onclick="setSpeed(1)">1x</button>
+                    <button onclick="setSpeed(2)">2x</button>
+                </div>
+            </div>
+            
+            <!-- Load More -->
+            <div class="section" style="text-align: center; display: none;" id="loadMoreSection">
+                <p style="color: #ffa500; margin-bottom: 15px;">
+                    ⚠️ Approaching end of loaded frames
+                </p>
+                <button class="big-button" onclick="loadMoreFrames()">
+                    🚀 Load Next Chunk
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        import getVideoFrames from './mod.js';
+        
+        // State
+        let frames = [];
+        let currentIndex = 0;
+        let isPlaying = false;
+        let speed = 1;
+        let chunkSize = 600;
+        let totalFramesFromVideo = 0;
+        let isLoading = false;
+        let fps = 60;
+        
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Make global
+        window.loadVideo = loadVideo;
+        window.loadMoreFrames = loadMoreFrames;
+        window.togglePlay = togglePlay;
+        window.prevFrame = prevFrame;
+        window.nextFrame = nextFrame;
+        window.setSpeed = setSpeed;
+        window.clearLog = clearLog;
+        
+        function addLog(msg, type = 'info') {
+            const log = document.getElementById('logContent');
+            const time = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = `log-entry ${type}`;
+            div.innerHTML = `<div class="log-timestamp">[${time}]</div><div class="log-message">${msg}</div>`;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function clearLog() {
+            document.getElementById('logContent').innerHTML = '';
+            addLog('Log cleared');
+        }
+        
+        function updateUI() {
+            document.getElementById('framesLoaded').textContent = frames.length;
+            document.getElementById('currentFrame').textContent = `${currentIndex + 1} / ${frames.length}`;
+            document.getElementById('status').textContent = isLoading ? 'Loading...' : 'Ready';
+            
+            if (frames.length > 0) {
+                const progress = ((currentIndex + 1) / frames.length) * 100;
+                document.getElementById('progress').style.width = `${progress}%`;
+                document.getElementById('progress').textContent = `${Math.round(progress)}%`;
+                
+                // Memory calculation
+                const bytesPerFrame = canvas.width * canvas.height * 4;
+                const memoryMB = (frames.length * bytesPerFrame / 1024 / 1024).toFixed(1);
+                document.getElementById('memoryUsage').textContent = `${memoryMB} MB`;
+                
+                // Show load more button if near end
+                const nearEnd = currentIndex > frames.length * 0.8;
+                document.getElementById('loadMoreSection').style.display = nearEnd ? 'block' : 'none';
+            }
+        }
+        
+        async function loadVideo() {
+            const url = document.getElementById('videoUrl').value.trim();
+            if (!url || isLoading) return;
+            
+            chunkSize = parseInt(document.getElementById('chunkSize').value);
+            frames = [];
+            currentIndex = 0;
+            totalFramesFromVideo = 0;
+            
+            addLog(`Loading video: ${url}`, 'info');
+            addLog(`Chunk size: ${chunkSize} frames`, 'info');
+            
+            await loadFramesChunk(url);
+        }
+        
+        async function loadFramesChunk(url) {
+            if (isLoading) return;
+            isLoading = true;
+            
+            const startFrameCount = frames.length;
+            let newFramesLoaded = 0;
+            const startTime = performance.now();
+            
+            addLog(`Loading chunk starting at frame ${startFrameCount}...`, 'info');
+            
+            try {
+                await getVideoFrames({
+                    videoUrl: url,
+                    async onFrame(frame) {
+                        // Stop if we have enough frames for this chunk
+                        if (newFramesLoaded >= chunkSize) {
+                            frame.close();
+                            return;
+                        }
+                        
+                        const img = await createImageBitmap(frame);
+                        frames.push(img);
+                        newFramesLoaded++;
+                        totalFramesFromVideo++;
+                        
+                        // Setup canvas on first frame
+                        if (frames.length === 1) {
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            addLog(`Canvas: ${img.width}x${img.height}`, 'success');
+                            renderFrame(0);
+                        }
+                        
+                        // Update UI every 50 frames
+                        if (newFramesLoaded % 50 === 0) {
+                            addLog(`Loaded ${newFramesLoaded} frames in this chunk...`, 'info');
+                            updateUI();
+                        }
+                        
+                        frame.close();
+                    },
+                    onConfig(config) {
+                        addLog(`Video codec: ${config.codec}`, 'info');
+                    },
+                    onFinish() {
+                        const loadTime = ((performance.now() - startTime) / 1000).toFixed(2);
+                        addLog(`Chunk complete: ${newFramesLoaded} frames in ${loadTime}s`, 'success');
+                        
+                        // If we got fewer frames than requested, we've reached the end
+                        if (newFramesLoaded < chunkSize) {
+                            addLog(`End of video reached (loaded ${newFramesLoaded} frames)`, 'warning');
+                        }
+                    }
+                });
+                
+            } catch (error) {
+                addLog(`Error loading chunk: ${error.message}`, 'error');
+            } finally {
+                isLoading = false;
+                updateUI();
+            }
+        }
+        
+        async function loadMoreFrames() {
+            const url = document.getElementById('videoUrl').value.trim();
+            if (!url) return;
+            
+            addLog('User requested more frames', 'info');
+            await loadFramesChunk(url);
+        }
+        
+        function renderFrame(index) {
+            if (index >= 0 && index < frames.length) {
+                ctx.drawImage(frames[index], 0, 0, canvas.width, canvas.height);
+                currentIndex = index;
+                updateUI();
+            }
+        }
+        
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const btn = event.target;
+            btn.textContent = isPlaying ? '⏸️ Pause' : '▶️ Play';
+            
+            if (isPlaying) {
+                addLog(`Playing at ${speed}x speed`, 'info');
+                playLoop();
+            } else {
+                addLog('Paused', 'info');
+            }
+        }
+        
+        function playLoop() {
+            if (!isPlaying) return;
+            
+            if (currentIndex < frames.length - 1) {
+                renderFrame(currentIndex + 1);
+                setTimeout(playLoop, 1000 / (fps * speed));
+            } else {
+                isPlaying = false;
+                document.querySelector('button').textContent = '▶️ Play';
+                addLog('Reached end of loaded frames', 'warning');
+            }
+        }
+        
+        function prevFrame() {
+            if (currentIndex > 0) renderFrame(currentIndex - 1);
+        }
+        
+        function nextFrame() {
+            if (currentIndex < frames.length - 1) renderFrame(currentIndex + 1);
+        }
+        
+        function setSpeed(newSpeed) {
+            speed = newSpeed;
+            addLog(`Speed set to ${speed}x`, 'info');
+        }
+        
+        // Initialize
+        addLog('Simple Chunked Loader ready', 'success');
+        addLog('This version loads frames in chunks and stops properly', 'info');
+        
+        // Auto-load if URL provided
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('url')) {
+            document.getElementById('videoUrl').value = urlParams.get('url');
+            loadVideo();
+        }
+        
+        updateUI();
+    </script>
+</body>
+</html>

@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ZNN — Sign Language Browser</title>
+    <script src="/userProtect.js"></script>
+    <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+    <style>
+        /* Smooth view transitions */
+        .view { display: none; opacity: 0; transition: opacity 0.2s ease; }
+        .view.active { display: flex; flex-direction: column; opacity: 1; }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+
+        /* Video thumbnail hover area */
+        .video-card { touch-action: manipulation; }
+        .video-card video { object-fit: cover; }
+        .video-card img { object-fit: cover; }
+
+        /* Subtitle overlay */
+        .subtitle-overlay {
+            position: absolute; bottom: 8px; left: 0; right: 0;
+            text-align: center; pointer-events: none;
+        }
+        .subtitle-overlay span {
+            background: rgba(0,0,0,0.75); color: #fff;
+            padding: 2px 8px; border-radius: 4px; font-size: 0.85rem;
+            line-height: 1.3;
+        }
+
+        /* Synced video group */
+        .detail-video-wrap { position: relative; }
+        .detail-video-wrap video { width: 100%; display: block; border-radius: 0.5rem; }
+
+        /* Infinite scroll sentinel */
+        #scroll-sentinel { height: 1px; }
+
+        /* Search clear button */
+        .search-wrap { position: relative; }
+        .search-wrap .clear-btn {
+            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+            cursor: pointer; color: #94a3b8; font-size: 1.2rem; line-height: 1;
+            display: none;
+        }
+        .search-wrap .clear-btn.visible { display: block; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+
+<!-- ========== STICKY HEADER ========== -->
+<header id="app-header" class="sticky top-0 z-50 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 py-3">
+    <div class="flex items-center gap-3 max-w-5xl mx-auto">
+        <!-- Back button (hidden on home) -->
+        <button id="btn-back" onclick="goBack()" class="hidden shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-slate-800 active:bg-slate-700">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+        </button>
+        <!-- Title -->
+        <h1 id="header-title" class="text-lg font-semibold truncate">ZNN</h1>
+        <!-- Search -->
+        <div class="search-wrap flex-1 max-w-md ml-auto">
+            <input id="search-input" type="search" placeholder="Zoeken…"
+                class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                oninput="onSearchInput(this.value)"
+                onkeydown="if(event.key==='Enter')onSearchSubmit(this.value)" />
+            <span class="clear-btn" onclick="clearSearch()">&times;</span>
+        </div>
+    </div>
+</header>
+
+<!-- ========== VIEW 1: THEMES ========== -->
+<main id="view-home" class="view active flex-1 overflow-y-auto">
+    <div class="max-w-5xl mx-auto px-4 py-4">
+        <div id="theme-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+        <div id="theme-loading" class="text-center py-12 text-slate-500">Thema's laden…</div>
+        <div id="theme-empty" class="hidden text-center py-12 text-slate-500">Geen thema's gevonden.</div>
+    </div>
+</main>
+
+<!-- ========== VIEW 2: VIDEO LIST ========== -->
+<main id="view-list" class="view flex-1 overflow-y-auto">
+    <div class="max-w-5xl mx-auto px-4 py-4">
+        <div id="sentence-list" class="space-y-3"></div>
+        <div id="list-loading" class="text-center py-8 text-slate-500">Laden…</div>
+        <div id="list-empty" class="hidden text-center py-12 text-slate-500">Geen resultaten gevonden.</div>
+        <div id="scroll-sentinel"></div>
+    </div>
+</main>
+
+<!-- ========== VIEW 3: VIDEO DETAIL ========== -->
+<main id="view-detail" class="view flex-1 overflow-y-auto">
+    <div class="max-w-5xl mx-auto px-4 py-4">
+        <!-- Sentence text -->
+        <p id="detail-sentence" class="text-lg font-medium mb-4 leading-relaxed"></p>
+        <!-- Video grid: L M R -->
+        <div id="detail-videos" class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4"></div>
+        <!-- Subtitle toggle buttons -->
+        <div id="subtitle-toggles" class="flex flex-wrap gap-2 mb-4">
+            <button data-sub="nederlands" onclick="toggleSubtitle('nederlands')"
+                class="sub-btn px-4 py-2 rounded-lg text-sm font-medium bg-slate-800 border border-slate-700 active:bg-slate-700 transition-colors">
+                Nederlands</button>
+            <button data-sub="gvg" onclick="toggleSubtitle('gvg')"
+                class="sub-btn px-4 py-2 rounded-lg text-sm font-medium bg-slate-800 border border-slate-700 active:bg-slate-700 transition-colors">
+                Gebaar voor Gebaar</button>
+            <button data-sub="glos" onclick="toggleSubtitle('glos')"
+                class="sub-btn px-4 py-2 rounded-lg text-sm font-medium bg-slate-800 border border-slate-700 active:bg-slate-700 transition-colors">
+                Glos</button>
+        </div>
+    </div>
+</main>
+
+<script>
+// ──────────────────────────────────────
+// State
+// ──────────────────────────────────────
+const API = '../getZinnen.php';
+const API_MT = '../getMT.php';
+const MEDIA_POST       = 'https://signcollect.nl/gebarenoverleg_media/studioFilesMini/post/trim_prod/';
+const MEDIA_POST_THUMB = 'https://signcollect.nl/gebarenoverleg_media/studioFilesMini/post/';
+const MEDIA_RAW        = 'https://signcollect.nl/gebarenoverleg_media/studioFilesMini/raw/';
+
+let currentView = 'home';   // home | list | detail
+let allThemes = [];
+let currentTheme = null;
+let currentSearch = '';
+let currentPage = 1;
+let totalPages = 1;
+let loadingMore = false;
+let sentences = [];
+let activeSubtitle = null;   // 'nederlands' | 'gvg' | 'glos'
+let detailVideos = [];       // video elements in detail view
+let subtitleData = {};       // { nederlands: [], gvg: [], glos: [] }
+let syncIntervalId = null;
+
+// ──────────────────────────────────────
+// Helpers
+// ──────────────────────────────────────
+function mediaBase(postProcessed) {
+    return postProcessed === '1' || postProcessed === 1 ? MEDIA_POST : MEDIA_RAW;
+}
+function thumbBase(postProcessed) {
+    return postProcessed === '1' || postProcessed === 1 ? MEDIA_POST_THUMB : MEDIA_RAW;
+}
+function toMp4(wavFile, base) { return base + wavFile.replace('.wav', '.mp4'); }
+function toJpg(wavFile, base) { return base + wavFile.replace('.wav', '.jpg'); }
+
+function $(id) { return document.getElementById(id); }
+
+// ──────────────────────────────────────
+// View Management
+// ──────────────────────────────────────
+function showView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    $(`view-${name}`).classList.add('active');
+    currentView = name;
+
+    // Back button visibility
+    $('btn-back').classList.toggle('hidden', name === 'home');
+    // Flex alignment fix for back button
+    $('btn-back').style.display = name === 'home' ? 'none' : 'flex';
+
+    // Header title
+    if (name === 'home') {
+        $('header-title').textContent = 'ZNN';
+    } else if (name === 'list') {
+        $('header-title').textContent = currentTheme || 'Zoekresultaten';
+    } else if (name === 'detail') {
+        $('header-title').textContent = 'Video';
+    }
+
+    // Scroll to top
+    $(`view-${name}`).scrollTop = 0;
+
+    // Search bar visible except detail
+    $('search-input').closest('.search-wrap').style.display = name === 'detail' ? 'none' : '';
+}
+
+function goBack() {
+    if (currentView === 'detail') {
+        cleanupDetail();
+        showView('list');
+    } else if (currentView === 'list') {
+        currentTheme = null;
+        currentSearch = '';
+        $('search-input').value = '';
+        updateClearBtn('');
+        showView('home');
+        renderThemes(allThemes);
+    }
+}
+
+// Handle browser back
+window.addEventListener('popstate', (e) => {
+    if (e.state) {
+        if (e.state.view === 'home') {
+            currentTheme = null;
+            currentSearch = '';
+            $('search-input').value = '';
+            updateClearBtn('');
+            cleanupDetail();
+            showView('home');
+            renderThemes(allThemes);
+        } else if (e.state.view === 'list') {
+            cleanupDetail();
+            currentTheme = e.state.theme || null;
+            currentSearch = e.state.search || '';
+            showView('list');
+        }
+    }
+});
+
+// ──────────────────────────────────────
+// Search
+// ──────────────────────────────────────
+let searchDebounce = null;
+function onSearchInput(val) {
+    updateClearBtn(val);
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => {
+        const q = val.trim();
+        if (currentView === 'home') {
+            if (q.length > 0) {
+                // Filter themes
+                const filtered = allThemes.filter(t => t.toLowerCase().includes(q.toLowerCase()));
+                renderThemes(filtered);
+            } else {
+                renderThemes(allThemes);
+            }
+        } else if (currentView === 'list') {
+            // Re-search from API
+            currentSearch = q;
+            currentPage = 1;
+            sentences = [];
+            $('sentence-list').innerHTML = '';
+            fetchSentences();
+        }
+    }, 300);
+}
+
+function onSearchSubmit(val) {
+    const q = val.trim();
+    if (!q) return;
+    if (currentView === 'home') {
+        // Search sentences globally
+        currentTheme = null;
+        currentSearch = q;
+        currentPage = 1;
+        sentences = [];
+        $('sentence-list').innerHTML = '';
+        history.pushState({ view: 'list', search: q }, '', `#search=${encodeURIComponent(q)}`);
+        showView('list');
+        fetchSentences();
+    }
+}
+
+function clearSearch() {
+    $('search-input').value = '';
+    updateClearBtn('');
+    onSearchInput('');
+}
+
+function updateClearBtn(val) {
+    const btn = document.querySelector('.clear-btn');
+    btn.classList.toggle('visible', val.length > 0);
+}
+
+// ──────────────────────────────────────
+// View 1: Themes
+// ──────────────────────────────────────
+async function fetchThemes() {
+    $('theme-loading').classList.remove('hidden');
+    $('theme-empty').classList.add('hidden');
+    try {
+        const res = await fetch(`${API}?action=fetchThemas`);
+        const data = await res.json();
+        if (data.success && data.themas) {
+            allThemes = data.themas.sort((a, b) => a.localeCompare(b, 'nl'));
+            renderThemes(allThemes);
+        }
+    } catch (e) {
+        console.error('Failed to fetch themes:', e);
+    }
+    $('theme-loading').classList.add('hidden');
+}
+
+function renderThemes(themes) {
+    const grid = $('theme-grid');
+    grid.innerHTML = '';
+    $('theme-empty').classList.toggle('hidden', themes.length > 0);
+
+    themes.forEach(theme => {
+        const card = document.createElement('button');
+        card.className = 'bg-slate-800 hover:bg-slate-750 active:bg-slate-700 border border-slate-700 rounded-xl p-4 text-left transition-colors min-h-[80px] flex items-center';
+        card.innerHTML = `<span class="text-sm font-medium leading-snug">${esc(theme)}</span>`;
+        card.onclick = () => openTheme(theme);
+        grid.appendChild(card);
+    });
+}
+
+function openTheme(theme) {
+    currentTheme = theme;
+    currentSearch = '';
+    currentPage = 1;
+    sentences = [];
+    $('search-input').value = '';
+    updateClearBtn('');
+    $('sentence-list').innerHTML = '';
+    history.pushState({ view: 'list', theme }, '', `#theme=${encodeURIComponent(theme)}`);
+    showView('list');
+    fetchSentences();
+}
+
+// ──────────────────────────────────────
+// View 2: Sentence / Video List
+// ──────────────────────────────────────
+async function fetchSentences() {
+    if (loadingMore) return;
+    loadingMore = true;
+    $('list-loading').classList.remove('hidden');
+    $('list-empty').classList.add('hidden');
+
+    let url = `${API}?page=${currentPage}`;
+    if (currentTheme) url += `&thema=${encodeURIComponent(currentTheme)}`;
+    if (currentSearch) url += `&search=${encodeURIComponent(currentSearch)}`;
+
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.success && data.rows) {
+            totalPages = data.pagination?.totalPages || 1;
+            let rendered = 0;
+            data.rows.forEach(row => {
+                if (isAllKlaar(row) && row.videos && row.videos.length > 0) {
+                    sentences.push(row);
+                    renderSentenceCard(row);
+                    rendered++;
+                }
+            });
+            // If everything on this page was filtered out, auto-load next page
+            if (rendered === 0 && currentPage < totalPages) {
+                currentPage++;
+                loadingMore = false;
+                fetchSentences();
+                return;
+            }
+            if (sentences.length === 0) {
+                $('list-empty').classList.remove('hidden');
+            }
+        }
+    } catch (e) {
+        console.error('Failed to fetch sentences:', e);
+    }
+    $('list-loading').classList.add('hidden');
+    loadingMore = false;
+}
+
+function isAllKlaar(row) {
+    return row.status_video === 'Klaar'
+        && row.status_annotatie === 'Klaar'
+        && row.status_glos === 'Klaar'
+        && row.status_gvg === 'Klaar';
+}
+
+function srtToText(srtEntries) {
+    return srtEntries.map(s => s.text.replace(/<br>/g, ' ')).join(' ').trim();
+}
+
+function renderSentenceCard(row) {
+    const container = $('sentence-list');
+
+    // Only show sentences where all 4 statuses are Klaar
+    if (!isAllKlaar(row)) return;
+
+    if (!row.videos || row.videos.length === 0) return;
+
+    row.videos.forEach((video, vidIdx) => {
+        const base = mediaBase(video.post_processed);
+        const thumbUrl = video.m_file ? toJpg(video.m_file, thumbBase(video.post_processed)) : '';
+        const videoUrl = video.m_file ? toMp4(video.m_file, base) : '';
+
+        const card = document.createElement('div');
+        card.className = 'video-card bg-slate-800 border border-slate-700 rounded-xl overflow-hidden flex gap-3 p-3 cursor-pointer active:bg-slate-700 transition-colors';
+        card.setAttribute('data-row-id', row.ID);
+        card.setAttribute('data-video-idx', vidIdx);
+        card.setAttribute('data-video-url', videoUrl);
+
+        card.innerHTML = `
+            <div class="shrink-0 w-[120px] h-[120px] sm:w-[150px] sm:h-[150px] rounded-lg overflow-hidden bg-slate-900 relative">
+                <img src="${esc(thumbUrl)}" alt="" class="w-full h-full object-cover" loading="lazy"
+                     onerror="this.style.display='none'" />
+            </div>
+            <div class="flex-1 min-w-0 flex flex-col justify-center">
+                <p class="sentence-text text-sm font-medium leading-relaxed line-clamp-3 text-slate-500">Laden…</p>
+                ${row.thema ? `<span class="mt-1 text-xs text-slate-400">${esc(row.thema)}</span>` : ''}
+            </div>
+        `;
+
+        // Load sentence text from Nederlands SRT
+        if (video.srt_nederlands) {
+            loadSRT(video.srt_nederlands).then(subs => {
+                const text = srtToText(subs);
+                const p = card.querySelector('.sentence-text');
+                if (p) {
+                    p.textContent = text || '(geen tekst)';
+                    p.classList.remove('text-slate-500');
+                }
+                // Cache for detail view
+                video._nlText = text;
+            });
+        } else {
+            const p = card.querySelector('.sentence-text');
+            if (p) p.textContent = '(geen tekst)';
+        }
+
+        // Hover → autoplay M video
+        const mediaWrap = card.querySelector('div');
+        let hoverVideo = null;
+
+        card.addEventListener('mouseenter', () => {
+            if (!videoUrl || hoverVideo) return;
+            hoverVideo = document.createElement('video');
+            hoverVideo.src = videoUrl;
+            hoverVideo.muted = true;
+            hoverVideo.autoplay = true;
+            hoverVideo.loop = true;
+            hoverVideo.playsInline = true;
+            hoverVideo.className = 'w-full h-full object-cover absolute inset-0';
+            mediaWrap.appendChild(hoverVideo);
+            hoverVideo.play().catch(() => {});
+        });
+
+        card.addEventListener('mouseleave', () => {
+            if (hoverVideo) {
+                hoverVideo.pause();
+                hoverVideo.removeAttribute('src');
+                hoverVideo.load();
+                hoverVideo.remove();
+                hoverVideo = null;
+            }
+        });
+
+        // Touch: play on first tap, open on second (or use a timeout)
+        let touchPlaying = false;
+        card.addEventListener('touchstart', (e) => {
+            if (!touchPlaying && videoUrl) {
+                e.preventDefault();
+                touchPlaying = true;
+                hoverVideo = document.createElement('video');
+                hoverVideo.src = videoUrl;
+                hoverVideo.muted = true;
+                hoverVideo.autoplay = true;
+                hoverVideo.loop = true;
+                hoverVideo.playsInline = true;
+                hoverVideo.className = 'w-full h-full object-cover absolute inset-0';
+                mediaWrap.appendChild(hoverVideo);
+                hoverVideo.play().catch(() => {});
+                // Auto-open after brief preview
+                setTimeout(() => {
+                    if (hoverVideo) {
+                        hoverVideo.pause();
+                        hoverVideo.removeAttribute('src');
+                        hoverVideo.load();
+                        hoverVideo.remove();
+                        hoverVideo = null;
+                    }
+                    touchPlaying = false;
+                    openDetail(row, video);
+                }, 1500);
+            }
+        }, { passive: false });
+
+        // Click → open detail (desktop)
+        card.addEventListener('click', (e) => {
+            if (touchPlaying) return;
+            if (hoverVideo) {
+                hoverVideo.pause();
+                hoverVideo.removeAttribute('src');
+                hoverVideo.load();
+                hoverVideo.remove();
+                hoverVideo = null;
+            }
+            openDetail(row, video);
+        });
+
+        container.appendChild(card);
+    });
+}
+
+// Infinite scroll
+const listObserver = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting && currentView === 'list' && !loadingMore && currentPage < totalPages) {
+        currentPage++;
+        fetchSentences();
+    }
+}, { rootMargin: '200px' });
+
+// Observe after DOM ready
+setTimeout(() => {
+    const sentinel = $('scroll-sentinel');
+    if (sentinel) listObserver.observe(sentinel);
+}, 0);
+
+// ──────────────────────────────────────
+// View 3: Video Detail
+// ──────────────────────────────────────
+async function openDetail(row, video) {
+    // Use cached Nederlands SRT text, or load it
+    if (video._nlText) {
+        $('detail-sentence').textContent = video._nlText;
+    } else {
+        $('detail-sentence').textContent = 'Laden…';
+        if (video.srt_nederlands) {
+            const subs = await loadSRT(video.srt_nederlands);
+            $('detail-sentence').textContent = srtToText(subs) || '(geen tekst)';
+        } else {
+            $('detail-sentence').textContent = '(geen tekst)';
+        }
+    }
+
+    const grid = $('detail-videos');
+    grid.innerHTML = '';
+    detailVideos = [];
+    subtitleData = { nederlands: [], gvg: [], glos: [] };
+    activeSubtitle = null;
+    updateSubtitleButtons();
+
+    history.pushState({ view: 'detail' }, '', `#detail=${row.ID}`);
+    showView('detail');
+
+    // Use inline video data (already contains l/m/r files + SRT URLs)
+    const fileData = video;
+    const base = mediaBase(fileData.post_processed);
+
+    // Build L, M, R video elements
+    const cameras = [
+        { label: 'L', file: fileData.l_file },
+        { label: 'M', file: fileData.m_file },
+        { label: 'R', file: fileData.r_file },
+    ];
+
+    cameras.forEach(cam => {
+        const wrap = document.createElement('div');
+        wrap.className = 'detail-video-wrap';
+
+        if (cam.file) {
+            const vid = document.createElement('video');
+            vid.src = toMp4(cam.file, base);
+            vid.playsInline = true;
+            vid.preload = 'metadata';
+            vid.className = 'rounded-lg bg-slate-800';
+            vid.controls = false;
+            wrap.appendChild(vid);
+            detailVideos.push(vid);
+
+            // Subtitle overlay only on M
+            if (cam.label === 'M') {
+                const overlay = document.createElement('div');
+                overlay.className = 'subtitle-overlay';
+                overlay.id = 'subtitle-display';
+                overlay.innerHTML = '<span></span>';
+                wrap.appendChild(overlay);
+            }
+
+            // Label badge
+            const badge = document.createElement('div');
+            badge.className = 'absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded';
+            badge.textContent = cam.label;
+            wrap.style.position = 'relative';
+            wrap.appendChild(badge);
+        } else {
+            wrap.innerHTML = `<div class="bg-slate-800 rounded-lg aspect-video flex items-center justify-center text-slate-600 text-sm">${cam.label} — niet beschikbaar</div>`;
+        }
+
+        grid.appendChild(wrap);
+    });
+
+    // Load subtitles
+    const srtMap = {
+        nederlands: fileData.srt_nederlands,
+        glos: fileData.srt_signbank_id_glossen,
+        gvg: fileData.srt_gebaar_voor_gebaar,
+    };
+
+    await Promise.all(Object.entries(srtMap).map(async ([key, url]) => {
+        if (url) {
+            subtitleData[key] = await loadSRT(url);
+        }
+    }));
+
+    // Auto-enable first available subtitle
+    if (subtitleData.nederlands.length > 0) toggleSubtitle('nederlands');
+    else if (subtitleData.gvg.length > 0) toggleSubtitle('gvg');
+    else if (subtitleData.glos.length > 0) toggleSubtitle('glos');
+
+    // Add play/pause controls via tap
+    setupVideoSync();
+}
+
+function setupVideoSync() {
+    if (detailVideos.length === 0) return;
+    const master = detailVideos[0]; // first available video is master
+
+    // Tap to play/pause all
+    detailVideos.forEach(vid => {
+        vid.addEventListener('click', () => {
+            if (master.paused) {
+                detailVideos.forEach(v => v.play().catch(() => {}));
+            } else {
+                detailVideos.forEach(v => v.pause());
+            }
+        });
+    });
+
+    // Sync playback on timeupdate
+    master.addEventListener('timeupdate', () => {
+        // Sync other videos if drift > 0.15s
+        for (let i = 1; i < detailVideos.length; i++) {
+            if (Math.abs(detailVideos[i].currentTime - master.currentTime) > 0.15) {
+                detailVideos[i].currentTime = master.currentTime;
+            }
+        }
+        // Update subtitle display
+        updateSubtitleDisplay(master.currentTime);
+    });
+
+    // Loop: when master ends, restart all
+    master.addEventListener('ended', () => {
+        detailVideos.forEach(v => {
+            v.currentTime = 0;
+            v.play().catch(() => {});
+        });
+    });
+
+    // Auto-play
+    detailVideos.forEach(v => v.play().catch(() => {}));
+}
+
+function cleanupDetail() {
+    detailVideos.forEach(v => {
+        v.pause();
+        v.removeAttribute('src');
+        v.load();
+    });
+    detailVideos = [];
+    subtitleData = { nederlands: [], gvg: [], glos: [] };
+    activeSubtitle = null;
+    $('detail-videos').innerHTML = '';
+}
+
+// ──────────────────────────────────────
+// Subtitles
+// ──────────────────────────────────────
+function toggleSubtitle(type) {
+    if (activeSubtitle === type) {
+        activeSubtitle = null;
+    } else {
+        activeSubtitle = type;
+    }
+    updateSubtitleButtons();
+    updateSubtitleDisplay(detailVideos[0]?.currentTime || 0);
+}
+
+function updateSubtitleButtons() {
+    document.querySelectorAll('.sub-btn').forEach(btn => {
+        const sub = btn.getAttribute('data-sub');
+        const isActive = sub === activeSubtitle;
+        btn.classList.toggle('bg-sky-600', isActive);
+        btn.classList.toggle('border-sky-500', isActive);
+        btn.classList.toggle('text-white', isActive);
+        btn.classList.toggle('bg-slate-800', !isActive);
+        btn.classList.toggle('border-slate-700', !isActive);
+
+        // Show availability
+        const hasData = subtitleData[sub] && subtitleData[sub].length > 0;
+        btn.disabled = !hasData;
+        btn.classList.toggle('opacity-40', !hasData);
+        btn.classList.toggle('cursor-not-allowed', !hasData);
+    });
+}
+
+function updateSubtitleDisplay(time) {
+    const overlay = $('subtitle-display');
+    if (!overlay) return;
+    const span = overlay.querySelector('span');
+
+    if (!activeSubtitle || !subtitleData[activeSubtitle]) {
+        span.innerHTML = '';
+        return;
+    }
+
+    const subs = subtitleData[activeSubtitle];
+    const current = subs.find(s => time >= s.startTime && time <= s.endTime);
+    span.innerHTML = current ? current.text : '';
+}
+
+// ──────────────────────────────────────
+// SRT Parsing (reused from zinnen.html)
+// ──────────────────────────────────────
+function parseSRT(data) {
+    const srt = data.replace(/\r/g, '');
+    const regex = /(\d+)\n(\d{2}:\d{2}:\d{2},\d{3}) --> (\d{2}:\d{2}:\d{2},\d{3})\n([\s\S]*?)(?=\n\n|\n*$)/g;
+    const result = [];
+    let match;
+    while ((match = regex.exec(srt)) !== null) {
+        result.push({
+            index: parseInt(match[1], 10),
+            startTime: toSeconds(match[2]),
+            endTime: toSeconds(match[3]),
+            text: match[4].replace('\n', '<br>')
+        });
+    }
+    return result;
+}
+
+function toSeconds(time) {
+    const parts = time.split(':');
+    const secParts = parts[2].split(',');
+    return parseInt(parts[0], 10) * 3600 +
+           parseInt(parts[1], 10) * 60 +
+           parseFloat(secParts[0] + '.' + secParts[1]);
+}
+
+async function loadSRT(url) {
+    if (!url) return [];
+    try {
+        const res = await fetch(url);
+        if (!res.ok) return [];
+        const text = await res.text();
+        return parseSRT(text);
+    } catch (e) {
+        console.warn('SRT load failed:', url, e);
+        return [];
+    }
+}
+
+// ──────────────────────────────────────
+// Utilities
+// ──────────────────────────────────────
+function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str || '';
+    return d.innerHTML;
+}
+
+// ──────────────────────────────────────
+// Init
+// ──────────────────────────────────────
+(function init() {
+    // Check for hash-based deep link
+    const hash = location.hash;
+    if (hash.startsWith('#theme=')) {
+        const theme = decodeURIComponent(hash.slice(7));
+        currentTheme = theme;
+        showView('list');
+        fetchSentences();
+    } else if (hash.startsWith('#search=')) {
+        const q = decodeURIComponent(hash.slice(8));
+        currentSearch = q;
+        $('search-input').value = q;
+        updateClearBtn(q);
+        showView('list');
+        fetchSentences();
+    } else {
+        showView('home');
+        history.replaceState({ view: 'home' }, '', location.pathname);
+    }
+    fetchThemes();
+})();
+</script>
+
+</body>
+</html>

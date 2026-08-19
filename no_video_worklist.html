@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zinnen zonder actieve video — werklijst</title>
+<style>
+  :root{--bg:#0f1216;--panel:#171c22;--panel2:#1f262e;--line:#2a323c;--text:#e6edf3;--muted:#8b97a5;
+        --accent:#3fb950;--accent-d:#2ea043;--gold:#ffd866;--blue:#a5d6ff;--danger:#f85149;--amber:#ffb86b;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;}
+  header{position:sticky;top:0;z-index:20;background:rgba(15,18,22,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:13px 20px;}
+  .hrow{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;}
+  h1{font-size:17px;margin:0;font-weight:650;}
+  h1 .sub{color:var(--muted);font-weight:400;font-size:13px;margin-left:8px;}
+  .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  input[type=search]{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 12px;width:230px;font-size:14px;}
+  select{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 10px;font-size:13px;}
+  .tabs{display:flex;gap:8px;margin-top:10px;}
+  .tab{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:6px 15px;cursor:pointer;font-size:13px;font-weight:600;}
+  .tab.active{color:var(--text);border-color:var(--accent);}
+  .tab.active.rec{border-color:var(--amber);}
+  main{max-width:1200px;margin:0 auto;padding:18px;}
+  section{display:none;} section.show{display:block;}
+  .grid{display:grid;grid-template-columns:1fr;gap:18px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:11px;overflow:hidden;display:flex;flex-direction:column;transition:opacity .3s,transform .3s;}
+  .card.gone{opacity:0;transform:scale(.96);}
+  .chead{padding:11px 13px 8px;}
+  .zin{font-size:14.5px;font-weight:600;line-height:1.35;}
+  .meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;align-items:center;}
+  .chip{font-size:10.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:var(--panel2);color:var(--muted);}
+  .chip.thema{color:var(--blue);}
+  .st{font-size:10px;padding:1px 7px;border-radius:999px;border:1px solid var(--line);background:var(--panel2);color:var(--muted);}
+  .st.klaar{color:#fff;border-color:#2ea043;background:#1a7f37;font-weight:700;}
+  .takes{display:flex;gap:14px;flex-wrap:wrap;padding:4px 16px 16px;}
+  .take{width:520px;max-width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;}
+  .tthumb{position:relative;aspect-ratio:16/11;background:#000;cursor:pointer;}
+  .tthumb img,.tthumb video{width:100%;height:100%;object-fit:contain;display:block;background:#000;}
+  .tthumb .noimg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;text-align:center;padding:10px;}
+  .tthumb .play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:48px;color:rgba(255,255,255,.85);text-shadow:0 2px 8px #000;pointer-events:none;}
+  .tthumb .g{position:absolute;top:7px;right:7px;background:rgba(0,0,0,.72);color:var(--gold);font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;}
+  .tthumb .g.zero{color:var(--muted);}
+  .tid{font-size:12px;color:var(--muted);padding:5px 8px 0;text-align:center;}
+  .take button{font:inherit;border:none;border-radius:0 0 9px 9px;padding:9px;cursor:pointer;font-weight:600;font-size:13.5px;background:var(--accent);color:#04260c;margin-top:6px;}
+  .take button:hover{background:var(--accent-d);color:#fff;}
+  .take button:disabled{opacity:.6;cursor:default;}
+  .rec-body{padding:6px 13px 14px;}
+  .rec-tag{display:inline-block;font-size:11px;color:var(--amber);border:1px solid #5a4326;background:#231a10;border-radius:999px;padding:3px 10px;}
+  .secinfo{color:var(--muted);font-size:13px;margin:2px 0 14px;}
+  .logbtn{font:inherit;font-size:11px;font-weight:600;border:1px solid var(--line);background:var(--panel2);color:var(--blue);border-radius:999px;padding:2px 10px;cursor:pointer;}
+  .logbtn:hover{border-color:var(--blue);color:#cfe8ff;}
+  /* logboek modal */
+  #logModal{position:fixed;inset:0;z-index:60;display:none;align-items:flex-start;justify-content:center;background:rgba(0,0,0,.6);padding:40px 16px;overflow:auto;}
+  #logModal.show{display:flex;}
+  .modal-box{background:var(--panel);border:1px solid var(--line);border-radius:12px;width:100%;max-width:880px;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+  .modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);}
+  .modal-head h3{margin:0;font-size:15px;font-weight:650;}
+  .modal-head .x{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;}
+  .modal-head .x:hover{color:var(--text);}
+  .modal-sub{color:var(--muted);font-size:12px;padding:8px 18px 0;}
+  .modal-body{padding:12px 18px 18px;max-height:65vh;overflow:auto;}
+  table.log{width:100%;border-collapse:collapse;font-size:12.5px;}
+  table.log th{text-align:left;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line);padding:6px 8px;position:sticky;top:0;background:var(--panel);}
+  table.log td{border-bottom:1px solid #20262e;padding:6px 8px;vertical-align:top;}
+  table.log tr:hover td{background:var(--panel2);}
+  .lact{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:1px 7px;font-size:11px;}
+  .lparams{font-family:ui-monospace,monospace;color:#cdd6e0;word-break:break-word;}
+  .lmuted{color:var(--muted);white-space:nowrap;}
+  #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:11px 18px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:50;}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  #toast.err{border-color:var(--danger);color:#ffc4c0;}
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <h1>Zinnen zonder actieve video <span class="sub">added=1 ontbreekt · zOg='zin' · volledige DB</span></h1>
+    <div class="controls">
+      <input type="search" id="search" placeholder="Zoek in zin…" autocomplete="off">
+      <select id="thema"><option value="">Alle thema's</option></select>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" data-sec="rec" id="tab-rec">↩ Terug te zetten (<span id="cRec">…</span>)</div>
+  </div>
+</header>
+<main>
+  <section id="sec-rec" class="show">
+    <div class="secinfo">Zinnen met alleen <b>verwijderde</b> opnames (added=0) — staan nog op schijf, terug te zetten.</div>
+    <div class="grid" id="grid-rec"></div>
+  </section>
+</main>
+<div id="toast"></div>
+
+<div id="logModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="logTitle">Logboek</h3>
+      <button class="x" id="logClose" aria-label="Sluiten">&times;</button>
+    </div>
+    <div class="modal-sub" id="logSub"></div>
+    <div class="modal-body" id="logBody"></div>
+  </div>
+</div>
+
+<script>
+const API='getZinnen.php';
+let REC=[];
+const gRec=document.getElementById('grid-rec');
+const searchEl=document.getElementById('search'), themaEl=document.getElementById('thema');
+
+function esc(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function stChips(st){
+  return ['video','annotatie','glos','gvg'].map(k=>{
+    const v=st[k]||'—'; const on=v==='Klaar'?' klaar':'';
+    return `<span class="st${on}" title="status_${k}">${k}:${esc(v)}</span>`;
+  }).join('');
+}
+
+function recCard(s){
+  const c=document.createElement('div');
+  c.className='card'; c.dataset.zin=(s.zin||'').toLowerCase(); c.dataset.thema=s.thema||'';
+  const takes=s.takes.map(t=>{
+    const gz=t.gloss_items>0?'':' zero';
+    return `<div class="take" data-id="${t.video_id}">
+      <div class="tthumb" data-m="${esc(t.m_url)}" data-srt="${esc(t.gloss_srt_url||'')}" title="Klik om af te spelen">
+        <img src="${esc(t.thumb_url)}" loading="lazy" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+        <div class="noimg" style="display:none">geen<br>thumb</div>
+        <div class="play">▶</div>
+        <div class="g${gz}">${t.gloss_items} gl</div>
+      </div>
+      <div class="tid">#${t.video_id}</div>
+      <button>↩ terug</button>
+    </div>`;
+  }).join('');
+  c.innerHTML=`
+    <div class="chead">
+      <div class="zin">${esc(s.zin)}</div>
+      <div class="meta"><span class="chip thema">${esc(s.thema)}</span><span class="chip">sent #${s.sentence_id}</span>${stChips(s.statuses)}<button class="logbtn">📖 Logboek</button></div>
+    </div>
+    <div class="takes">${takes}</div>`;
+  c.querySelectorAll('.tthumb').forEach(el=>el.addEventListener('click',()=>playInline(el)));
+  c.querySelectorAll('.take button').forEach(b=>b.addEventListener('click',()=>undelete(b.closest('.take'),c)));
+  c.querySelector('.logbtn').addEventListener('click',()=>showLog(s.sentence_id,s.zin));
+  return c;
+}
+function newCard(s){
+  const c=document.createElement('div');
+  c.className='card'; c.dataset.zin=(s.zin||'').toLowerCase(); c.dataset.thema=s.thema||'';
+  c.innerHTML=`
+    <div class="chead">
+      <div class="zin">${esc(s.zin)}</div>
+      <div class="meta"><span class="chip thema">${esc(s.thema)}</span><span class="chip">sent #${s.sentence_id}</span>${stChips(s.statuses)}<button class="logbtn">📖 Logboek</button></div>
+    </div>
+    <div class="rec-body"><span class="rec-tag">geen opname — nog te filmen</span></div>`;
+  c.querySelector('.logbtn').addEventListener('click',()=>showLog(s.sentence_id,s.zin));
+  return c;
+}
+
+async function playInline(el){
+  if(el.dataset.playing) return; el.dataset.playing='1';
+  const m=el.dataset.m, srt=el.dataset.srt;
+  el.innerHTML='';
+  const v=document.createElement('video'); v.controls=true; v.autoplay=true; v.playsInline=true; v.crossOrigin='anonymous'; v.src=m;
+  el.appendChild(v);
+  if(srt){ try{
+    const res=await fetch(srt,{cache:'force-cache'});
+    if(res.ok){ const t=await res.text();
+      const vtt='WEBVTT\n\n'+t.replace(/\r+/g,'').trim().replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g,'$1.$2');
+      const url=URL.createObjectURL(new Blob([vtt],{type:'text/vtt'}));
+      const tr=document.createElement('track'); tr.kind='subtitles'; tr.label='glossen'; tr.srclang='nl'; tr.src=url; tr.default=true;
+      v.appendChild(tr); tr.addEventListener('load',()=>{if(v.textTracks[0])v.textTracks[0].mode='showing';});
+    }
+  }catch(e){} }
+}
+
+async function undelete(take, card){
+  const id=take.dataset.id, btn=take.querySelector('button');
+  btn.disabled=true; btn.textContent='…';
+  try{
+    const fd=new FormData(); fd.append('action','restoreVideo'); fd.append('videoId',id);
+    const r=await fetch(API,{method:'POST',body:fd}); const d=await r.json();
+    if(!d.success) throw new Error(d.error||'fout');
+    take.style.opacity=.35; btn.textContent='✓ terug';
+    toast('Video #'+id+' teruggezet ✓ — zin heeft nu een actieve video');
+    // if all takes restored, fade the card
+    if([...card.querySelectorAll('.take button')].every(b=>b.disabled)){
+      card.classList.add('gone'); setTimeout(()=>card.remove(),320);
+    }
+  }catch(e){ btn.disabled=false; btn.textContent='↩ terug'; toast('Mislukt: '+e.message,true); }
+}
+
+function render(){
+  const q=searchEl.value.trim().toLowerCase(), th=themaEl.value;
+  for(const c of gRec.children){
+    const ok=(!q||c.dataset.zin.includes(q))&&(!th||c.dataset.thema===th);
+    c.style.display=ok?'':'none';
+  }
+}
+
+async function init(){
+  const d=await (await fetch(API+'?action=fetchNoVideoWorklist',{cache:'no-cache'})).json();
+  REC=d.recoverable||[];
+  document.getElementById('cRec').textContent=REC.length;
+  const themas=[...new Set(REC.map(s=>s.thema).filter(Boolean))].sort();
+  for(const t of themas){const o=document.createElement('option');o.value=t;o.textContent=t;themaEl.appendChild(o);}
+  const fr1=document.createDocumentFragment(); REC.forEach(s=>fr1.appendChild(recCard(s))); gRec.appendChild(fr1);
+  render();
+}
+// ---- Logboek modal (same source as zinnen.html: fetchSentenceLog) ----
+const logModal=document.getElementById('logModal');
+function closeLog(){ logModal.classList.remove('show'); }
+document.getElementById('logClose').addEventListener('click',closeLog);
+logModal.addEventListener('click',e=>{ if(e.target===logModal) closeLog(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeLog(); });
+
+async function showLog(sentenceId, zin){
+  document.getElementById('logTitle').textContent='Logboek — '+(zin||('zin #'+sentenceId));
+  document.getElementById('logSub').textContent='';
+  const body=document.getElementById('logBody');
+  body.innerHTML='<div style="color:var(--muted);padding:14px 0">Laden…</div>';
+  logModal.classList.add('show');
+  try{
+    const res=await fetch(API+'?action=fetchSentenceLog&rowId='+encodeURIComponent(sentenceId));
+    const d=await res.json();
+    if(!d.success){ body.innerHTML='<div style="color:#ffc4c0">Fout: '+esc(d.error||'onbekend')+'</div>'; return; }
+    const logs=d.logs||[];
+    document.getElementById('logSub').textContent =
+      logs.length+' gebeurtenis(sen)'+(d.videos&&d.videos.length?' · videos: '+d.videos.join(', '):'');
+    if(!logs.length){ body.innerHTML='<div style="color:var(--muted)">Geen logboek-gebeurtenissen voor deze zin.</div>'; return; }
+    let h='<table class="log"><thead><tr><th>Datum/tijd</th><th>Actie</th><th>Gebruiker</th><th>Details</th><th>IP</th></tr></thead><tbody>';
+    for(const l of logs){
+      let p=l.parameters; try{ p=JSON.stringify(JSON.parse(l.parameters)); }catch(e){}
+      h+='<tr><td class="lmuted">'+esc(l.datetime)+'</td>'
+        +'<td><span class="lact">'+esc(l.action)+'</span></td>'
+        +'<td class="lmuted">'+esc(l.user||'—')+'</td>'
+        +'<td class="lparams">'+esc(p||'')+'</td>'
+        +'<td class="lmuted">'+esc(l.ip_address||'')+'</td></tr>';
+    }
+    h+='</tbody></table>';
+    body.innerHTML=h;
+  }catch(err){ body.innerHTML='<div style="color:#ffc4c0">Netwerkfout: '+esc(err.message)+'</div>'; }
+}
+
+searchEl.addEventListener('input',render); themaEl.addEventListener('change',render);
+let tT; function toast(m,err){const t=document.getElementById('toast');t.textContent=m;t.className='show'+(err?' err':'');clearTimeout(tT);tT=setTimeout(()=>t.className='',2800);}
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+--- subBeta8.html.backup_task4	2026-06-19 09:54:48.827765527 +0000
++++ subBeta8.html	2026-06-19 09:59:09.341411751 +0000
+@@ -3236,6 +3236,26 @@
+           else                        nudgeLeftBoundary(sub, dir);
+           return;
+         }
++
++        // Tab / Shift+Tab: walk glosses in the same tier (time order), clamp at ends
++        if (e.key === 'Tab') {
++          e.preventDefault();
++          const cur = getSelectedSub();
++          if (!cur) {
++            // nothing selected: select the block nearest the playhead
++            if (!subtitles.length) return;
++            const nearest = subtitles.slice().sort((a, b) =>
++              Math.abs(a.start - currentTime) - Math.abs(b.start - currentTime))[0];
++            selectSub(nearest.id, {snapPlayhead: true});
++            return;
++          }
++          const tierBlocks = subtitles.filter(s => s.tier === cur.tier).sort((a, b) => a.start - b.start);
++          const idx = tierBlocks.findIndex(s => s.id === cur.id);
++          const nextIdx = e.shiftKey ? idx - 1 : idx + 1;
++          if (nextIdx < 0 || nextIdx >= tierBlocks.length) return; // clamp at ends
++          selectSub(tierBlocks[nextIdx].id, {snapPlayhead: true});
++          return;
++        }
+     });
+ 
+     let glossary = {};

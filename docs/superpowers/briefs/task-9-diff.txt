@@ -1,0 +1,55 @@
+--- subBeta8.html.backup_task8	2026-06-19 10:58:04.620250038 +0000
++++ subBeta8.html	2026-06-19 11:17:02.910076932 +0000
+@@ -586,6 +586,7 @@
+         if (opts.snapPlayhead) setCanvasTime(sub.start, 'select');
+         const box = document.querySelector('.subtitle-box[data-id="' + id + '"]');
+         if (box && box.scrollIntoView) box.scrollIntoView({block:'nearest', inline:'nearest'});
++        updateThreeCanvases(sub);
+       }
+     }
+     let autoLoopEnabled = true, loopSubtitle = null;
+@@ -856,7 +857,7 @@
+       } else {
+         subtitles = subtitles.filter(s => s.id !== id);
+       }
+-      if (selectedSubId === id) { selectedSubId = null; }
++      if (selectedSubId === id) { selectedSubId = null; onEndThreeCanvases(); }
+       renderAll();
+       uploadSubtitles(); // Trigger autosave after delete
+     }
+@@ -1144,7 +1145,7 @@
+   sub.start = ns;
+   pushNeighbors(sub, -1);
+   updateSubtitleBoxDimensions(sub); syncTwin(sub); updateTwinBox(sub);
+-  setCanvasTime(sub.start, 'keyboard'); uploadSubtitles();
++  setCanvasTime(sub.start, 'keyboard'); updateThreeCanvases(sub); uploadSubtitles();
+ }
+ function nudgeRightBoundary(sub, frames) {
+   let ne = snapToFrame(sub.end + frames * FRAME);
+@@ -1158,7 +1159,7 @@
+   sub.end = ne;
+   pushNeighbors(sub, 1);
+   updateSubtitleBoxWidth(sub); syncTwin(sub); updateTwinBox(sub);
+-  setCanvasTime(sub.end, 'keyboard'); uploadSubtitles();
++  setCanvasTime(sub.end, 'keyboard'); updateThreeCanvases(sub); uploadSubtitles();
+ }
+ function nudgeWholeBlock(sub, frames) {
+   const len = sub.end - sub.start;
+@@ -1182,7 +1183,7 @@
+   sub.start = ns; sub.end = ns + len;
+   pushNeighbors(sub, frames >= 0 ? 1 : -1);
+   updateSubtitleBoxDimensions(sub); syncTwin(sub); updateTwinBox(sub);
+-  setCanvasTime(sub.start, 'keyboard'); uploadSubtitles();
++  setCanvasTime(sub.start, 'keyboard'); updateThreeCanvases(sub); uploadSubtitles();
+ }
+ 
+     // Render timeline & subtitles
+@@ -1744,6 +1745,8 @@
+         // Only hide if not actively dragging, resizing, or tab-navigating
+         if (suppressSideCanvasClear) return;
+         if (!dragActive && !leftResizeActive && !rightResizeActive) {
++            const sel = getSelectedSub();
++            if (sel) { updateThreeCanvases(sel); return; }   // keep showing the selected gloss
+             canvasLeft.style.display = 'none';
+             canvasRight.style.display = 'none';
+             ctxLeft.clearRect(0, 0, canvasLeft.width, canvasLeft.height);

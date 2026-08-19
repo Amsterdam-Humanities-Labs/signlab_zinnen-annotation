@@ -1,0 +1,19 @@
+{
+    "name": "iss-server/test-clients",
+    "description": "PHP test clients for ISS Server WebSocket and HTTP+SSE endpoints",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "textalk/websocket": "^1.6"
+    },
+    "authors": [
+        {
+            "name": "ISS Server Team"
+        }
+    ],
+    "autoload": {
+        "files": [
+            "config.php"
+        ]
+    }
+}
