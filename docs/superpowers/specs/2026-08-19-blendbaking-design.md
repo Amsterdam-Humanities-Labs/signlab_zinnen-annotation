@@ -82,9 +82,11 @@ convention to slot into; inventing one for two callers is unwarranted).
 
 ### Repository note
 
-`/web/blendBaking` sits outside the `/web/zin` git repository. It will not be
-version-controlled by this repo. Resolve before implementation: either
-`git init` it as its own repository, or place it inside `/web/zin`.
+`/web/blendBaking` sits outside the `/web/zin` git repository, so it is not
+version-controlled by this repo. Decided 2026-08-19: it becomes its own
+repository via `git init`, with its own `.gitignore` excluding `cache/`.
+`categories.json` is committed there; the `listMocapFiles` change is committed
+to `/web/zin` separately.
 
 ## Component 1 — `listMocapFiles`
 
