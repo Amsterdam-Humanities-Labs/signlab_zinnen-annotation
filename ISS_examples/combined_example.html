@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISS Server - Combined Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: #f5f5f5;
+            border: none;
+            font-size: 16px;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background: #4CAF50;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: inline-block;
+            width: 120px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"], select {
+            width: 500px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        button.action-btn {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button.action-btn:hover {
+            background: #45a049;
+        }
+        button.action-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #4CAF50;
+            transition: width 0.3s;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+            font-weight: bold;
+        }
+        .log {
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 5px;
+        }
+        .log-entry {
+            padding: 2px 0;
+        }
+        .log-info { color: #4FC3F7; }
+        .log-success { color: #66BB6A; }
+        .log-warning { color: #FFA726; }
+        .log-error { color: #EF5350; }
+        .result-box {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            display: none;
+        }
+        .result-box h3 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+            max-height: 300px;
+        }
+        .info-box {
+            background: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 ISS Server - Interactive Client</h1>
+
+    <div class="info-box">
+        <strong>Choose your protocol:</strong> WebSocket for bidirectional real-time communication,
+        or HTTP+SSE for simpler one-way progress updates.
+    </div>
+
+    <!-- Environment Selection -->
+    <div class="form-group">
+        <label>Environment:</label>
+        <select id="environment" onchange="updateUrls()">
+            <option value="local">Local (localhost:9102)</option>
+            <option value="production">Production (signcollect.nl)</option>
+        </select>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('websocket')">WebSocket</button>
+        <button class="tab" onclick="switchTab('httpsse')">HTTP + SSE</button>
+    </div>
+
+    <!-- WebSocket Tab -->
+    <div id="websocket-tab" class="tab-content active">
+        <h2>WebSocket Protocol</h2>
+
+        <div class="form-group">
+            <label>WebSocket URL:</label>
+            <input type="text" id="wsUrl" value="ws://localhost:9102/ws">
+        </div>
+
+        <div class="form-group">
+            <label>HaMeR Path:</label>
+            <input type="text" id="wsHamerPath" value="/path/to/file.hamer">
+        </div>
+
+        <div class="form-group">
+            <label>FPS:</label>
+            <input type="number" id="wsFps" value="60" min="1" max="120">
+        </div>
+
+        <button class="action-btn" id="wsBtn" onclick="startWebSocket()">Connect & Start</button>
+    </div>
+
+    <!-- HTTP+SSE Tab -->
+    <div id="httpsse-tab" class="tab-content">
+        <h2>HTTP + SSE Protocol</h2>
+
+        <div class="form-group">
+            <label>Base URL:</label>
+            <input type="text" id="httpUrl" value="http://localhost:9102">
+        </div>
+
+        <div class="form-group">
+            <label>HaMeR Path:</label>
+            <input type="text" id="httpHamerPath" value="/path/to/file.hamer">
+        </div>
+
+        <div class="form-group">
+            <label>FPS:</label>
+            <input type="number" id="httpFps" value="60" min="1" max="120">
+        </div>
+
+        <button class="action-btn" id="httpBtn" onclick="startHTTP()">Submit Request</button>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-bar" style="display: none;" id="progressContainer">
+        <div class="progress-fill" id="progressBar" style="width: 0%">0%</div>
+    </div>
+
+    <!-- Result Box -->
+    <div class="result-box" id="resultBox">
+        <h3>✓ Result Received</h3>
+        <div id="resultContent"></div>
+    </div>
+
+    <!-- Log -->
+    <h3>Log:</h3>
+    <div class="log" id="log"></div>
+
+    <script>
+        let ws = null;
+        let eventSource = null;
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Update tabs
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+
+            // Clear log
+            document.getElementById('log').innerHTML = '';
+            document.getElementById('resultBox').style.display = 'none';
+            document.getElementById('progressContainer').style.display = 'none';
+        }
+
+        // Update URLs based on environment
+        function updateUrls() {
+            const env = document.getElementById('environment').value;
+
+            if (env === 'local') {
+                document.getElementById('wsUrl').value = 'ws://localhost:9102/ws';
+                document.getElementById('httpUrl').value = 'http://localhost:9102';
+            } else {
+                document.getElementById('wsUrl').value = 'wss://signcollect.nl/ISS_Server/ws';
+                document.getElementById('httpUrl').value = 'https://signcollect.nl/ISS_Server';
+            }
+        }
+
+        // Logging
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        // Progress bar
+        function updateProgress(percentage) {
+            const container = document.getElementById('progressContainer');
+            const bar = document.getElementById('progressBar');
+            container.style.display = 'block';
+            bar.style.width = percentage + '%';
+            bar.textContent = Math.round(percentage) + '%';
+        }
+
+        // Display result
+        function displayResult(data) {
+            const resultBox = document.getElementById('resultBox');
+            const resultContent = document.getElementById('resultContent');
+
+            const metadata = data.metadata || {};
+            let html = '<div>';
+
+            if (metadata.segments_detected !== undefined) {
+                html += `<p><strong>Segments Detected:</strong> ${metadata.segments_detected}</p>`;
+            }
+            if (metadata.total_frames !== undefined) {
+                html += `<p><strong>Total Frames:</strong> ${metadata.total_frames}</p>`;
+            }
+            if (metadata.duration_seconds !== undefined) {
+                html += `<p><strong>Duration:</strong> ${metadata.duration_seconds}s</p>`;
+            }
+            if (metadata.processing_time !== undefined) {
+                html += `<p><strong>Processing Time:</strong> ${metadata.processing_time}s</p>`;
+            }
+            if (metadata.fps !== undefined) {
+                html += `<p><strong>FPS:</strong> ${metadata.fps}</p>`;
+            }
+
+            if (data.srt_content) {
+                const preview = data.srt_content.substring(0, 1000);
+                html += '<h4>SRT Content:</h4>';
+                html += `<pre>${preview}${data.srt_content.length > 1000 ? '\n... (truncated, showing first 1000 chars)' : ''}</pre>`;
+            }
+
+            html += '</div>';
+            resultContent.innerHTML = html;
+            resultBox.style.display = 'block';
+        }
+
+        // WebSocket implementation
+        function startWebSocket() {
+            const wsUrl = document.getElementById('wsUrl').value;
+            const hamerPath = document.getElementById('wsHamerPath').value;
+            const fps = parseInt(document.getElementById('wsFps').value);
+
+            if (!hamerPath) {
+                log('Please enter a HaMeR path', 'error');
+                return;
+            }
+
+            // Clear previous results
+            document.getElementById('resultBox').style.display = 'none';
+            document.getElementById('progressContainer').style.display = 'none';
+            document.getElementById('log').innerHTML = '';
+
+            log(`Connecting to ${wsUrl}...`, 'info');
+            const btn = document.getElementById('wsBtn');
+            btn.disabled = true;
+            btn.textContent = 'Connecting...';
+
+            try {
+                ws = new WebSocket(wsUrl);
+
+                ws.onopen = () => {
+                    log('✓ Connected to ISS Server', 'success');
+
+                    const requestId = `js-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+                    const request = {
+                        type: 'inference_request',
+                        request_id: requestId,
+                        hamer_path: hamerPath,
+                        fps: fps
+                    };
+
+                    log(`Sending request: ${requestId}`, 'info');
+                    ws.send(JSON.stringify(request));
+                };
+
+                ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+
+                    switch (data.type) {
+                        case 'ack':
+                            log(`✓ ${data.message}`, 'success');
+                            updateProgress(0);
+                            break;
+
+                        case 'progress':
+                            log(`⟳ ${data.stage} (${data.percentage}%)`, 'warning');
+                            updateProgress(data.percentage);
+                            break;
+
+                        case 'result':
+                            log('✓ Result received!', 'success');
+                            updateProgress(100);
+                            displayResult(data);
+                            btn.disabled = false;
+                            btn.textContent = 'Connect & Start';
+                            ws.close();
+                            break;
+
+                        case 'error':
+                            log(`✗ Error: ${data.message}`, 'error');
+                            btn.disabled = false;
+                            btn.textContent = 'Connect & Start';
+                            ws.close();
+                            break;
+                    }
+                };
+
+                ws.onerror = () => {
+                    log('✗ WebSocket error', 'error');
+                    btn.disabled = false;
+                    btn.textContent = 'Connect & Start';
+                };
+
+                ws.onclose = () => {
+                    log('Connection closed', 'info');
+                    btn.disabled = false;
+                    btn.textContent = 'Connect & Start';
+                };
+
+            } catch (error) {
+                log(`✗ Error: ${error.message}`, 'error');
+                btn.disabled = false;
+                btn.textContent = 'Connect & Start';
+            }
+        }
+
+        // HTTP + SSE implementation
+        async function startHTTP() {
+            const httpUrl = document.getElementById('httpUrl').value;
+            const hamerPath = document.getElementById('httpHamerPath').value;
+            const fps = parseInt(document.getElementById('httpFps').value);
+
+            if (!hamerPath) {
+                log('Please enter a HaMeR path', 'error');
+                return;
+            }
+
+            // Clear previous results
+            document.getElementById('resultBox').style.display = 'none';
+            document.getElementById('progressContainer').style.display = 'none';
+            document.getElementById('log').innerHTML = '';
+
+            const btn = document.getElementById('httpBtn');
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+
+            try {
+                // Step 1: Submit request
+                log(`Submitting to ${httpUrl}/inference...`, 'info');
+
+                const response = await fetch(`${httpUrl}/inference`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({hamer_path: hamerPath, fps: fps})
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                log(`✓ Request submitted: ${data.request_id}`, 'success');
+
+                btn.textContent = 'Monitoring...';
+
+                // Step 2: Monitor via SSE
+                eventSource = new EventSource(`${httpUrl}/progress/${data.request_id}`);
+
+                eventSource.addEventListener('ack', (event) => {
+                    const data = JSON.parse(event.data);
+                    log(`✓ ${data.message}`, 'success');
+                    updateProgress(0);
+                });
+
+                eventSource.addEventListener('progress', (event) => {
+                    const data = JSON.parse(event.data);
+                    log(`⟳ ${data.stage} (${data.percentage}%)`, 'warning');
+                    updateProgress(data.percentage);
+                });
+
+                eventSource.addEventListener('result', (event) => {
+                    const data = JSON.parse(event.data);
+                    log('✓ Result received!', 'success');
+                    updateProgress(100);
+                    displayResult(data);
+                    eventSource.close();
+                    btn.disabled = false;
+                    btn.textContent = 'Submit Request';
+                });
+
+                eventSource.addEventListener('error', (event) => {
+                    const data = JSON.parse(event.data);
+                    log(`✗ Error: ${data.message}`, 'error');
+                    eventSource.close();
+                    btn.disabled = false;
+                    btn.textContent = 'Submit Request';
+                });
+
+                eventSource.onerror = () => {
+                    log('✗ SSE connection error', 'error');
+                    eventSource.close();
+                    btn.disabled = false;
+                    btn.textContent = 'Submit Request';
+                };
+
+            } catch (error) {
+                log(`✗ Error: ${error.message}`, 'error');
+                btn.disabled = false;
+                btn.textContent = 'Submit Request';
+            }
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (ws) ws.close();
+            if (eventSource) eventSource.close();
+        });
+    </script>
+</body>
+</html>

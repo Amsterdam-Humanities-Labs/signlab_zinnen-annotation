@@ -1,0 +1,11 @@
+# Python WebSocket Client Dependencies
+# Install with: pip install -r requirements.txt
+
+# WebSocket client library
+websockets>=12.0
+
+# Async support (usually included with Python 3.7+, but listed for clarity)
+asyncio>=3.4.3
+
+# Optional: for better JSON handling
+python-dotenv>=1.0.0

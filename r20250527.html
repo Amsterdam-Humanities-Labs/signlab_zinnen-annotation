@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>R20241216 missing r_file videos (67)</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #181b22;
+    --border: #262a33;
+    --text: #e6e8ec;
+    --muted: #8a92a3;
+    --accent: #7aa2ff;
+    --accent-fg: #0f1115;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+  }
+  header h1 {
+    font-size: 16px;
+    margin: 0;
+    font-weight: 600;
+  }
+  header .meta { color: var(--muted); font-size: 13px; }
+  .pager {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .pager button, .pager .page-num {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font: inherit;
+    min-width: 36px;
+  }
+  .pager button:hover { border-color: var(--accent); }
+  .pager button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .pager .page-num.active {
+    background: var(--accent);
+    color: var(--accent-fg);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .pager .ellipsis { color: var(--muted); padding: 0 4px; }
+  main {
+    padding: 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+  .grid {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .card video {
+    width: 100%;
+    max-height: 70vh;
+    background: #000;
+    display: block;
+  }
+  .card .label {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .card .label .zin {
+    font-size: 17px;
+    color: var(--text);
+    line-height: 1.4;
+    margin-bottom: 6px;
+  }
+  .card .label .file {
+    font-size: 12px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color: var(--muted);
+    word-break: break-all;
+  }
+  .card .label .index {
+    color: var(--accent);
+    margin-right: 8px;
+    font-weight: 600;
+  }
+  footer {
+    text-align: center;
+    color: var(--muted);
+    padding: 20px;
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>R20241216 missing r_file videos</h1>
+  <span class="meta" id="meta"></span>
+  <nav class="pager" id="pager"></nav>
+</header>
+
+<main>
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer>
+  <span id="footer-meta"></span>
+</footer>
+
+<script>
+const BASE_URL = "https://signcollect.nl/gebarenoverleg_media/studioFilesMini/raw/";
+// Note: these 67 R20241216_*.mp4 files exist on signcollect.nl but are 404 on media.signcollect.nl
+const PER_PAGE = 10;
+
+const FILES = [
+  "R20241216_4519.mp4",
+  "R20241216_4520.mp4",
+  "R20241216_4523.mp4",
+  "R20241216_4537.mp4",
+  "R20241216_4539.mp4",
+  "R20241216_4540.mp4",
+  "R20241216_4542.mp4",
+  "R20241216_4543.mp4",
+  "R20241216_4554.mp4",
+  "R20241216_4555.mp4",
+  "R20241216_4561.mp4",
+  "R20241216_4562.mp4",
+  "R20241216_4564.mp4",
+  "R20241216_4566.mp4",
+  "R20241216_4567.mp4",
+  "R20241216_4573.mp4",
+  "R20241216_4575.mp4",
+  "R20241216_4578.mp4",
+  "R20241216_4579.mp4",
+  "R20241216_4582.mp4",
+  "R20241216_4583.mp4",
+  "R20241216_4584.mp4",
+  "R20241216_4585.mp4",
+  "R20241216_4589.mp4",
+  "R20241216_4596.mp4",
+  "R20241216_4598.mp4",
+  "R20241216_4600.mp4",
+  "R20241216_4602.mp4",
+  "R20241216_4603.mp4",
+  "R20241216_4604.mp4",
+  "R20241216_4609.mp4",
+  "R20241216_4611.mp4",
+  "R20241216_4612.mp4",
+  "R20241216_4613.mp4",
+  "R20241216_4621.mp4",
+  "R20241216_4622.mp4",
+  "R20241216_4623.mp4",
+  "R20241216_4625.mp4",
+  "R20241216_4626.mp4",
+  "R20241216_4627.mp4",
+  "R20241216_4628.mp4",
+  "R20241216_4640.mp4",
+  "R20241216_4643.mp4",
+  "R20241216_4646.mp4",
+  "R20241216_4648.mp4",
+  "R20241216_4649.mp4",
+  "R20241216_4653.mp4",
+  "R20241216_4655.mp4",
+  "R20241216_4658.mp4",
+  "R20241216_4659.mp4",
+  "R20241216_4667.mp4",
+  "R20241216_4668.mp4",
+  "R20241216_4670.mp4",
+  "R20241216_4673.mp4",
+  "R20241216_4675.mp4",
+  "R20241216_4676.mp4",
+  "R20241216_4678.mp4",
+  "R20241216_4681.mp4",
+  "R20241216_4682.mp4",
+  "R20241216_4683.mp4",
+  "R20241216_4686.mp4",
+  "R20241216_4692.mp4",
+  "R20241216_4693.mp4",
+  "R20241216_4697.mp4",
+  "R20241216_4704.mp4",
+  "R20241216_4706.mp4",
+  "R20241216_4707.mp4"
+];
+
+const META = {
+  "R20241216_4519.mp4": "Het bed is om in te slapen.",
+  "R20241216_4520.mp4": "Jij mag even op je kamer spelen.",
+  "R20241216_4523.mp4": "Lees maar even een boekje.",
+  "R20241216_4537.mp4": "Kijk maar in de spiegel.",
+  "R20241216_4539.mp4": "Maak je maar geen zorgen.",
+  "R20241216_4540.mp4": "Maak je maar geen zorgen.",
+  "R20241216_4542.mp4": "Kijk, daar is het grote varken.",
+  "R20241216_4543.mp4": "Nee dat is voor de geitjes, niet voor jullie.",
+  "R20241216_4554.mp4": "Kijk uit voor je vingers.",
+  "R20241216_4555.mp4": "Mama gaat nu koken.",
+  "R20241216_4561.mp4": "Je mag bij opa lekker spelen.",
+  "R20241216_4562.mp4": "Je moet extra kleren inpakken.",
+  "R20241216_4564.mp4": "Jouw oom en tante vinden het heel leuk dat je komt.",
+  "R20241216_4566.mp4": "je hebt gepoept",
+  "R20241216_4567.mp4": "Nee, niet omdraaien.",
+  "R20241216_4573.mp4": "het is nu echt tijd om te gaan slapen.",
+  "R20241216_4575.mp4": "Het wordt donker om ongeveer 8 uur.",
+  "R20241216_4578.mp4": "Hier heb je je knuffel",
+  "R20241216_4579.mp4": "Hier is je speen.",
+  "R20241216_4582.mp4": "Ik aai nog even over je hoofd.",
+  "R20241216_4583.mp4": "Ik hou van je, slaap lekker.",
+  "R20241216_4584.mp4": "Ik hou van je, slaap lekker.",
+  "R20241216_4585.mp4": "Ik kom je morgenochtend weer halen.",
+  "R20241216_4589.mp4": "Kan gebeuren.",
+  "R20241216_4596.mp4": "kom op, het lukt wel.",
+  "R20241216_4598.mp4": "Kwam je plas te snel?",
+  "R20241216_4600.mp4": "leg het brilletje maar op de wc.",
+  "R20241216_4602.mp4": "Mama gaat het even schoonmaken.",
+  "R20241216_4603.mp4": "Mama gaat nou even het potje schoonmaken.",
+  "R20241216_4604.mp4": "Mama moet even naar de wc.",
+  "R20241216_4609.mp4": "Moeten we even je broek wisselen?",
+  "R20241216_4611.mp4": "net zo lang vegen totdat er geen poep meer op zit. (situatie: tijdens afvegen)",
+  "R20241216_4612.mp4": "Het wordt warm.",
+  "R20241216_4613.mp4": "Ik help je even met je jas aantrekken.",
+  "R20241216_4621.mp4": "Je pop laten we thuis vandaag, anders willen andere kinderen ermee spelen.",
+  "R20241216_4622.mp4": "Je zus gaat naar Juf Elma, jij gaat naar Juf Petra.",
+  "R20241216_4623.mp4": "Je zus gaat naar Juf Elma, jij gaat naar Juf Petra.",
+  "R20241216_4625.mp4": "Laten we snel gaan.",
+  "R20241216_4626.mp4": "Laten we snel gaan.",
+  "R20241216_4627.mp4": "Mag ik een knuffel voordat je gaat?",
+  "R20241216_4628.mp4": "Nee, je mag geen autootje meenemen, want die raak je kwijt.",
+  "R20241216_4640.mp4": "Ga je de oppas helpen?",
+  "R20241216_4643.mp4": "Eerst je kamer opruimen, daarna mag je kleien.",
+  "R20241216_4646.mp4": "Help maar mee.",
+  "R20241216_4648.mp4": "Ik pak even een doekje.",
+  "R20241216_4649.mp4": "Kijk of je ergens een doekje kunt vinden.",
+  "R20241216_4653.mp4": "Kom maar, dan gaan we het schoonmaken.",
+  "R20241216_4655.mp4": "geef aan als je hulp nodig hebt",
+  "R20241216_4658.mp4": "Heb je je tas?",
+  "R20241216_4659.mp4": "Heel even wachten.",
+  "R20241216_4667.mp4": "Hoe ga je dat doen?",
+  "R20241216_4668.mp4": "Hoe ga je dat doen?",
+  "R20241216_4670.mp4": "Hoe kunnen we dat gaan doen?",
+  "R20241216_4673.mp4": "Hoeveel nachtjes moet je nou nog wachten?",
+  "R20241216_4675.mp4": "Ik denk dat die van mama is.",
+  "R20241216_4676.mp4": "Ik denk dat die van mama is.",
+  "R20241216_4678.mp4": "Ik kom zo bij je.",
+  "R20241216_4681.mp4": "Ik weet niet wat jij nu wil.",
+  "R20241216_4682.mp4": "Ik wil niet graag te laat komen.",
+  "R20241216_4683.mp4": "Ik wil niet graag te laat komen.",
+  "R20241216_4686.mp4": "Je moet iets langer wachten.",
+  "R20241216_4692.mp4": "Jij hebt helemaal gelijk.",
+  "R20241216_4693.mp4": "geef maar aan mama",
+  "R20241216_4697.mp4": "Gooi maar in de prullenbak",
+  "R20241216_4704.mp4": "Hier zijn je druppels (Vitame D druppels)",
+  "R20241216_4706.mp4": "Je bent een boefje.",
+  "R20241216_4707.mp4": "Je hele bed is vies."
+};
+
+const totalPages = Math.ceil(FILES.length / PER_PAGE);
+
+function clearChildren(node) {
+  while (node.firstChild) node.removeChild(node.firstChild);
+}
+
+function getPageFromHash() {
+  const m = location.hash.match(/page=(\d+)/);
+  const p = m ? parseInt(m[1], 10) : 1;
+  return Math.min(Math.max(p, 1), totalPages);
+}
+
+function setPage(p) {
+  location.hash = "page=" + p;
+}
+
+function buildPager(current) {
+  const pager = document.getElementById("pager");
+  clearChildren(pager);
+
+  const prev = document.createElement("button");
+  prev.textContent = "<";
+  prev.disabled = current === 1;
+  prev.onclick = () => setPage(current - 1);
+  pager.appendChild(prev);
+
+  const pages = new Set([1, totalPages, current, current - 1, current + 1]);
+  const sorted = [...pages].filter(p => p >= 1 && p <= totalPages).sort((a,b)=>a-b);
+
+  let last = 0;
+  for (const p of sorted) {
+    if (p - last > 1) {
+      const e = document.createElement("span");
+      e.className = "ellipsis";
+      e.textContent = "...";
+      pager.appendChild(e);
+    }
+    const b = document.createElement("button");
+    b.className = "page-num" + (p === current ? " active" : "");
+    b.textContent = String(p);
+    b.onclick = () => setPage(p);
+    pager.appendChild(b);
+    last = p;
+  }
+
+  const next = document.createElement("button");
+  next.textContent = ">";
+  next.disabled = current === totalPages;
+  next.onclick = () => setPage(current + 1);
+  pager.appendChild(next);
+}
+
+function render() {
+  const page = getPageFromHash();
+  const start = (page - 1) * PER_PAGE;
+  const end = Math.min(start + PER_PAGE, FILES.length);
+  const slice = FILES.slice(start, end);
+
+  document.getElementById("meta").textContent =
+    FILES.length + " files - page " + page + " / " + totalPages +
+    " - showing " + (start + 1) + "-" + end;
+  document.getElementById("footer-meta").textContent =
+    "page " + page + " / " + totalPages;
+
+  const grid = document.getElementById("grid");
+  clearChildren(grid);
+  slice.forEach((name, i) => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const v = document.createElement("video");
+    v.src = BASE_URL + name;
+    v.controls = true;
+    v.preload = "metadata";
+    v.playsInline = true;
+
+    const label = document.createElement("div");
+    label.className = "label";
+
+    const zinDiv = document.createElement("div");
+    zinDiv.className = "zin";
+    zinDiv.textContent = META[name] || "(no zinString found)";
+    label.appendChild(zinDiv);
+
+    const fileDiv = document.createElement("div");
+    fileDiv.className = "file";
+    const indexSpan = document.createElement("span");
+    indexSpan.className = "index";
+    indexSpan.textContent = "#" + (start + i + 1);
+    fileDiv.appendChild(indexSpan);
+    fileDiv.appendChild(document.createTextNode(name));
+    label.appendChild(fileDiv);
+
+    card.appendChild(v);
+    card.appendChild(label);
+    grid.appendChild(card);
+  });
+
+  buildPager(page);
+  window.scrollTo({ top: 0, behavior: "instant" });
+}
+
+window.addEventListener("hashchange", render);
+window.addEventListener("DOMContentLoaded", render);
+</script>
+
+</body>
+</html>

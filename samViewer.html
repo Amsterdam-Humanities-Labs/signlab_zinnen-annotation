@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAM Video Viewer</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .video-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .video-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        .thumbnail-container {
+            position: relative;
+            aspect-ratio: 1/1;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .thumbnail-container img,
+        .thumbnail-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .file-badges {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .file-badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .file-badge.glb {
+            background: #198754;
+            color: white;
+        }
+
+        .file-badge.npz {
+            background: #0d6efd;
+            color: white;
+        }
+
+        .card-body {
+            padding: 12px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-text {
+            font-size: 12px;
+            color: #6c757d;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
+
+        /* Modal styles */
+        .modal-xl-custom {
+            max-width: 95vw;
+        }
+
+        .viewer-container {
+            display: flex;
+            gap: 20px;
+            height: 70vh;
+        }
+
+        .video-panel, .babylon-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .video-panel video {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            border-radius: 8px;
+        }
+
+        .babylon-panel {
+            background: #1a1a2e;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+
+        .panel-header {
+            padding: 10px 15px;
+            background: rgba(0,0,0,0.1);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .babylon-panel .panel-header {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .no-glb-message {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        /* Pagination */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .page-info {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .viewer-container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .video-panel, .babylon-panel {
+                height: 40vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-1">SAM Video Viewer</h1>
+                <p class="text-muted mb-0">Videos with SAM files (GLB/NPZ)</p>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span id="totalCount" class="badge bg-primary fs-6">0 videos</span>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="loading-spinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Video Grid -->
+        <div id="videoGrid" class="row g-3" style="display: none;">
+            <!-- Videos will be dynamically inserted here -->
+        </div>
+
+        <!-- Pagination -->
+        <div id="paginationContainer" class="pagination-container" style="display: none;">
+            <button id="prevBtn" class="btn btn-outline-primary" disabled>
+                <i class="bi bi-chevron-left"></i> Previous
+            </button>
+            <span id="pageInfo" class="page-info">Page 1 of 1</span>
+            <button id="nextBtn" class="btn btn-outline-primary" disabled>
+                Next <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Video Modal -->
+    <div class="modal fade" id="videoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl-custom modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Video Viewer</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <span id="modalSentence" class="text-muted"></span>
+                    </div>
+                    <div class="viewer-container">
+                        <!-- Video Panel -->
+                        <div class="video-panel">
+                            <div class="panel-header">
+                                <i class="bi bi-camera-video"></i> Video
+                            </div>
+                            <video id="modalVideo" controls></video>
+                        </div>
+
+                        <!-- BabylonJS Panel -->
+                        <div class="babylon-panel">
+                            <div class="panel-header">
+                                <i class="bi bi-box"></i> 3D Model (GLB)
+                            </div>
+                            <div id="babylonContainer" style="flex: 1; position: relative;">
+                                <canvas id="renderCanvas"></canvas>
+                                <div id="noGlbMessage" class="no-glb-message" style="display: none;">
+                                    <span><i class="bi bi-exclamation-circle me-2"></i>No GLB file available</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- BabylonJS -->
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+
+    <script>
+        // State
+        let currentPage = 1;
+        let totalPages = 1;
+        let videos = [];
+        let babylonEngine = null;
+        let babylonScene = null;
+        let animationGroups = [];
+        let videoDuration = 0;
+
+        // DOM Elements
+        const videoGrid = document.getElementById('videoGrid');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const paginationContainer = document.getElementById('paginationContainer');
+        const totalCountBadge = document.getElementById('totalCount');
+        const pageInfo = document.getElementById('pageInfo');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const videoModal = new bootstrap.Modal(document.getElementById('videoModal'));
+        const modalVideo = document.getElementById('modalVideo');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalSentence = document.getElementById('modalSentence');
+        const renderCanvas = document.getElementById('renderCanvas');
+        const noGlbMessage = document.getElementById('noGlbMessage');
+        const babylonContainer = document.getElementById('babylonContainer');
+
+        // Fetch videos from API
+        async function fetchVideos(page = 1) {
+            loadingSpinner.style.display = 'flex';
+            videoGrid.style.display = 'none';
+            paginationContainer.style.display = 'none';
+
+            try {
+                const response = await fetch(`/zin/api/getSamVideos.php?page=${page}&limit=20`);
+                const data = await response.json();
+
+                if (data.success) {
+                    videos = data.data.videos;
+                    currentPage = data.data.pagination.page;
+                    totalPages = data.data.pagination.total_pages;
+
+                    totalCountBadge.textContent = `${data.data.pagination.total} videos`;
+                    pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+
+                    prevBtn.disabled = currentPage <= 1;
+                    nextBtn.disabled = currentPage >= totalPages;
+
+                    renderVideoGrid();
+                } else {
+                    console.error('API Error:', data.errors);
+                    videoGrid.innerHTML = '<div class="col-12 text-center text-danger">Error loading videos</div>';
+                }
+            } catch (error) {
+                console.error('Fetch Error:', error);
+                videoGrid.innerHTML = '<div class="col-12 text-center text-danger">Error loading videos</div>';
+            }
+
+            loadingSpinner.style.display = 'none';
+            videoGrid.style.display = 'flex';
+            paginationContainer.style.display = 'flex';
+        }
+
+        // Render video grid
+        function renderVideoGrid() {
+            videoGrid.innerHTML = '';
+
+            if (videos.length === 0) {
+                videoGrid.innerHTML = '<div class="col-12 text-center text-muted py-5">No videos with SAM files found</div>';
+                return;
+            }
+
+            videos.forEach((video, index) => {
+                const card = document.createElement('div');
+                card.className = 'col-6 col-md-4 col-lg-3 col-xl-2';
+                card.innerHTML = `
+                    <div class="video-card" data-index="${index}">
+                        <div class="thumbnail-container">
+                            <img src="${video.thumbnailUrl}" alt="${video.m_file}"
+                                 onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23333%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2250%22 fill=%22%23666%22 text-anchor=%22middle%22 dy=%22.3em%22>No Image</text></svg>'">
+                            <div class="file-badges">
+                                ${video.glbExists ? '<span class="file-badge glb">GLB</span>' : ''}
+                                ${video.npzExists ? '<span class="file-badge npz">NPZ</span>' : ''}
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-title">${video.m_file}</div>
+                            <div class="card-text">${video.zinString || 'No sentence'}</div>
+                        </div>
+                    </div>
+                `;
+
+                // Hover to play
+                const thumbnailContainer = card.querySelector('.thumbnail-container');
+                const img = thumbnailContainer.querySelector('img');
+                let hoverVideo = null;
+
+                thumbnailContainer.addEventListener('mouseenter', () => {
+                    if (!hoverVideo) {
+                        hoverVideo = document.createElement('video');
+                        hoverVideo.src = video.videoUrl;
+                        hoverVideo.muted = true;
+                        hoverVideo.loop = true;
+                        hoverVideo.playsInline = true;
+                        hoverVideo.style.display = 'none';
+                        thumbnailContainer.appendChild(hoverVideo);
+                    }
+                    img.style.display = 'none';
+                    hoverVideo.style.display = 'block';
+                    hoverVideo.play().catch(() => {});
+                });
+
+                thumbnailContainer.addEventListener('mouseleave', () => {
+                    if (hoverVideo) {
+                        hoverVideo.pause();
+                        hoverVideo.currentTime = 0;
+                        hoverVideo.style.display = 'none';
+                    }
+                    img.style.display = 'block';
+                });
+
+                // Click to open modal
+                card.querySelector('.video-card').addEventListener('click', () => {
+                    openVideoModal(video);
+                });
+
+                videoGrid.appendChild(card);
+            });
+        }
+
+        // Open video modal
+        function openVideoModal(video) {
+            modalTitle.textContent = video.m_file;
+            modalSentence.textContent = video.zinString || '';
+            modalVideo.src = video.videoUrl;
+
+            // Show/hide GLB viewer
+            if (video.glbExists && video.glbUrl) {
+                renderCanvas.style.display = 'block';
+                noGlbMessage.style.display = 'none';
+                // BabylonJS will be initialized when modal is shown
+            } else {
+                renderCanvas.style.display = 'none';
+                noGlbMessage.style.display = 'flex';
+            }
+
+            // Store GLB URL for BabylonJS initialization
+            renderCanvas.dataset.glbUrl = video.glbUrl || '';
+
+            videoModal.show();
+        }
+
+        // Initialize BabylonJS scene
+        function initBabylonScene(glbUrl) {
+            // Dispose previous scene if exists
+            disposeBabylonScene();
+
+            if (!glbUrl) return;
+
+            // Create engine
+            babylonEngine = new BABYLON.Engine(renderCanvas, true, {
+                preserveDrawingBuffer: true,
+                stencil: true
+            });
+
+            // Create scene
+            babylonScene = new BABYLON.Scene(babylonEngine);
+            babylonScene.clearColor = new BABYLON.Color4(0.1, 0.1, 0.15, 1);
+
+            // Create camera
+            const camera = new BABYLON.ArcRotateCamera(
+                "camera",
+                Math.PI / 2,
+                Math.PI / 2.5,
+                3,
+                new BABYLON.Vector3(0, 1, 0),
+                babylonScene
+            );
+            camera.attachControl(renderCanvas, true);
+            camera.wheelPrecision = 50;
+            camera.minZ = 0.1;
+
+            // Create light
+            const light = new BABYLON.HemisphericLight(
+                "light",
+                new BABYLON.Vector3(0, 1, 0),
+                babylonScene
+            );
+            light.intensity = 1.0;
+
+            // Add directional light for better shadows
+            const dirLight = new BABYLON.DirectionalLight(
+                "dirLight",
+                new BABYLON.Vector3(-1, -2, -1),
+                babylonScene
+            );
+            dirLight.intensity = 0.5;
+
+            // Load GLB model
+            BABYLON.SceneLoader.ImportMeshAsync(null, "", glbUrl, babylonScene)
+                .then((result) => {
+                    // Center the model
+                    if (result.meshes.length > 0) {
+                        const rootMesh = result.meshes[0];
+
+                        // Calculate bounding box
+                        let boundingInfo = rootMesh.getHierarchyBoundingVectors(true);
+                        let center = boundingInfo.min.add(boundingInfo.max).scale(0.5);
+                        let size = boundingInfo.max.subtract(boundingInfo.min);
+                        let maxDim = Math.max(size.x, size.y, size.z);
+
+                        // Adjust camera
+                        camera.target = center;
+                        camera.radius = maxDim * 2;
+                    }
+
+                    // Store animation groups for sync control
+                    animationGroups = result.animationGroups || [];
+
+                    // Don't auto-play - wait for video sync
+                    animationGroups.forEach(ag => {
+                        ag.stop();
+                        ag.loopAnimation = false;
+                    });
+                })
+                .catch((error) => {
+                    console.error('Error loading GLB:', error);
+                });
+
+            // Start render loop
+            babylonEngine.runRenderLoop(() => {
+                babylonScene.render();
+            });
+
+            // Handle resize
+            window.addEventListener('resize', () => {
+                babylonEngine.resize();
+            });
+        }
+
+        // Dispose BabylonJS scene
+        function disposeBabylonScene() {
+            animationGroups = [];
+            videoDuration = 0;
+            if (babylonScene) {
+                babylonScene.dispose();
+                babylonScene = null;
+            }
+            if (babylonEngine) {
+                babylonEngine.dispose();
+                babylonEngine = null;
+            }
+        }
+
+        // Sync animation with video
+        function syncAnimationToVideo() {
+            if (animationGroups.length === 0 || !modalVideo.duration) return;
+
+            const videoTime = modalVideo.currentTime;
+            const videoDur = modalVideo.duration;
+
+            animationGroups.forEach(ag => {
+                if (ag.targetedAnimations.length > 0) {
+                    const animDuration = (ag.to - ag.from) / ag.targetedAnimations[0].animation.framePerSecond;
+                    // Map video time to animation frame
+                    const animProgress = (videoTime / videoDur);
+                    const targetFrame = ag.from + (ag.to - ag.from) * animProgress;
+                    ag.goToFrame(targetFrame);
+                }
+            });
+        }
+
+        // Start both video and animation synced
+        function startSyncedPlayback() {
+            if (animationGroups.length === 0) return;
+
+            // Reset animations to start
+            animationGroups.forEach(ag => {
+                ag.reset();
+                ag.goToFrame(ag.from);
+                ag.play(false); // Don't loop
+            });
+        }
+
+        // Video event handlers
+        modalVideo.addEventListener('play', () => {
+            startSyncedPlayback();
+        });
+
+        modalVideo.addEventListener('pause', () => {
+            animationGroups.forEach(ag => ag.pause());
+        });
+
+        modalVideo.addEventListener('seeked', () => {
+            syncAnimationToVideo();
+        });
+
+        modalVideo.addEventListener('ended', () => {
+            // Loop: restart both video and animation
+            modalVideo.currentTime = 0;
+            animationGroups.forEach(ag => {
+                ag.reset();
+                ag.goToFrame(ag.from);
+            });
+            modalVideo.play().catch(() => {});
+        });
+
+        // Event Listeners
+        prevBtn.addEventListener('click', () => {
+            if (currentPage > 1) {
+                fetchVideos(currentPage - 1);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentPage < totalPages) {
+                fetchVideos(currentPage + 1);
+            }
+        });
+
+        // Modal events
+        document.getElementById('videoModal').addEventListener('shown.bs.modal', () => {
+            const glbUrl = renderCanvas.dataset.glbUrl;
+            if (glbUrl) {
+                initBabylonScene(glbUrl);
+            }
+            // Small delay to let GLB load, then start synced playback
+            setTimeout(() => {
+                modalVideo.currentTime = 0;
+                modalVideo.play().catch(() => {});
+            }, 500);
+        });
+
+        document.getElementById('videoModal').addEventListener('hidden.bs.modal', () => {
+            modalVideo.pause();
+            modalVideo.src = '';
+            disposeBabylonScene();
+        });
+
+        // Handle URL parameters for page
+        const urlParams = new URLSearchParams(window.location.search);
+        const pageParam = parseInt(urlParams.get('page')) || 1;
+
+        // Initialize
+        fetchVideos(pageParam);
+    </script>
+</body>
+</html>

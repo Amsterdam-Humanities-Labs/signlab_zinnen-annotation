@@ -1,0 +1,121 @@
+--- subBeta8.html.backup_fix1	2026-06-19 10:11:09.543209522 +0000
++++ subBeta8.html	2026-06-19 10:57:29.859163775 +0000
+@@ -474,11 +474,13 @@
+             <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+           </div>
+           <div class="modal-body">
+-            <p><strong>Select a gloss first</strong> — click it, or press <kbd>Tab</kbd>. The selected gloss is outlined in cyan.</p>
++            <p><strong>Select a gloss</strong> — single-click it or press <kbd>Tab</kbd> (it gets a cyan outline). <strong>Double-click</strong> (or press <kbd>Enter</kbd>) to edit its text; press <kbd>Esc</kbd> to stop editing.</p>
+             <table class="table table-sm table-bordered">
+               <thead><tr><th>Keys</th><th>Action</th></tr></thead>
+               <tbody>
+                 <tr><td><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd></td><td>Next / previous gloss (same tier)</td></tr>
++                <tr><td><kbd>Double-click</kbd> / <kbd>Enter</kbd></td><td>Edit the selected gloss's text</td></tr>
++                <tr><td><kbd>Esc</kbd></td><td>Stop editing (back to selecting)</td></tr>
+                 <tr><td><kbd>&larr;</kbd> / <kbd>&rarr;</kbd></td><td>Move <strong>left</strong> boundary by 1 frame</td></tr>
+                 <tr><td><kbd>Shift</kbd>+<kbd>&larr;</kbd>/<kbd>&rarr;</kbd></td><td>Move <strong>right</strong> boundary by 1 frame</td></tr>
+                 <tr><td><kbd>Ctrl</kbd>+<kbd>&larr;</kbd>/<kbd>&rarr;</kbd> (<kbd>Cmd</kbd> on Mac)</td><td>Move the <strong>whole block</strong> by 1 frame</td></tr>
+@@ -1085,6 +1087,20 @@
+   if (tw) updateSubtitleBoxDimensions(tw);
+ }
+ 
++// Edit 2: Enter edit mode on a gloss box (make content editable and focus it with text selected)
++function enterEditMode(box) {
++  if (!box) return;
++  const c = box.querySelector('.content');
++  if (!c) return;
++  c.contentEditable = true;
++  c.focus();
++  const range = document.createRange();
++  range.selectNodeContents(c);
++  const sel = window.getSelection();
++  sel.removeAllRanges();
++  sel.addRange(range);
++}
++
+ function pushNeighbors(movedSub, direction) {
+   const tierBlocks = subtitles
+     .filter(s => s.tier === movedSub.tier && s.id !== movedSub.id)
+@@ -1306,7 +1322,7 @@
+         box.appendChild(dragHandle);
+         const content = document.createElement('div');
+         content.className = 'content';
+-        content.contentEditable = true;
++        content.contentEditable = false;
+         content.innerText = sub.text;
+         content.addEventListener('blur', () => {
+           sub.text = content.innerText;
+@@ -1318,6 +1334,23 @@
+           uploadSubtitles(); // Autosave on blur
+           renderAll();
+         });
++        // Edit 5: Esc/Enter exits edit mode (must be registered before tier-2 dropdown keydown)
++        content.addEventListener('keydown', (e) => {
++          if (e.key === 'Escape') {
++            const dd = box.querySelector('.glossary-dropdown');
++            if (dd && dd.style.display !== 'none') return; // dropdown open: let it close first, keep editing
++            e.preventDefault();
++            content.blur();   // blur autosaves + renderAll re-creates non-editable
++            return;
++          }
++          if (e.key === 'Enter') {
++            const dd = box.querySelector('.glossary-dropdown');
++            if (dd && dd.style.display !== 'none') return; // dropdown open: let it pick the suggestion
++            e.preventDefault();
++            content.blur();
++            return;
++          }
++        });
+         box.appendChild(content);
+         if (sub.tier === 2) {
+           const glossaryDD = document.createElement('div');
+@@ -1478,7 +1511,7 @@
+                   const newBox = document.querySelector(`.subtitle-box[data-id="${subId}"]`);
+                   if (newBox) {
+                     const newContent = newBox.querySelector('.content');
+-                    if (newContent) newContent.focus();
++                    if (newContent) { newContent.contentEditable = true; newContent.focus(); }
+                   }
+                 });
+               }
+@@ -1663,8 +1696,14 @@
+         rightHandle.addEventListener('mousedown', e => initRightResize(e, sub.id));
+         box.appendChild(rightHandle);
+         box.addEventListener('mousedown', (e) => {
+-          if (e.target.closest('.content, .resize-handle, .drag-handle, .dropdown, button')) return;
++          if (e.target.closest('.resize-handle, .drag-handle, .dropdown, button')) return;
++          selectSub(sub.id);
++        });
++        // Edit 4: double-click enters edit mode
++        box.addEventListener('dblclick', (e) => {
++          if (e.target.closest('.resize-handle, .drag-handle, .dropdown, button')) return;
+           selectSub(sub.id);
++          enterEditMode(box);
+         });
+         timelineTrack.appendChild(box);
+       });
+@@ -3301,6 +3340,16 @@
+           selectSub(tierBlocks[nextIdx].id, {snapPlayhead: true});
+           return;
+         }
++
++        // Edit 7: Enter enters edit mode on the selected gloss
++        if (e.key === 'Enter') {
++          const sub = getSelectedSub();
++          if (!sub) return;            // nothing selected: leave Enter for any other behavior
++          e.preventDefault();
++          const box = document.querySelector('.subtitle-box[data-id="' + sub.id + '"]');
++          enterEditMode(box);
++          return;
++        }
+     });
+ 
+     let glossary = {};
+@@ -3625,6 +3674,7 @@
+         if (!nextBox) return;
+         const nextContent = nextBox.querySelector('.content');
+         if (nextContent) {
++          nextContent.contentEditable = true;
+           nextContent.focus();
+           // Update canvas time and red line to center on target subtitle
+           const midTime = (nextSub.start + nextSub.end) / 2;

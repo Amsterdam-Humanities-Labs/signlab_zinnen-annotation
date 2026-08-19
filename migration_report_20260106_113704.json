@@ -1,0 +1,1042 @@
+{
+  "migration_timestamp": "20260106_113704",
+  "backup_tables": {
+    "sentences": "sentences_backup_pre_id_restore_20260106_113646",
+    "matched_transcriptions": "matched_transcriptions_backup_20260106_113646"
+  },
+  "source_file": "/web/zin/zinnen_back.txt",
+  "backup_table_used": "sentences_backup_20250728_113520",
+  "statistics": {
+    "total_zinstrings_in_file": 120,
+    "records_updated": 107,
+    "records_unchanged": 4024,
+    "not_found_in_backup": 7,
+    "not_found_in_current": 6,
+    "matched_transcriptions_references_updated": 0,
+    "total_mt_references": 4396
+  },
+  "id_mapping": {
+    "2327": {
+      "backup_id": 2327,
+      "backup_zinID": 12327,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2328": {
+      "backup_id": 2328,
+      "backup_zinID": 12328,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2329": {
+      "backup_id": 2329,
+      "backup_zinID": 12329,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2330": {
+      "backup_id": 2330,
+      "backup_zinID": 12330,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2331": {
+      "backup_id": 2331,
+      "backup_zinID": 12331,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2332": {
+      "backup_id": 2332,
+      "backup_zinID": 12332,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2333": {
+      "backup_id": 2333,
+      "backup_zinID": 12333,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2334": {
+      "backup_id": 2334,
+      "backup_zinID": 12334,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2335": {
+      "backup_id": 2335,
+      "backup_zinID": 12335,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2336": {
+      "backup_id": 2336,
+      "backup_zinID": 12336,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2337": {
+      "backup_id": 2337,
+      "backup_zinID": 12337,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2338": {
+      "backup_id": 2338,
+      "backup_zinID": 12338,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2339": {
+      "backup_id": 2339,
+      "backup_zinID": 12339,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2340": {
+      "backup_id": 2340,
+      "backup_zinID": 12340,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2341": {
+      "backup_id": 2341,
+      "backup_zinID": 12341,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2342": {
+      "backup_id": 2342,
+      "backup_zinID": 12342,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2343": {
+      "backup_id": 2343,
+      "backup_zinID": 12343,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2344": {
+      "backup_id": 2344,
+      "backup_zinID": 12344,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2345": {
+      "backup_id": 2345,
+      "backup_zinID": 12345,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2346": {
+      "backup_id": 2346,
+      "backup_zinID": 12346,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2347": {
+      "backup_id": 2347,
+      "backup_zinID": 12347,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2348": {
+      "backup_id": 2348,
+      "backup_zinID": 12348,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2349": {
+      "backup_id": 2349,
+      "backup_zinID": 12349,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2351": {
+      "backup_id": 2351,
+      "backup_zinID": 12351,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2353": {
+      "backup_id": 2353,
+      "backup_zinID": 12353,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": "beide videos zijn goed (gaat het om locatie) "
+    },
+    "2354": {
+      "backup_id": 2354,
+      "backup_zinID": 12354,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2356": {
+      "backup_id": 2356,
+      "backup_zinID": 12356,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2357": {
+      "backup_id": 2357,
+      "backup_zinID": 12357,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2358": {
+      "backup_id": 2358,
+      "backup_zinID": 12358,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2361": {
+      "backup_id": 2361,
+      "backup_zinID": 12361,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2362": {
+      "backup_id": 2362,
+      "backup_zinID": 12362,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2363": {
+      "backup_id": 2363,
+      "backup_zinID": 12363,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2364": {
+      "backup_id": 2364,
+      "backup_zinID": 12364,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2365": {
+      "backup_id": 2365,
+      "backup_zinID": 12365,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2366": {
+      "backup_id": 2366,
+      "backup_zinID": 12366,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2367": {
+      "backup_id": 2367,
+      "backup_zinID": 12367,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2368": {
+      "backup_id": 2368,
+      "backup_zinID": 12368,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2369": {
+      "backup_id": 2369,
+      "backup_zinID": 12369,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2370": {
+      "backup_id": 2370,
+      "backup_zinID": 12370,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2371": {
+      "backup_id": 2371,
+      "backup_zinID": 12371,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2373": {
+      "backup_id": 2373,
+      "backup_zinID": 12373,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2376": {
+      "backup_id": 2376,
+      "backup_zinID": 12376,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2377": {
+      "backup_id": 2377,
+      "backup_zinID": 12377,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2378": {
+      "backup_id": 2378,
+      "backup_zinID": 12378,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2380": {
+      "backup_id": 2380,
+      "backup_zinID": 12380,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2381": {
+      "backup_id": 2381,
+      "backup_zinID": 12381,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2383": {
+      "backup_id": 2383,
+      "backup_zinID": 12383,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2384": {
+      "backup_id": 2384,
+      "backup_zinID": 12384,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2385": {
+      "backup_id": 2385,
+      "backup_zinID": 12385,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2386": {
+      "backup_id": 2386,
+      "backup_zinID": 12386,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2387": {
+      "backup_id": 2387,
+      "backup_zinID": 12387,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2388": {
+      "backup_id": 2388,
+      "backup_zinID": 12388,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2389": {
+      "backup_id": 2389,
+      "backup_zinID": 12389,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2390": {
+      "backup_id": 2390,
+      "backup_zinID": 12390,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2391": {
+      "backup_id": 2391,
+      "backup_zinID": 12391,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2392": {
+      "backup_id": 2392,
+      "backup_zinID": 12392,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "4233": {
+      "backup_id": 4233,
+      "backup_zinID": 14233,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "4234": {
+      "backup_id": 4234,
+      "backup_zinID": 14234,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "4235": {
+      "backup_id": 4235,
+      "backup_zinID": 14235,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "4236": {
+      "backup_id": 4236,
+      "backup_zinID": 14236,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "4237": {
+      "backup_id": 4237,
+      "backup_zinID": 14237,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "4238": {
+      "backup_id": 4238,
+      "backup_zinID": 14238,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "4239": {
+      "backup_id": 4239,
+      "backup_zinID": 14239,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2393": {
+      "backup_id": 2393,
+      "backup_zinID": 12393,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2394": {
+      "backup_id": 2394,
+      "backup_zinID": 12394,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2395": {
+      "backup_id": 2395,
+      "backup_zinID": 12395,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2397": {
+      "backup_id": 2397,
+      "backup_zinID": 12397,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2398": {
+      "backup_id": 2398,
+      "backup_zinID": 12398,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Controle nodig",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Klaar",
+      "backup_comments": null
+    },
+    "2399": {
+      "backup_id": 2399,
+      "backup_zinID": 12399,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2400": {
+      "backup_id": 2400,
+      "backup_zinID": 12400,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2401": {
+      "backup_id": 2401,
+      "backup_zinID": 12401,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2402": {
+      "backup_id": 2402,
+      "backup_zinID": 12402,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2403": {
+      "backup_id": 2403,
+      "backup_zinID": 12403,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2404": {
+      "backup_id": 2404,
+      "backup_zinID": 12404,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2405": {
+      "backup_id": 2405,
+      "backup_zinID": 12405,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Check nodig",
+      "backup_comments": null
+    },
+    "2406": {
+      "backup_id": 2406,
+      "backup_zinID": 12406,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Klaar",
+      "backup_comments": null
+    },
+    "2407": {
+      "backup_id": 2407,
+      "backup_zinID": 12407,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Controle nodig",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Klaar",
+      "backup_comments": null
+    },
+    "2408": {
+      "backup_id": 2408,
+      "backup_zinID": 12408,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Klaar",
+      "backup_comments": null
+    },
+    "2410": {
+      "backup_id": 2410,
+      "backup_zinID": 12410,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Klaar",
+      "backup_comments": null
+    },
+    "2411": {
+      "backup_id": 2411,
+      "backup_zinID": 12411,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2412": {
+      "backup_id": 2412,
+      "backup_zinID": 12412,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": "beide zinnen zijn goed"
+    },
+    "2413": {
+      "backup_id": 2413,
+      "backup_zinID": 12413,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Klaar",
+      "backup_comments": null
+    },
+    "2415": {
+      "backup_id": 2415,
+      "backup_zinID": 12415,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2416": {
+      "backup_id": 2416,
+      "backup_zinID": 12416,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Klaar",
+      "backup_comments": null
+    },
+    "2418": {
+      "backup_id": 2418,
+      "backup_zinID": 12418,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2419": {
+      "backup_id": 2419,
+      "backup_zinID": 12419,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2420": {
+      "backup_id": 2420,
+      "backup_zinID": 12420,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2421": {
+      "backup_id": 2421,
+      "backup_zinID": 12421,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2422": {
+      "backup_id": 2422,
+      "backup_zinID": 12422,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2423": {
+      "backup_id": 2423,
+      "backup_zinID": 12423,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2426": {
+      "backup_id": 2426,
+      "backup_zinID": 12426,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": "beide videos zijn goed"
+    },
+    "2427": {
+      "backup_id": 2427,
+      "backup_zinID": 12427,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": null
+    },
+    "2428": {
+      "backup_id": 2428,
+      "backup_zinID": 12428,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Klaar",
+      "backup_comments": null
+    },
+    "2429": {
+      "backup_id": 2429,
+      "backup_zinID": 12429,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Check nodig",
+      "backup_comments": null
+    },
+    "2431": {
+      "backup_id": 2431,
+      "backup_zinID": 12431,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Klaar",
+      "backup_comments": null
+    },
+    "2432": {
+      "backup_id": 2432,
+      "backup_zinID": 12432,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Klaar",
+      "backup_comments": null
+    },
+    "2434": {
+      "backup_id": 2434,
+      "backup_zinID": 12434,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Controle nodig",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Check nodig",
+      "backup_comments": null
+    },
+    "2436": {
+      "backup_id": 2436,
+      "backup_zinID": 12436,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Klaar",
+      "backup_comments": null
+    },
+    "2437": {
+      "backup_id": 2437,
+      "backup_zinID": 12437,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Klaar",
+      "backup_comments": null
+    },
+    "2438": {
+      "backup_id": 2438,
+      "backup_zinID": 12438,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Klaar",
+      "backup_comments": null
+    },
+    "2439": {
+      "backup_id": 2439,
+      "backup_zinID": 12439,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Klaar",
+      "backup_comments": null
+    },
+    "2440": {
+      "backup_id": 2440,
+      "backup_zinID": 12440,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Controle nodig",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Klaar",
+      "backup_comments": "beide videos zijn goed"
+    },
+    "2441": {
+      "backup_id": 2441,
+      "backup_zinID": 12441,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Klaar",
+      "backup_comments": "beide videos zijn goed, (variant buiten) "
+    },
+    "2442": {
+      "backup_id": 2442,
+      "backup_zinID": 12442,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Controle nodig",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Check nodig",
+      "backup_comments": null
+    },
+    "2443": {
+      "backup_id": 2443,
+      "backup_zinID": 12443,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Klaar",
+      "backup_comments": null
+    },
+    "2444": {
+      "backup_id": 2444,
+      "backup_zinID": 12444,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Controle nodig",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Check nodig",
+      "backup_comments": null
+    },
+    "2445": {
+      "backup_id": 2445,
+      "backup_zinID": 12445,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Klaar",
+      "backup_status_glos": "Klaar",
+      "backup_status_video": "Klaar",
+      "backup_comments": null
+    }
+  },
+  "fields_restored": [
+    "ID",
+    "zinID",
+    "status",
+    "status_annotatie",
+    "status_glos",
+    "status_video",
+    "comments"
+  ],
+  "warnings": {
+    "zinstrings_not_in_backup": [
+      "Je hebt ook al zulke dikke beentjes gekregen.",
+      "Daar zijn je voetjes, lang niet gezien!",
+      "focus, focus! Je bent melk aan het drinken.",
+      "Allemaal voor jou!",
+      "Gezellig hè, op het terras met tante Julia.",
+      "Aap gaat ook mee in de auto.",
+      "Riem goed vast"
+    ],
+    "zinstrings_not_in_current": [
+      "Even rollen.",
+      "Ja, daar gaat het. Allemaal in Bobby's mond.",
+      "Papa's vinger verdwijnt bijna in Bobby's mond!",
+      "Waar zijn Bobby's vingers gebleven?",
+      "kijk Bobby, een flesje voor jou.",
+      "Oh, nee je wilt geen speen."
+    ]
+  },
+  "verification": {
+    "passed": true,
+    "checks": [
+      {
+        "check": "Record count",
+        "passed": true,
+        "details": "4131 records"
+      },
+      {
+        "check": "Duplicate IDs",
+        "passed": true,
+        "details": "None found"
+      },
+      {
+        "check": "AUTO_INCREMENT",
+        "passed": true,
+        "details": "6451"
+      },
+      {
+        "check": "Sample records",
+        "passed": true,
+        "details": "10/10 correct"
+      },
+      {
+        "check": "Broken references",
+        "passed": true,
+        "details": "69 broken"
+      }
+    ],
+    "broken_references": 69
+  }
+}

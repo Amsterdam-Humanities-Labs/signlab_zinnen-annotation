@@ -1,0 +1,239 @@
+{
+  "migration_timestamp": "20260112_095958",
+  "backup_tables": {
+    "sentences": "sentences_backup_pre_id_restore_20260112_095938",
+    "matched_transcriptions": "matched_transcriptions_backup_20260112_095938"
+  },
+  "source_file": "/web/zin/zinnen_back.txt",
+  "backup_table_used": "sentences_backup_20250728_113520",
+  "statistics": {
+    "total_zinstrings_in_file": 20,
+    "records_updated": 19,
+    "exact_matches": 17,
+    "fuzzy_matches": 2,
+    "records_unchanged": 4112,
+    "not_found_in_backup": 0,
+    "not_found_in_current": 1,
+    "matched_transcriptions_references_updated": 0,
+    "total_mt_references": 4396
+  },
+  "id_mapping": {
+    "658": {
+      "backup_id": 658,
+      "backup_zinID": null,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": ""
+    },
+    "171": {
+      "backup_id": 171,
+      "backup_zinID": null,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": ""
+    },
+    "190": {
+      "backup_id": 190,
+      "backup_zinID": null,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": ""
+    },
+    "210": {
+      "backup_id": 210,
+      "backup_zinID": null,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": ""
+    },
+    "211": {
+      "backup_id": 211,
+      "backup_zinID": null,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": ""
+    },
+    "217": {
+      "backup_id": 217,
+      "backup_zinID": null,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": ""
+    },
+    "226": {
+      "backup_id": 226,
+      "backup_zinID": null,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": ""
+    },
+    "278": {
+      "backup_id": 278,
+      "backup_zinID": null,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": "Tob: Dit kan gebruikt, meer NMG achtig. Komt nieuwe opname, meer NGT"
+    },
+    "1094": {
+      "backup_id": 1094,
+      "backup_zinID": null,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": ""
+    },
+    "1097": {
+      "backup_id": 1097,
+      "backup_zinID": null,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": ""
+    },
+    "1098": {
+      "backup_id": 1098,
+      "backup_zinID": null,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": ""
+    },
+    "1147": {
+      "backup_id": 1147,
+      "backup_zinID": null,
+      "backup_status": "signbank",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": ""
+    },
+    "1160": {
+      "backup_id": 1160,
+      "backup_zinID": null,
+      "backup_status": "signbank",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": ""
+    },
+    "1203": {
+      "backup_id": 1203,
+      "backup_zinID": null,
+      "backup_status": "Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": ""
+    },
+    "1367": {
+      "backup_id": 1367,
+      "backup_zinID": null,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": ""
+    },
+    "1400": {
+      "backup_id": 1400,
+      "backup_zinID": null,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": ""
+    },
+    "1423": {
+      "backup_id": 1423,
+      "backup_zinID": null,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": ""
+    },
+    "1424": {
+      "backup_id": 1424,
+      "backup_zinID": null,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": ""
+    },
+    "1619": {
+      "backup_id": 1619,
+      "backup_zinID": null,
+      "backup_status": "Niet Klaar",
+      "backup_status_annotatie": "Niet Klaar",
+      "backup_status_glos": "Niet Klaar",
+      "backup_status_video": "Niet Klaar",
+      "backup_comments": ""
+    }
+  },
+  "fields_restored": [
+    "ID",
+    "zinID",
+    "status",
+    "status_annotatie",
+    "status_glos",
+    "status_video",
+    "comments"
+  ],
+  "warnings": {
+    "zinstrings_not_in_backup": [],
+    "zinstrings_not_in_current": [
+      "Wil je in de zandbak spelen?"
+    ]
+  },
+  "verification": {
+    "passed": true,
+    "checks": [
+      {
+        "check": "Record count",
+        "passed": true,
+        "details": "4131 records"
+      },
+      {
+        "check": "Duplicate IDs",
+        "passed": true,
+        "details": "None found"
+      },
+      {
+        "check": "AUTO_INCREMENT",
+        "passed": true,
+        "details": "6451"
+      },
+      {
+        "check": "Sample records",
+        "passed": false,
+        "details": "Only 0/10 correct"
+      },
+      {
+        "check": "Broken references",
+        "passed": true,
+        "details": "60 broken"
+      }
+    ],
+    "broken_references": 60
+  }
+}

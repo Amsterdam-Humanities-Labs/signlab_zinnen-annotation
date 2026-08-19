@@ -1,0 +1,36 @@
+Array
+(
+    [sentences] => ['Ik ben Gomer', 'Ik draag een ring']
+)
+Array
+(
+    [{"sentences":] => Array
+        (
+            ["Ik ben Gomer","Ik draag een ring"] => 
+        )
+
+)
+Array
+(
+    [{"sentences":] => Array
+        (
+            ["Ik ben Gomer","Ik draag een ring"] => 
+        )
+
+)
+Array
+(
+    [{"sentences":] => Array
+        (
+            ["Ik ben Gomer","Ik draag een ring"] => 
+        )
+
+)
+Array
+(
+    [Ik_ben_Gomer,Ik_draag_een_ring] => 
+)
+Array
+(
+)
+['Ik ben Gomer', 'Ik draag een ring']

@@ -1,0 +1,589 @@
+{
+    "condition": "zOg='zin', no active (added=1) video",
+    "deleted_only": {
+        "total": 115,
+        "other": [
+            {
+                "id": "342",
+                "zin": "Even de lamp aanzetten.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "345",
+                "zin": "Het bed is om in te slapen.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "346",
+                "zin": "Jij mag even op je kamer spelen.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "348",
+                "zin": "Lees maar even een boekje.",
+                "del": 3,
+                "in_list": false
+            },
+            {
+                "id": "363",
+                "zin": "Kijk maar in de spiegel.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "365",
+                "zin": "Maak je maar geen zorgen.",
+                "del": 2,
+                "in_list": false
+            },
+            {
+                "id": "371",
+                "zin": "Kijk, daar is het grote varken.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "372",
+                "zin": "Nee dat is voor de geitjes, niet voor jullie.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "390",
+                "zin": "Kijk uit voor je vingers.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "391",
+                "zin": "Mama gaat nu koken.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "403",
+                "zin": "Je mag bij opa lekker spelen.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "404",
+                "zin": "Je moet extra kleren inpakken.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "406",
+                "zin": "Jouw oom en tante vinden het heel leuk dat je komt.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "411",
+                "zin": "je hebt gepoept",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "412",
+                "zin": "Nee, niet omdraaien.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "427",
+                "zin": "het is nu echt tijd om te gaan slapen.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "428",
+                "zin": "Het wordt donker om ongeveer 8 uur.",
+                "del": 2,
+                "in_list": false
+            },
+            {
+                "id": "430",
+                "zin": "Hier heb je je knuffel",
+                "del": 2,
+                "in_list": false
+            },
+            {
+                "id": "431",
+                "zin": "Hier is je speen.",
+                "del": 2,
+                "in_list": false
+            },
+            {
+                "id": "432",
+                "zin": "Ik aai nog even over je hoofd.",
+                "del": 2,
+                "in_list": false
+            },
+            {
+                "id": "435",
+                "zin": "Ik hou van je, slaap lekker.",
+                "del": 2,
+                "in_list": false
+            },
+            {
+                "id": "436",
+                "zin": "Ik kom je morgenochtend weer halen.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "464",
+                "zin": "kom op, het lukt wel.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "466",
+                "zin": "Kwam je plas te snel?",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "467",
+                "zin": "leg het brilletje maar op de wc.",
+                "del": 2,
+                "in_list": false
+            },
+            {
+                "id": "469",
+                "zin": "Mama gaat nou even het potje schoonmaken.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "470",
+                "zin": "Mama moet even naar de wc.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "475",
+                "zin": "Moeten we even je broek wisselen?",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "476",
+                "zin": "net zo lang vegen totdat er geen poep meer op zit. (situatie: tijdens afvegen)",
+                "del": 2,
+                "in_list": false
+            },
+            {
+                "id": "487",
+                "zin": "Het wordt warm.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "488",
+                "zin": "Ik help je even met je jas aantrekken.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "492",
+                "zin": "Je pop laten we thuis vandaag, anders willen andere kinderen ermee spelen.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "493",
+                "zin": "Je zus gaat naar Juf Elma, jij gaat naar Juf Petra.",
+                "del": 2,
+                "in_list": false
+            },
+            {
+                "id": "495",
+                "zin": "Mag ik een knuffel voordat je gaat?",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "496",
+                "zin": "Nee, je mag geen autootje meenemen, want die raak je kwijt.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "512",
+                "zin": "Ga je de oppas helpen?",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "526",
+                "zin": "Help maar mee.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "527",
+                "zin": "Ik pak even een doekje.",
+                "del": 2,
+                "in_list": false
+            },
+            {
+                "id": "528",
+                "zin": "Kijk of je ergens een doekje kunt vinden.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "531",
+                "zin": "Kom maar, dan gaan we het schoonmaken.",
+                "del": 2,
+                "in_list": false
+            },
+            {
+                "id": "1085",
+                "zin": "geef aan als je hulp nodig hebt",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "1088",
+                "zin": "Heb je je tas?",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "1089",
+                "zin": "Heel even wachten.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "1095",
+                "zin": "Hoe ga je dat doen?",
+                "del": 3,
+                "in_list": false
+            },
+            {
+                "id": "1099",
+                "zin": "Hoeveel nachtjes moet je nou nog wachten?",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "1100",
+                "zin": "Ik denk dat die van mama is.",
+                "del": 3,
+                "in_list": false
+            },
+            {
+                "id": "1103",
+                "zin": "Ik weet niet wat jij nu wil.",
+                "del": 2,
+                "in_list": false
+            },
+            {
+                "id": "1104",
+                "zin": "Ik wil niet graag te laat komen.",
+                "del": 2,
+                "in_list": false
+            },
+            {
+                "id": "1203",
+                "zin": "Daar kun je lekker spelen met de andere kindjes.",
+                "del": 5,
+                "in_list": false
+            },
+            {
+                "id": "2009",
+                "zin": "geef maar aan mama",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "2012",
+                "zin": "Gooi maar in de prullenbak",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "2017",
+                "zin": "Hier zijn je druppels (Vitame D druppels)",
+                "del": 2,
+                "in_list": false
+            },
+            {
+                "id": "2019",
+                "zin": "Je bent een boefje.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "2020",
+                "zin": "Je hele bed is vies.",
+                "del": 1,
+                "in_list": false
+            },
+            {
+                "id": "2404",
+                "zin": "Ben je het eten op tafel aan het smeren?",
+                "del": 1,
+                "in_list": false
+            }
+        ]
+    },
+    "no_video": {
+        "total": 44,
+        "other": [
+            {
+                "id": "957",
+                "zin": "Als er een ongelukje gebeurt, pak je altijd even een schone onderbroek, oké?",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "958",
+                "zin": "één keer vegen, dubbel vouwen, nog een keer vegen. En dan weggooien en nog een keer. (situatie: tijdens afvegen)",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2223",
+                "zin": "Kom je mama helpen met de vaatwasser uitruimen?",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2226",
+                "zin": "Chlamydia kan behandeld worden met antibiotica.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2227",
+                "zin": "Chlamydia is een veelvoorkomende soa (seksueel overdraagbare aandoening) die veroorzaakt wordt door een bacterie.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2228",
+                "zin": "Koffie voor het slapen kan slapeloosheid veroorzaken",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2229",
+                "zin": "Slapeloosheid is moeite met in slaap vallen of doorslapen.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2230",
+                "zin": "Aandacht is het vermogen om je op iets te concentreren.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2231",
+                "zin": "Je moet dit medicijn met water innemen",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2232",
+                "zin": "De inname van dit medicijn moet 's ochtends gebeuren",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2233",
+                "zin": "Apotheker is iemand die medicijnen geeft en uitlegt hoe je ze moet gebruiken.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2234",
+                "zin": "Bijwerkingen zijn ongewenste effecten van medicijnen.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2235",
+                "zin": "Ik had buikpijn van te veel snoep.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2236",
+                "zin": "Capsules lossen op in je maag.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2237",
+                "zin": "Capsules zijn medicijnen die in een gelachtig omhulsel zitten dat je inslikt.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2238",
+                "zin": "Duizeligheid is het gevoel dat je bijna flauwvalt of dat alles draait.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2239",
+                "zin": "Na snel opstaan voelde ik duizeligheid.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2240",
+                "zin": "Hoofdpijn kan komen van te weinig slapen.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2241",
+                "zin": "Hoofdpijn is pijn in je hoofd.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2242",
+                "zin": "Impulsiviteit is iets doen zonder goed na te denken.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2243",
+                "zin": "Zijn impulsiviteit zorgde ervoor dat hij dingen kocht die hij niet nodig had",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2244",
+                "zin": "De inname van deze pil moet op een vast moment zijn.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2245",
+                "zin": "Inname is het slikken of gebruiken van medicijnen.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2246",
+                "zin": "Methylfenidaat helpt bij concentratieproblemen",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2247",
+                "zin": "Methylfenidaat is een medicijn dat helpt bij ADHD en narcolepsie. Het verbetert je concentratie en houdt je wakker. Soms wordt het ook gebruikt om vermoeidheid te verlichten bij mensen in de laatste fase van een ziekte.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2248",
+                "zin": "Misschien is het gevoel van twijfel of niet zeker weten over iets.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2249",
+                "zin": "Narcolepsie is een slaapstoornis waarbij je plotseling in slaap valt.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2250",
+                "zin": "Mensen met narcolepsie vallen overdag zomaar in slaap",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2251",
+                "zin": "Hij werd nerveus toen hij moest spreken voor de groep.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2252",
+                "zin": "Onrust is een gevoel van spanning of ongemak, vaak zonder duidelijk te weten waarom.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2253",
+                "zin": "De onrust in mijn buik maakte me ongemakkelijk",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2254",
+                "zin": "Rusteloosheid is het gevoel dat je niet stil kunt zitten of ontspannen",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "2255",
+                "zin": "Ik heb last van rusteloosheid als ik veel energie heb",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "4214",
+                "zin": "probeer je het zelf?",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "4215",
+                "zin": "Heb je genoeg gegeten?",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "4218",
+                "zin": "Daar is de handdoek",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "4219",
+                "zin": "Is het warm?",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "4222",
+                "zin": "De pasta is warm.",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "4223",
+                "zin": "Heb je genoeg gegeten?",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "4225",
+                "zin": "Je mag zelf je kleren uitzoeken",
+                "del": 0,
+                "in_list": false
+            },
+            {
+                "id": "5620",
+                "zin": "Kom maar lekker liggen, alles even goed doen.",
+                "del": 0,
+                "in_list": false
+            }
+        ]
+    }
+}

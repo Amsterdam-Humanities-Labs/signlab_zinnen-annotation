@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Sentence Videos — ZIN Project</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f5f6fa; }
+        .stat-card { border-radius: 12px; padding: 1.2rem; color: #fff; }
+        .stat-card.total { background: #3b82f6; }
+        .stat-card.ok { background: #22c55e; }
+        .stat-card.issues { background: #ef4444; }
+        .stat-card.errors { background: #f59e0b; }
+        .stat-card h2 { font-size: 2rem; font-weight: 700; margin: 0; }
+        .stat-card small { opacity: 0.85; }
+        .cam-cell { font-size: 0.82rem; line-height: 1.4; min-width: 200px; }
+        .cam-cell video { width: 100%; aspect-ratio: 1.15 / 1; object-fit: cover; border-radius: 6px; background: #000; }
+        .cam-cell .filename { color: #6b7280; font-family: monospace; font-size: 0.75rem; word-break: break-all; }
+        .cam-cell .dims { font-weight: 600; display: inline; }
+        .cam-cell .ratio-label { display: inline; margin-left: 8px; }
+        .ratio-ok { color: #16a34a; }
+        .ratio-bad { color: #dc2626; font-weight: 700; }
+        .ratio-err { color: #d97706; }
+        .border-badge { display: inline-block; background: #7c3aed; color: #fff; font-size: 0.7rem; font-weight: 600; padding: 1px 6px; border-radius: 4px; margin-top: 2px; }
+        .stat-card.borders { background: #7c3aed; }
+        #search { max-width: 400px; }
+        .table > tbody > tr > td { vertical-align: top; }
+        .pagination .page-link { cursor: pointer; }
+        .filter-btns .btn { font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid py-4 px-4">
+    <h1 class="mb-1">All Sentence Videos</h1>
+    <p class="text-muted mb-4">ZIN Project — Expected ratio <strong>1.15 : 1</strong> (w:h) per camera</p>
+
+    <div id="loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-3 text-muted">Loading all_videos.json...</p>
+    </div>
+
+    <div id="load-error" class="alert alert-danger d-none"></div>
+
+    <div id="content" class="d-none">
+        <!-- Stats -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-lg-3">
+                <div class="stat-card total">
+                    <small>Sentences</small>
+                    <h2 id="stat-sentences">—</h2>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card ok">
+                    <small>All OK</small>
+                    <h2 id="stat-ok">—</h2>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card issues">
+                    <small>Has Issues</small>
+                    <h2 id="stat-issues">—</h2>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card errors">
+                    <small>Has Errors</small>
+                    <h2 id="stat-errors">—</h2>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="stat-card borders">
+                    <small>Black Border</small>
+                    <h2 id="stat-borders">—</h2>
+                </div>
+            </div>
+        </div>
+
+        <p class="text-muted small" id="generated-at"></p>
+
+        <!-- Search & Filter -->
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <input type="text" id="search" class="form-control" placeholder="Search by sentence ID, text, or filename...">
+            <div class="filter-btns btn-group">
+                <button class="btn btn-outline-secondary btn-sm active" data-filter="all">All</button>
+                <button class="btn btn-outline-danger btn-sm" data-filter="issues">Issues only</button>
+                <button class="btn btn-outline-warning btn-sm" data-filter="errors">Errors only</button>
+                <button class="btn btn-sm" style="border-color:#7c3aed;color:#7c3aed" data-filter="borders">Black border</button>
+            </div>
+            <div class="text-muted small" id="showing-count"></div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:30px">#</th>
+                        <th style="width:50px">ID</th>
+                        <th>Sentence</th>
+                        <th style="width:25%">Left (L)</th>
+                        <th style="width:25%">Center (M)</th>
+                        <th style="width:25%">Right (R)</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+            </table>
+        </div>
+
+        <nav>
+            <ul class="pagination justify-content-center" id="pagination"></ul>
+        </nav>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const PER_PAGE = 20;
+let data = null;
+let borderLookup = {};  // filename -> {border_width_px, ...}
+let filtered = [];
+let currentPage = 1;
+let currentFilter = 'all';
+
+async function init() {
+    try {
+        const [resp, borderResp] = await Promise.all([
+            fetch('all_videos.json'),
+            fetch('black_border_issues.json').catch(() => null)
+        ]);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+        data = await resp.json();
+
+        // Load border data if available
+        if (borderResp && borderResp.ok) {
+            const borderData = await borderResp.json();
+            borderData.issues.forEach(i => { borderLookup[i.filename] = i; });
+        }
+
+        render();
+    } catch (e) {
+        document.getElementById('loading').classList.add('d-none');
+        const el = document.getElementById('load-error');
+        el.classList.remove('d-none');
+        el.textContent = `Failed to load all_videos.json: ${e.message}. Run check_dimensions.py first.`;
+    }
+}
+
+function sentenceHasBorder(s) {
+    return [s.left, s.center, s.right].some(c => c && borderLookup[c.filename?.replace('.mp4', '.jpg')]);
+}
+
+function sentenceStatus(s) {
+    const cams = [s.left, s.center, s.right];
+    if (cams.some(c => c && c.status === 'error')) return 'error';
+    if (cams.some(c => c && c.status === 'issue')) return 'issue';
+    return 'ok';
+}
+
+function render() {
+    document.getElementById('loading').classList.add('d-none');
+    document.getElementById('content').classList.remove('d-none');
+
+    let nOk = 0, nIssue = 0, nError = 0, nBorder = 0;
+    data.sentences.forEach(s => {
+        const st = sentenceStatus(s);
+        if (st === 'ok') nOk++;
+        else if (st === 'issue') nIssue++;
+        else nError++;
+        if (sentenceHasBorder(s)) nBorder++;
+    });
+
+    document.getElementById('stat-sentences').textContent = data.total_sentences.toLocaleString();
+    document.getElementById('stat-ok').textContent = nOk.toLocaleString();
+    document.getElementById('stat-issues').textContent = nIssue.toLocaleString();
+    document.getElementById('stat-errors').textContent = nError.toLocaleString();
+    document.getElementById('stat-borders').textContent = nBorder.toLocaleString();
+    document.getElementById('generated-at').textContent = `Generated: ${new Date(data.generated_at).toLocaleString()} | ${data.total_videos_checked} videos checked`;
+
+    filtered = data.sentences;
+    renderPage();
+
+    document.getElementById('search').addEventListener('input', applyFilters);
+    document.querySelectorAll('.filter-btns .btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btns .btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.dataset.filter;
+            applyFilters();
+        });
+    });
+}
+
+function applyFilters() {
+    const q = document.getElementById('search').value.trim().toLowerCase();
+    filtered = data.sentences.filter(s => {
+        if (q) {
+            const haystack = [
+                String(s.sentence_id),
+                s.zinString || '',
+                s.left?.filename || '',
+                s.center?.filename || '',
+                s.right?.filename || '',
+            ].join(' ').toLowerCase();
+            if (!haystack.includes(q)) return false;
+        }
+        if (currentFilter === 'issues') return sentenceStatus(s) === 'issue';
+        if (currentFilter === 'errors') return sentenceStatus(s) === 'error';
+        if (currentFilter === 'borders') return sentenceHasBorder(s);
+        return true;
+    });
+    currentPage = 1;
+    renderPage();
+}
+
+function camCell(cam) {
+    if (!cam) return '<td class="cam-cell text-muted">—</td>';
+
+    const statusClass = cam.status === 'ok' ? 'ratio-ok' : cam.status === 'error' ? 'ratio-err' : 'ratio-bad';
+    const dims = (cam.width && cam.height) ? `${cam.width}×${cam.height}` : '—';
+    const ratio = cam.ratio != null ? cam.ratio.toFixed(4) : '—';
+    const statusLabel = cam.status === 'ok' ? ratio : cam.status === 'error' ? (cam.error || 'err') : ratio;
+
+    const border = borderLookup[cam.filename.replace('.mp4', '.jpg')];
+    const borderTag = border ? `<span class="border-badge">border ${border.border_width_px}px</span>` : '';
+
+    return `<td class="cam-cell">
+        <video src="${esc(cam.video_url)}" muted loop preload="metadata"></video>
+        <div class="filename">${esc(cam.filename)}</div>
+        <div><span class="dims">${dims}</span><span class="ratio-label ${statusClass}">${statusLabel}</span></div>
+        ${borderTag}
+    </td>`;
+}
+
+function renderPage() {
+    const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    const start = (currentPage - 1) * PER_PAGE;
+    const page = filtered.slice(start, start + PER_PAGE);
+
+    document.getElementById('showing-count').textContent =
+        filtered.length ? `Showing ${start + 1}–${start + page.length} of ${filtered.length}` : 'No results';
+
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = '';
+    page.forEach((s, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="text-muted">${start + idx + 1}</td>
+            <td><strong>${s.sentence_id}</strong></td>
+            <td>${esc(s.zinString || '')}</td>
+            ${camCell(s.left)}
+            ${camCell(s.center)}
+            ${camCell(s.right)}
+        `;
+        // Autoplay all 3 videos on row hover
+        tr.addEventListener('mouseenter', () => {
+            tr.querySelectorAll('video').forEach(v => v.play().catch(() => {}));
+        });
+        tr.addEventListener('mouseleave', () => {
+            tr.querySelectorAll('video').forEach(v => { v.pause(); v.currentTime = 0; });
+        });
+        tbody.appendChild(tr);
+    });
+
+    renderPagination(totalPages);
+}
+
+function renderPagination(totalPages) {
+    const ul = document.getElementById('pagination');
+    ul.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    const add = (label, page, disabled, active) => {
+        const li = document.createElement('li');
+        li.className = `page-item${disabled ? ' disabled' : ''}${active ? ' active' : ''}`;
+        const a = document.createElement('a');
+        a.className = 'page-link';
+        a.textContent = label;
+        if (!disabled && !active) a.onclick = () => { currentPage = page; renderPage(); };
+        li.appendChild(a);
+        ul.appendChild(li);
+    };
+
+    add('«', 1, currentPage === 1);
+    add('‹', currentPage - 1, currentPage === 1);
+
+    let startP = Math.max(1, currentPage - 3);
+    let endP = Math.min(totalPages, currentPage + 3);
+    if (startP > 1) { add('1', 1); if (startP > 2) add('...', 0, true); }
+    for (let p = startP; p <= endP; p++) add(p, p, false, p === currentPage);
+    if (endP < totalPages) { if (endP < totalPages - 1) add('...', 0, true); add(totalPages, totalPages); }
+
+    add('›', currentPage + 1, currentPage === totalPages);
+    add('»', totalPages, currentPage === totalPages);
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,1887 @@
+{
+  "generated_at": "2026-02-25T07:25:00.116598+00:00",
+  "threshold": 5,
+  "total_checked": 13305,
+  "total_issues": 56,
+  "total_errors": 210,
+  "issues": [
+    {
+      "sentence_id": 425,
+      "zinString": "het is echt al bedtijd geweest nu.",
+      "camera": "right",
+      "filename": "R20241216_4571.jpg",
+      "video_url": "https://media.signcollect.nl/R20241216_4571.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20241216_4571.jpg",
+      "border_width_px": 44,
+      "image_width": 44,
+      "image_height": 1434
+    },
+    {
+      "sentence_id": 1374,
+      "zinString": "Pas op, niet te hoog klimmen.",
+      "camera": "center",
+      "filename": "M20250204_4119.jpg",
+      "video_url": "https://media.signcollect.nl/M20250204_4119.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/M20250204_4119.jpg",
+      "border_width_px": 7,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 1386,
+      "zinString": "Wat ben je hoog geklommen zeg!",
+      "camera": "center",
+      "filename": "M20250204_4257.jpg",
+      "video_url": "https://media.signcollect.nl/M20250204_4257.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/M20250204_4257.jpg",
+      "border_width_px": 45,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 1386,
+      "zinString": "Wat ben je hoog geklommen zeg!",
+      "camera": "right",
+      "filename": "R20250204_7865.jpg",
+      "video_url": "https://media.signcollect.nl/R20250204_7865.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20250204_7865.jpg",
+      "border_width_px": 2,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4968,
+      "zinString": "Wil je vertellen wat er is?",
+      "camera": "right",
+      "filename": "R20251209_1983.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1983.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1983.jpg",
+      "border_width_px": 20,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4969,
+      "zinString": "ben je alweer zo moe?",
+      "camera": "right",
+      "filename": "R20251209_1986.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1986.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1986.jpg",
+      "border_width_px": 25,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4970,
+      "zinString": "Ben je zo aan het lachen?",
+      "camera": "right",
+      "filename": "R20251209_1988.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1988.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1988.jpg",
+      "border_width_px": 17,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4971,
+      "zinString": "ben je zo blij om mama te zien?",
+      "camera": "right",
+      "filename": "R20251209_1989.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1989.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1989.jpg",
+      "border_width_px": 25,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4972,
+      "zinString": "Dadelijk mag je lekker naar bed.",
+      "camera": "right",
+      "filename": "R20251209_1990.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1990.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1990.jpg",
+      "border_width_px": 14,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4973,
+      "zinString": "Heb je zo'n leuke dag?",
+      "camera": "right",
+      "filename": "R20251209_1992.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1992.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1992.jpg",
+      "border_width_px": 18,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4973,
+      "zinString": "Heb je zo'n leuke dag?",
+      "camera": "right",
+      "filename": "R20251209_1993.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1993.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1993.jpg",
+      "border_width_px": 18,
+      "image_width": 1524,
+      "image_height": 1476
+    },
+    {
+      "sentence_id": 4974,
+      "zinString": "Heb jij er weer zin in?",
+      "camera": "right",
+      "filename": "R20251209_1995.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1995.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1995.jpg",
+      "border_width_px": 21,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4975,
+      "zinString": "Het valt toch wel mee?",
+      "camera": "right",
+      "filename": "R20251209_1996.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1996.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1996.jpg",
+      "border_width_px": 19,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4976,
+      "zinString": "Het valt wel mee.",
+      "camera": "right",
+      "filename": "R20251209_1997.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1997.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1997.jpg",
+      "border_width_px": 19,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4977,
+      "zinString": "ik ben zo blij met jou!",
+      "camera": "right",
+      "filename": "R20251209_1998.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1998.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1998.jpg",
+      "border_width_px": 15,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4978,
+      "zinString": "Ik vind het zo leuk om met jou te zijn.",
+      "camera": "right",
+      "filename": "R20251209_2001.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2001.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2001.jpg",
+      "border_width_px": 17,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4979,
+      "zinString": "Is het echt zo erg?",
+      "camera": "right",
+      "filename": "R20251209_2003.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2003.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2003.jpg",
+      "border_width_px": 24,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4980,
+      "zinString": "kijk, daar is papa weer, zo gezellig.",
+      "camera": "right",
+      "filename": "R20251209_2006.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2006.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2006.jpg",
+      "border_width_px": 16,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4981,
+      "zinString": "nou, mevrouwtje, zo erg is het allemaal niet.",
+      "camera": "right",
+      "filename": "R20251209_2007.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2007.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2007.jpg",
+      "border_width_px": 78,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4981,
+      "zinString": "nou, mevrouwtje, zo erg is het allemaal niet.",
+      "camera": "right",
+      "filename": "R20251209_2008.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2008.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2008.jpg",
+      "border_width_px": 28,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4983,
+      "zinString": "Oh, ben je een beetje chagrijnig?",
+      "camera": "right",
+      "filename": "R20251209_2011.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2011.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2011.jpg",
+      "border_width_px": 17,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4984,
+      "zinString": "oh, heb je alweer zo'n honger?",
+      "camera": "right",
+      "filename": "R20251209_2013.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2013.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2013.jpg",
+      "border_width_px": 21,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4985,
+      "zinString": "Papa gaat altijd bij jou blijven.",
+      "camera": "right",
+      "filename": "R20251209_2017.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2017.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2017.jpg",
+      "border_width_px": 26,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4986,
+      "zinString": "Denk je dat hij honden leuk vindt?",
+      "camera": "right",
+      "filename": "R20251209_2020.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2020.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2020.jpg",
+      "border_width_px": 22,
+      "image_width": 1528,
+      "image_height": 1474
+    },
+    {
+      "sentence_id": 4986,
+      "zinString": "Denk je dat hij honden leuk vindt?",
+      "camera": "right",
+      "filename": "R20251209_2023.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2023.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2023.jpg",
+      "border_width_px": 25,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4987,
+      "zinString": "Rustig maar, hier heb je aap. (knuffel)",
+      "camera": "right",
+      "filename": "R20251209_2024.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2024.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2024.jpg",
+      "border_width_px": 24,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4988,
+      "zinString": "schatje, toch.",
+      "camera": "right",
+      "filename": "R20251209_2026.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2026.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2026.jpg",
+      "border_width_px": 14,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4989,
+      "zinString": "Verveel je je?",
+      "camera": "right",
+      "filename": "R20251209_2027.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2027.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2027.jpg",
+      "border_width_px": 26,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4990,
+      "zinString": "Vrolijke meid.",
+      "camera": "right",
+      "filename": "R20251209_2028.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2028.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2028.jpg",
+      "border_width_px": 29,
+      "image_width": 1600,
+      "image_height": 1480
+    },
+    {
+      "sentence_id": 4991,
+      "zinString": "Ben je nog steeds kwaad?",
+      "camera": "right",
+      "filename": "R20251209_2029.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2029.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2029.jpg",
+      "border_width_px": 18,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4992,
+      "zinString": "Je kijkt verbaasd, is er iets?",
+      "camera": "right",
+      "filename": "R20251209_2033.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2033.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2033.jpg",
+      "border_width_px": 6,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4993,
+      "zinString": "Ah, dat kindje viel, dat is wel een beetje zielig hè.",
+      "camera": "right",
+      "filename": "R20251209_2034.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2034.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2034.jpg",
+      "border_width_px": 16,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 4994,
+      "zinString": "Dat was gemeen van dat kindje, hè?",
+      "camera": "right",
+      "filename": "R20251209_2035.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2035.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2035.jpg",
+      "border_width_px": 19,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 5217,
+      "zinString": "Kijk eens hoe lang je armen zijn!",
+      "camera": "right",
+      "filename": "R20260126_5831.jpg",
+      "video_url": "https://media.signcollect.nl/R20260126_5831.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20260126_5831.jpg",
+      "border_width_px": 14,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 5280,
+      "zinString": "De kapper knipt de puntjes eraf.",
+      "camera": "center",
+      "filename": "M20260126_1838.jpg",
+      "video_url": "https://media.signcollect.nl/M20260126_1838.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/M20260126_1838.jpg",
+      "border_width_px": 5,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 5280,
+      "zinString": "De kapper knipt de puntjes eraf.",
+      "camera": "right",
+      "filename": "R20260126_6058.jpg",
+      "video_url": "https://media.signcollect.nl/R20260126_6058.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20260126_6058.jpg",
+      "border_width_px": 26,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 5321,
+      "zinString": "Het is vandaag kerstavond.",
+      "camera": "right",
+      "filename": "R20251209_1962.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1962.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1962.jpg",
+      "border_width_px": 17,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 5322,
+      "zinString": "Papa en mama gaan vanavond naar de kerk.",
+      "camera": "right",
+      "filename": "R20251209_1963.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1963.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1963.jpg",
+      "border_width_px": 2,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 5325,
+      "zinString": "Je mag vanavond in je pyjama blijven.",
+      "camera": "right",
+      "filename": "R20251209_1968.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1968.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1968.jpg",
+      "border_width_px": 14,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 5326,
+      "zinString": "Het is kerst.",
+      "camera": "right",
+      "filename": "R20251209_1970.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1970.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1970.jpg",
+      "border_width_px": 17,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 5327,
+      "zinString": "Zullen we een kerstfilm kijken?",
+      "camera": "right",
+      "filename": "R20251209_1971.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1971.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1971.jpg",
+      "border_width_px": 10,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 5328,
+      "zinString": "Er is sneeuw! Zullen we buiten spelen?",
+      "camera": "right",
+      "filename": "R20251209_1972.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1972.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1972.jpg",
+      "border_width_px": 17,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 5330,
+      "zinString": "Kijk, overal hangen lampjes.",
+      "camera": "right",
+      "filename": "R20251209_1973.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1973.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1973.jpg",
+      "border_width_px": 14,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 5332,
+      "zinString": "We gaan een kerstkaart maken voor oma en opa.",
+      "camera": "right",
+      "filename": "R20251209_1975.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1975.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1975.jpg",
+      "border_width_px": 16,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 5333,
+      "zinString": "Zal ik de kaarsjes aansteken?",
+      "camera": "right",
+      "filename": "R20251209_1979.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1979.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1979.jpg",
+      "border_width_px": 19,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 5334,
+      "zinString": "Wil je een tekening maken op de kerstkaart?",
+      "camera": "right",
+      "filename": "R20251209_1980.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1980.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1980.jpg",
+      "border_width_px": 16,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 5335,
+      "zinString": "Zullen we een kerstliedje zingen?",
+      "camera": "right",
+      "filename": "R20251209_1982.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_1982.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_1982.jpg",
+      "border_width_px": 18,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 5622,
+      "zinString": "oh zon, felle zon.",
+      "camera": "right",
+      "filename": "R20251209_2054.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2054.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2054.jpg",
+      "border_width_px": 22,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 5628,
+      "zinString": "We gaan een wandeling maken.",
+      "camera": "right",
+      "filename": "R20251209_2062.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2062.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2062.jpg",
+      "border_width_px": 9,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 5629,
+      "zinString": "we gaan even naar de supermarkt.",
+      "camera": "right",
+      "filename": "R20251209_2066.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2066.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2066.jpg",
+      "border_width_px": 9,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 5630,
+      "zinString": "zie je de blauwe lucht?",
+      "camera": "right",
+      "filename": "R20251209_2068.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2068.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2068.jpg",
+      "border_width_px": 6,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 5631,
+      "zinString": "Zo, dekentje eroverheen.",
+      "camera": "right",
+      "filename": "R20251209_2069.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2069.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2069.jpg",
+      "border_width_px": 5,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 5673,
+      "zinString": "Daarom slachten mensen nu een dier met het Offerfeest.",
+      "camera": "right",
+      "filename": "R20260204_7352.jpg",
+      "video_url": "https://media.signcollect.nl/R20260204_7352.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20260204_7352.jpg",
+      "border_width_px": 13,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 6097,
+      "zinString": "Kijk, allemaal lekker eten voor het feest!",
+      "camera": "right",
+      "filename": "R20251209_2083.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2083.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2083.jpg",
+      "border_width_px": 7,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 6099,
+      "zinString": "Kijk, mooie versieringen speciaal voor het feest.",
+      "camera": "right",
+      "filename": "R20251209_2090.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2090.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2090.jpg",
+      "border_width_px": 13,
+      "image_width": 1440,
+      "image_height": 1252
+    },
+    {
+      "sentence_id": 6106,
+      "zinString": "We zeggen 'Eid Mubarak' tegen elkaar.",
+      "camera": "right",
+      "filename": "R20251209_2104.jpg",
+      "video_url": "https://media.signcollect.nl/R20251209_2104.mp4",
+      "thumbnail_url": "https://media.signcollect.nl/R20251209_2104.jpg",
+      "border_width_px": 22,
+      "image_width": 1440,
+      "image_height": 1252
+    }
+  ],
+  "errors": [
+    {
+      "type": "error",
+      "sentence_id": 1,
+      "filename": "M20260224_5425.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 1,
+      "filename": "R20260224_9647.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 345,
+      "filename": "R20241216_4519.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 346,
+      "filename": "R20241216_4520.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 348,
+      "filename": "R20241216_4523.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 363,
+      "filename": "R20241216_4537.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 365,
+      "filename": "R20241216_4539.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 365,
+      "filename": "R20241216_4540.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 371,
+      "filename": "R20241216_4542.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 372,
+      "filename": "R20241216_4543.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 390,
+      "filename": "R20241216_4554.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 391,
+      "filename": "R20241216_4555.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 403,
+      "filename": "R20241216_4561.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 404,
+      "filename": "R20241216_4562.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 406,
+      "filename": "R20241216_4564.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 411,
+      "filename": "R20241216_4566.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 412,
+      "filename": "R20241216_4567.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 427,
+      "filename": "R20241216_4573.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 428,
+      "filename": "R20241216_4575.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 430,
+      "filename": "R20241216_4578.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 431,
+      "filename": "R20241216_4579.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 432,
+      "filename": "R20241216_4582.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 435,
+      "filename": "R20241216_4583.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 435,
+      "filename": "R20241216_4584.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 436,
+      "filename": "R20241216_4585.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 459,
+      "filename": "R20241216_4589.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 464,
+      "filename": "R20241216_4596.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 466,
+      "filename": "R20241216_4598.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 467,
+      "filename": "R20241216_4600.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 468,
+      "filename": "R20241216_4602.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 469,
+      "filename": "R20241216_4603.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 470,
+      "filename": "R20241216_4604.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 475,
+      "filename": "R20241216_4609.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 476,
+      "filename": "R20241216_4611.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 487,
+      "filename": "R20241216_4612.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 488,
+      "filename": "R20241216_4613.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 492,
+      "filename": "R20241216_4621.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 493,
+      "filename": "R20241216_4622.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 493,
+      "filename": "R20241216_4623.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 494,
+      "filename": "R20241216_4625.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 494,
+      "filename": "R20241216_4626.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 495,
+      "filename": "R20241216_4627.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 496,
+      "filename": "R20241216_4628.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 512,
+      "filename": "R20241216_4640.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 523,
+      "filename": "R20241216_4643.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 526,
+      "filename": "R20241216_4646.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 527,
+      "filename": "R20241216_4648.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 528,
+      "filename": "R20241216_4649.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 531,
+      "filename": "R20241216_4653.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 1085,
+      "filename": "R20241216_4655.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 1088,
+      "filename": "R20241216_4658.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 1089,
+      "filename": "R20241216_4659.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 1095,
+      "filename": "R20241216_4667.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 1095,
+      "filename": "R20241216_4668.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 1096,
+      "filename": "R20241216_4670.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 1099,
+      "filename": "R20241216_4673.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 1100,
+      "filename": "R20241216_4675.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 1100,
+      "filename": "R20241216_4676.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 1101,
+      "filename": "R20241216_4678.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 1103,
+      "filename": "R20241216_4681.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 1104,
+      "filename": "R20241216_4682.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 1104,
+      "filename": "R20241216_4683.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 1107,
+      "filename": "R20241216_4686.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 1109,
+      "filename": "R20241216_4692.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 1926,
+      "filename": "M20260224_5441.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 1926,
+      "filename": "R20260224_9663.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2009,
+      "filename": "R20241216_4693.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2012,
+      "filename": "R20241216_4697.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2017,
+      "filename": "R20241216_4704.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2019,
+      "filename": "R20241216_4706.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2020,
+      "filename": "R20241216_4707.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2327,
+      "filename": "M20250428_7753.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2327,
+      "filename": "R20250428_1359.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2327,
+      "filename": "M20260224_5431.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2327,
+      "filename": "R20260224_9653.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2327,
+      "filename": "L20250428_8730.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "M20250429_7901.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "L20250429_8878.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "R20250429_1507.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "M20250429_7902.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "L20250429_8880.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "R20250429_1508.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "R20250429_1509.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "L20250429_8881.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "M20250429_7904.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "R20250429_1510.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "L20250429_8882.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "M20250429_7905.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "R20250429_1511.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "L20250429_8879.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "M20250429_7906.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "R20250429_1512.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "L20250429_8883.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "M20260224_5432.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "R20260224_9654.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "M20260224_5433.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "R20260224_9655.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "M20250429_7903.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "M20260224_5434.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2359,
+      "filename": "R20260224_9656.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2379,
+      "filename": "M20260224_5435.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2379,
+      "filename": "R20260224_9658.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2379,
+      "filename": "M20260224_5436.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2379,
+      "filename": "R20260224_9657.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2382,
+      "filename": "M20260224_5437.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 2382,
+      "filename": "R20260224_9659.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4237,
+      "filename": "M20260224_5428.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4237,
+      "filename": "R20260224_9650.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4237,
+      "filename": "M20260224_5429.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4237,
+      "filename": "R20260224_9651.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4237,
+      "filename": "M20260224_5430.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4237,
+      "filename": "R20260224_9652.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4238,
+      "filename": "M20260224_5426.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4238,
+      "filename": "R20260224_9648.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4238,
+      "filename": "M20260224_5427.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4238,
+      "filename": "R20260224_9649.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4404,
+      "filename": "R20260224_9675.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4404,
+      "filename": "M20260224_5453.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4420,
+      "filename": "M20260224_5424.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4420,
+      "filename": "R20260224_9646.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4422,
+      "filename": "M20260224_5423.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4422,
+      "filename": "R20260224_9645.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4426,
+      "filename": "M20260224_5420.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4426,
+      "filename": "R20260224_9642.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4426,
+      "filename": "M20260224_5421.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4426,
+      "filename": "R20260224_9643.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4426,
+      "filename": "M20260224_5422.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4426,
+      "filename": "R20260224_9644.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4429,
+      "filename": "M20260224_5419.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4429,
+      "filename": "R20260224_9641.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4432,
+      "filename": "M20260224_5417.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4432,
+      "filename": "R20260224_9639.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4432,
+      "filename": "M20260224_5418.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4432,
+      "filename": "R20260224_9640.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4450,
+      "filename": "M20260224_5416.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4450,
+      "filename": "R20260224_9638.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4450,
+      "filename": "M20260224_5415.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4450,
+      "filename": "R20260224_9637.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4632,
+      "filename": "M20260224_5411.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4632,
+      "filename": "M20260224_5413.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4632,
+      "filename": "R20260224_9635.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4632,
+      "filename": "R20260224_9636.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4632,
+      "filename": "M20260224_5414.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4632,
+      "filename": "R20260224_9633.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4632,
+      "filename": "R20260224_9634.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4632,
+      "filename": "M20260224_5412.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4639,
+      "filename": "M20260224_5410.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4639,
+      "filename": "R20260224_9632.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4729,
+      "filename": "M20260224_5407.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4729,
+      "filename": "M20260224_5408.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4729,
+      "filename": "R20260224_9630.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4729,
+      "filename": "M20260224_5409.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4729,
+      "filename": "R20260224_9631.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4729,
+      "filename": "R20260224_9629.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4730,
+      "filename": "M20260224_5405.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4730,
+      "filename": "R20260224_9627.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4730,
+      "filename": "M20260224_5404.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4730,
+      "filename": "R20260224_9626.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4730,
+      "filename": "M20260224_5406.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4730,
+      "filename": "R20260224_9628.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4741,
+      "filename": "M20260224_5401.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4741,
+      "filename": "R20260224_9623.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4741,
+      "filename": "M20260224_5403.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4741,
+      "filename": "R20260224_9625.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4741,
+      "filename": "M20260224_5402.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4741,
+      "filename": "R20260224_9624.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4742,
+      "filename": "M20260224_5400.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 4742,
+      "filename": "R20260224_9622.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6295,
+      "filename": "M20260224_5450.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6295,
+      "filename": "R20260224_9672.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6295,
+      "filename": "M20260224_5451.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6295,
+      "filename": "R20260224_9673.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6295,
+      "filename": "M20260224_5452.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6295,
+      "filename": "R20260224_9674.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6297,
+      "filename": "M20260224_5449.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6297,
+      "filename": "R20260224_9671.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6297,
+      "filename": "M20260224_5448.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6297,
+      "filename": "R20260224_9670.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6299,
+      "filename": "M20260224_5442.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6299,
+      "filename": "R20260224_9664.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6299,
+      "filename": "M20260224_5443.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6299,
+      "filename": "R20260224_9665.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6299,
+      "filename": "M20260224_5444.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6299,
+      "filename": "R20260224_9666.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6299,
+      "filename": "R20260224_9668.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6299,
+      "filename": "M20260224_5446.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6299,
+      "filename": "M20260224_5445.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6299,
+      "filename": "R20260224_9667.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6299,
+      "filename": "M20260224_5447.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6299,
+      "filename": "R20260224_9669.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6302,
+      "filename": "M20260224_5393.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6302,
+      "filename": "R20260224_9615.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6303,
+      "filename": "M20260224_5395.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6303,
+      "filename": "R20260224_9617.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6302,
+      "filename": "R20260224_9616.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6302,
+      "filename": "M20260224_5394.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6304,
+      "filename": "R20260224_9618.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6304,
+      "filename": "M20260224_5399.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6304,
+      "filename": "R20260224_9621.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6304,
+      "filename": "M20260224_5396.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6304,
+      "filename": "M20260224_5397.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6304,
+      "filename": "R20260224_9619.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6304,
+      "filename": "M20260224_5398.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6304,
+      "filename": "R20260224_9620.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6400,
+      "filename": "M20260224_5440.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6400,
+      "filename": "R20260224_9662.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6408,
+      "filename": "M20260224_5438.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6408,
+      "filename": "R20260224_9660.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6408,
+      "filename": "M20260224_5439.jpg",
+      "error": "file not found"
+    },
+    {
+      "type": "error",
+      "sentence_id": 6408,
+      "filename": "R20260224_9661.jpg",
+      "error": "file not found"
+    }
+  ]
+}

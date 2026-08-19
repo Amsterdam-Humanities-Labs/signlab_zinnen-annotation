@@ -1,0 +1,3874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>3D Annotation Editor - Improved UI</title>
+  <!-- Babylon.js dependencies - using latest CDN (versioned URLs not available) -->
+  <script src="https://cdn.babylonjs.com/babylon.js"></script>
+  <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+  <style>
+    /* CSS Custom Properties for easy customization */
+    :root {
+      --tier-height: 100px;
+      --dropdown-max-height: 350px;
+      --dropdown-min-width: 280px;
+      --dropdown-max-width: 400px;
+      --canvas-max-width: 1200px;
+      --canvas-min-width: 600px;
+      --touch-target-min: 48px;
+      --tier-0-color: #e3f2fd;
+      --tier-1-color: #fff3e0;
+      --tier-2-color: #e8f5e9;
+      --drag-handle-height: 16px;
+      --resize-handle-width: 10px;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .middle-bar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      margin: 1em;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+    .canvas-container {
+      position: relative;
+      width: 100%;
+    }
+    #renderCanvas {
+      width: 100%;
+      max-width: var(--canvas-max-width);
+      min-width: var(--canvas-min-width);
+      height: auto;
+      aspect-ratio: 16/9;
+      touch-action: none;
+      border: 1px solid #ccc;
+      display: block;
+      margin: 0 auto;
+    }
+    #glossPreviewContainer {
+      z-index: 2000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      background: black;
+    }
+    .control-buttons {
+      margin-top: 10px;
+    }
+    .bottom-bar {
+      display: flex;
+      flex-direction: column;
+    }
+    .add-bar {
+      padding: 5px;
+      background: #f3f3f3;
+    }
+    .timeline-container {
+      position: relative;
+      background: #f5f5f5;
+      overflow: auto;
+      overflow-x: hidden;
+      width: 100%;
+      box-sizing: border-box;
+      min-height: calc(var(--tier-height) * 3 + 100px);  /* extra bottom room so Zoeken/Suggesties panels aren't clipped */
+    }
+    .timeline-track {
+      position: relative;
+      min-height: calc(var(--tier-height) * 3);
+    }
+    .subtitle-box {
+      position: absolute;
+      background-color: rgba(255,255,255,0.95);
+      box-sizing: border-box;
+      border: 2px solid #666;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: box-shadow 0.2s;
+    }
+    .subtitle-box.selected-sub {
+      outline: 3px solid #00e0ff;
+      box-shadow: 0 0 8px 2px rgba(0, 224, 255, 0.8);
+      z-index: 1006 !important;
+    }
+    .subtitle-box:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 1010 !important;
+    }
+    .subtitle-box .drag-handle {
+      background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+      height: var(--drag-handle-height);
+      cursor: move;
+      border-radius: 2px 2px 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .subtitle-box .drag-handle::after {
+      content: '⋮⋮';
+      color: rgba(255,255,255,0.7);
+      font-size: 10px;
+      letter-spacing: 2px;
+    }
+    .subtitle-box .content {
+      padding: 6px 8px;
+      height: calc(100% - var(--drag-handle-height));
+      overflow: hidden;
+      color: #333;
+      background-color: transparent;
+      font-size: 13px;
+      line-height: 1.3;
+    }
+    .subtitle-box .content:focus {
+      outline: 3px solid #6faaff;
+      color: #000;
+      background-color: #fff;
+      border-radius: 0 0 2px 2px;
+    }
+    .resize-handle {
+      position: absolute;
+      top: 0;
+      width: var(--resize-handle-width);
+      height: 100%;
+      background: linear-gradient(90deg, transparent 0%, rgba(102,126,234,0.5) 50%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .subtitle-box:hover .resize-handle {
+      opacity: 1;
+    }
+    .resize-handle.left {
+      left: calc(var(--resize-handle-width) / -2);
+      cursor: w-resize;
+    }
+    .resize-handle.right {
+      right: calc(var(--resize-handle-width) / -2);
+      cursor: e-resize;
+    }
+    #timelineAddBtn {
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 2px 6px;
+      cursor: pointer;
+      position: absolute;
+      z-index: 1000;
+    }
+    #pendingPreviewDiv {
+      position: absolute;
+      border: 2px dashed red;
+      background-color: rgba(0,0,255,0.2);
+      pointer-events: none;
+      z-index: 10000;
+      display: none;
+    }
+    .headRow{
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      width: 100%;
+    }
+    .headCol {
+      flex: 1 1 auto;
+      max-width: var(--canvas-max-width);
+      min-width: var(--canvas-min-width);
+      position: relative;
+    }
+    .row{
+      flex-wrap: wrap !important;
+    }
+    #videoSubtitleOverlay{
+      height: 24px;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 2px 10px;
+      background: rgba(0,0,0,0.05);
+      border-radius: 4px;
+    }
+    /* Tier background colors */
+    .tier-label.tier-0 { background-color: var(--tier-0-color) !important; }
+    .tier-label.tier-1 { background-color: var(--tier-1-color) !important; }
+    .tier-label.tier-2 { background-color: var(--tier-2-color) !important; }
+    /* Side canvas styles for start/end frame preview — shown as insets over the
+       top corners of the 3D view so they are always visible regardless of window width */
+    #canvasLeft, #canvasRight {
+      position: absolute;
+      top: 8px;
+      width: 26%;
+      max-width: 280px;
+      height: auto;
+      aspect-ratio: 1 / 1;   /* square so both previews fit on screen */
+      border: 2px solid #00e0ff;
+      border-radius: 4px;
+      display: none;
+      z-index: 20;
+      background: #000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.45);
+    }
+    #canvasLeft  { left: 8px;  transform: none; }
+    #canvasRight { right: 8px; transform: none; }
+    .side-cap {
+      position: absolute;
+      top: 12px;
+      z-index: 21;
+      display: none;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      background: rgba(0,0,0,0.65);
+      padding: 1px 6px;
+      border-radius: 3px;
+      pointer-events: none;
+    }
+    .side-cap.left  { left: 14px; }
+    .side-cap.right { right: 14px; }
+    .delBtn{
+      z-index: 10000 !important;
+      padding: 4px 10px;
+      font-size: 14px;
+      font-weight: bold;
+      min-width: 32px;
+      min-height: 32px;
+    }
+    /* Force subtitle dropdown buttons to stay horizontal when visible */
+    .subtitle-dropdown {
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255,255,255,0.95);
+      padding: 4px 6px;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .subtitle-dropdown button {
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .glossary-dropdown {
+        box-sizing: border-box;
+        min-width: var(--dropdown-min-width);
+        max-width: var(--dropdown-max-width);
+        max-height: var(--dropdown-max-height);
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    /* Smart positioning classes */
+    .glossary-dropdown.flip-left {
+        left: auto !important;
+        right: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 10px !important;
+    }
+    .glossary-dropdown.flip-up {
+        top: auto !important;
+        bottom: 50% !important;
+        transform: translateY(50%) !important;
+    }
+    .glossary-item {
+        padding: 12px 16px;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background-color 0.15s, transform 0.1s;
+        min-height: var(--touch-target-min);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .glossary-item:hover {
+        background-color: #e3f2fd;
+        transform: translateX(2px);
+    }
+    .glossary-item:active {
+        background-color: #bbdefb;
+    }
+    .glossary-item:last-child {
+        border-bottom: none;
+    }
+    .glossary-dropdown::-webkit-scrollbar {
+        width: 10px;
+    }
+    .glossary-dropdown::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 0 8px 8px 0;
+    }
+    .glossary-dropdown::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 5px;
+        border: 2px solid #f1f1f1;
+    }
+    .glossary-dropdown::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    .speedGroup{
+      display: flex !important;
+    }
+    #customScrollbar {
+      height: 20px;
+      overflow-x: scroll;
+      overflow-y: hidden;
+      width: 100%;
+      background: #f1f1f1;
+      z-index: 10001;
+      position: relative;
+    }
+    #customScrollbarContent {
+      height: 1px;
+    }
+    #customScrollbar::-webkit-scrollbar {
+      height: 12px;
+    }
+    #customScrollbar::-webkit-scrollbar-track {
+      background: #e0e0e0;
+      border-radius: 10px;
+    }
+    #customScrollbar::-webkit-scrollbar-thumb {
+      background-color: red;
+      border-radius: 10px;
+      border: 3px solid #e0e0e0;
+    }
+    #customScrollbar::-webkit-scrollbar-thumb:hover {
+      background-color: #cc0000;
+    }
+    /* New: Dedicated container for Signbank video preview */
+    #signbankPreviewContainer {
+      position: fixed;
+      top: 50px;
+      right: 20px;
+      width: 350px;
+      z-index: 9999;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      background: black;
+      border-radius: 8px;
+      display: none;
+    }
+
+    /* Control bar improvements */
+    .control-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px;
+    }
+    .control-buttons .btn {
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .control-buttons .btn-group {
+      flex-wrap: nowrap;
+    }
+    /* Tooltips for keyboard shortcuts */
+    .btn[title] {
+      position: relative;
+    }
+    .btn[data-shortcut]::after {
+      content: attr(data-shortcut);
+      position: absolute;
+      bottom: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      color: #666;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .btn[data-shortcut]:hover::after {
+      opacity: 1;
+    }
+
+    /* Extra row (Zoeken filters) improvements */
+    .row.extra-row,
+    .subtitle-box .row {
+      min-width: var(--dropdown-min-width);
+      max-width: 500px;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    .row.extra-row.flip-left,
+    .subtitle-box .row.flip-left {
+      left: auto !important;
+      right: 100% !important;
+      margin-left: 0 !important;
+      margin-right: 10px !important;
+    }
+    .additional-dropdowns select {
+      padding: 8px 12px;
+      margin: 4px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      font-size: 12px;
+      min-height: 36px;
+      cursor: pointer;
+    }
+    .additional-dropdowns select:hover {
+      border-color: #007bff;
+    }
+    .additional-dropdowns select:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+    }
+
+    /* Responsive Media Queries */
+    @media (max-width: 1400px) {
+      :root {
+        --canvas-max-width: 900px;
+        --tier-height: 90px;
+      }
+      .headCol {
+        min-width: 500px;
+      }
+      .control-buttons .btn {
+        font-size: 13px;
+        padding: 6px 10px;
+      }
+    }
+
+    @media (max-width: 1000px) {
+      :root {
+        --canvas-max-width: 700px;
+        --canvas-min-width: 400px;
+        --tier-height: 85px;
+      }
+      .headCol {
+        min-width: 100%;
+      }
+      .control-buttons {
+        gap: 5px;
+      }
+      .speedGroup {
+        flex-wrap: wrap;
+      }
+      .add-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        justify-content: center;
+      }
+      .add-bar span {
+        width: 100%;
+        text-align: center;
+        font-size: 12px;
+      }
+      /* Smaller video preview on smaller screens */
+      #signbankPreviewContainer {
+        top: auto;
+        bottom: 80px;
+        width: 250px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      :root {
+        --tier-height: 80px;
+        --dropdown-max-height: 250px;
+      }
+      .control-buttons .btn-group {
+        width: 100%;
+        justify-content: center;
+      }
+      .speedGroup .btn {
+        flex: 1;
+        font-size: 11px;
+        padding: 4px 6px;
+      }
+    }
+  #toast-container {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .toast-msg {
+    background: #323232;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    opacity: 0;
+    transform: translateX(40px);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+  }
+  .toast-msg.show {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  .toast-msg.success { background: #2e7d32; }
+  .toast-msg.error { background: #c62828; }
+  </style>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div id="toast-container"></div>
+
+  <!-- Canvas Preview and Controls -->
+  <div class="middle-bar container text-center my-3">
+    <div id="zinDisplay" style="font-size: 1.2em; margin-bottom: 10px; font-weight: bold;">Load a GLB animation...</div>
+    <div class="headRow">
+      <div class="headCol">
+        <!-- Side canvases for start/end frame preview -->
+        <canvas id="canvasLeft"></canvas>
+        <div id="capLeft" class="side-cap left">Start</div>
+        <!-- Babylon.js render canvas -->
+        <canvas id="renderCanvas"></canvas>
+        <canvas id="canvasRight"></canvas>
+        <div id="capRight" class="side-cap right">Einde</div>
+        <!-- Signbank video preview container -->
+        <div id="signbankPreviewContainer"></div>
+      </div>
+      <div class="col-md-6" style="width:500px;">
+        <div id="glossPreviewContainer"></div>
+      </div>
+    </div>
+    <div id="videoTimeDisplay" style="margin-top:5px; font-weight:bold;">0.00</div>
+    <div id="videoSubtitleOverlay">.</div>
+
+    <div class="control-buttons mt-2">
+      <button id="playBtn" class="btn btn-success">(P) Play</button>
+      <button id="backToZinnenBtn" class="btn btn-info ml-2">Go back to Zinnen</button>
+
+      <div class="btn-group ml-2 speedGroup" role="group" aria-label="Playback Speed">
+        <button type="button" class="btn btn-secondary speed-btn" data-speed="0.25">0.25x (1)</button>
+        <button type="button" class="btn btn-secondary speed-btn" data-speed="0.5">0.5x (2)</button>
+        <button type="button" class="btn btn-secondary speed-btn" data-speed="0.75">0.75x (3)</button>
+        <button type="button" class="btn btn-secondary speed-btn active" data-speed="1">Normal (4)</button>
+      </div>
+
+      <div class="btn-group ml-2 zoomGroup" role="group" aria-label="Timeline Zoom">
+        <button type="button" class="btn btn-secondary zoom-btn" id="zoomOutBtn">-</button>
+        <button type="button" class="btn btn-secondary zoom-btn" id="zoomInBtn">+</button>
+      </div>
+
+      <div class="btn-group ml-2" role="group" aria-label="Shift All Subtitles">
+        <button type="button" class="btn btn-warning" id="shiftAllMinus1">-1s</button>
+        <button type="button" class="btn btn-warning" id="shiftAllMinus01">-0.1s</button>
+        <button type="button" class="btn btn-warning" id="shiftAllPlus01">+0.1s</button>
+        <button type="button" class="btn btn-warning" id="shiftAllPlus1">+1s</button>
+      </div>
+
+      <div class="btn-group ml-2" role="group" aria-label="Camera Focus">
+        <button type="button" class="btn btn-outline-primary" id="focusHandLeftBtn" title="Lock camera on left hand">Hand L</button>
+        <button type="button" class="btn btn-outline-primary" id="focusHandRightBtn" title="Lock camera on right hand">Hand R</button>
+        <button type="button" class="btn btn-outline-secondary" id="resetFocusBtn" title="Reset camera to avatar">Reset view</button>
+      </div>
+
+      <div class="btn-group ml-2 align-items-center" role="group" aria-label="Backdrop Colour">
+        <span id="backdropSwatches" style="display:inline-flex; gap:3px; align-items:center;"></span>
+        <input type="color" id="backdropColorInput" value="#36383b" title="Backdrop colour"
+               style="width:32px; height:32px; padding:0; border:1px solid #ccc; background:none; cursor:pointer; margin-left:3px;">
+      </div>
+    </div>
+
+    <!-- MCP motion-capture status dropdowns (persist to the sentences table) -->
+    <div id="mcpStatusBar" class="mt-2" style="display:flex; flex-wrap:wrap; justify-content:center; gap:14px; align-items:center;">
+      <label style="margin:0; font-size:12px;">MCP - Status Postprocessing:
+        <select id="mcpStatusPostprocessing" class="form-control form-control-sm" style="display:inline; width:auto; font-size:12px; padding:1px 6px;">
+          <option value="Niet Klaar">Niet Klaar</option>
+          <option value="Klaar">Klaar</option>
+          <option value="Check nodig">Check nodig</option>
+        </select>
+      </label>
+      <label style="margin:0; font-size:12px;">MCP - Status Tijd Annotatie Gloss:
+        <select id="mcpStatusTijdAnnotatie" class="form-control form-control-sm" style="display:inline; width:auto; font-size:12px; padding:1px 6px;">
+          <option value="">Leeg</option>
+          <option value="Niet Klaar">Niet Klaar</option>
+          <option value="Klaar">Klaar</option>
+          <option value="Controle nodig">Controle nodig</option>
+        </select>
+      </label>
+      <label style="margin:0; font-size:12px;">MCP - Status Tijd annotatie Gebaar voor Gebaar/Nederlands:
+        <select id="mcpStatusTijdAnnotatieGvg" class="form-control form-control-sm" style="display:inline; width:auto; font-size:12px; padding:1px 6px;">
+          <option value="">Leeg</option>
+          <option value="Niet Klaar">Niet Klaar</option>
+          <option value="Klaar">Klaar</option>
+          <option value="Controle nodig">Controle nodig</option>
+        </select>
+      </label>
+    </div>
+  </div>
+
+
+  <!-- Timeline and Buttons -->
+  <div class="bottom-bar">
+    <div class="add-bar mb-2">
+      <input type="file" id="glbFileInput" accept=".glb,.gltf" style="display:none">
+      <button id="loadGLBBtn" class="btn btn-secondary">Load GLB</button>
+      <button id="addSubtitleBtn" class="btn btn-primary">+ Add Subtitle</button>
+      <button id="downloadSubtitleBtn" class="btn btn-info">Download Subtitles</button>
+      <button id="saveSubtitlesBtn" class="btn btn-success">Autosave Enabled</button>
+      <button id="toggleAutoloopBtn" class="btn btn-warning">Disable Autoloop</button>
+      <button id="autoSegBtn" class="btn btn-dark ml-2" title="Re-segment the recorded video with VJEPA and re-time the Signbank ID glossen tier to match">Auto-Segment</button>
+      <button id="autoSeg2DBtn" class="btn btn-dark" title="Re-segment the 2D studio video (razer RIGHT stream) with VJEPA, align it to the animation timeline and re-time the Signbank ID glossen tier">Auto-Segment 2D</button>
+      <button id="revertAutoSegBtn" class="btn btn-outline-dark" title="Restore the Signbank ID glossen timings from before Auto-Segment" disabled>Revert Autoseg</button>
+      <button id="view2DBtn" class="btn btn-outline-dark" title="Open the 2D studio video (razer RIGHT stream) in a new tab">View 2D Video</button>
+      <button id="keyboardControlsBtn" class="btn btn-outline-secondary ml-2" data-toggle="modal" data-target="#keyboardControlsModal">⌨ Keyboard Controls</button>
+      <span class="ml-2">Click a gloss to select; drag handle to move; edges to resize; double-click to edit.</span>
+    </div>
+
+    <!-- Keyboard Controls Help Modal -->
+    <div class="modal fade" id="keyboardControlsModal" tabindex="-1" role="dialog" aria-labelledby="keyboardControlsModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header bg-info text-white">
+            <h5 class="modal-title" id="keyboardControlsModalLabel">⌨ Keyboard Controls</h5>
+            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <p><strong>Select a gloss</strong> — single-click it or press <kbd>Tab</kbd> (it gets a cyan outline). <strong>Double-click</strong> (or press <kbd>Enter</kbd>) to edit its text; press <kbd>Esc</kbd> or <kbd>Enter</kbd> to stop editing.</p>
+            <table class="table table-sm table-bordered">
+              <thead><tr><th>Keys</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr><td><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd></td><td>Next / previous gloss (same tier)</td></tr>
+                <tr><td><kbd>Double-click</kbd> / <kbd>Enter</kbd></td><td>Edit the selected gloss's text</td></tr>
+                <tr><td><kbd>Esc</kbd> / <kbd>Enter</kbd></td><td>Stop editing (back to selecting)</td></tr>
+                <tr><td><kbd>&larr;</kbd> / <kbd>&rarr;</kbd></td><td>Move the <strong>left</strong> boundary by one frame</td></tr>
+                <tr><td><kbd>Shift</kbd>+<kbd>&larr;</kbd>/<kbd>&rarr;</kbd></td><td>Move the <strong>right</strong> boundary by one frame</td></tr>
+                <tr><td><kbd>Ctrl</kbd>+<kbd>&larr;</kbd>/<kbd>&rarr;</kbd> (<kbd>Cmd</kbd> on Mac)</td><td>Move the <strong>whole gloss</strong> by one frame</td></tr>
+              </tbody>
+            </table>
+            <p class="text-muted small mb-2">A gloss stops when it meets its neighbour on the same tier — neighbours stay locked in place and are never pushed or overlapped. While you move or resize a gloss (or hover/select one), the two side screens show its <strong>start</strong> frame (left) and <strong>end</strong> frame (right), so you can see exactly where the sign begins and ends.</p>
+            <hr>
+            <p class="mb-1"><strong>Playback shortcuts</strong></p>
+            <table class="table table-sm table-bordered mb-0">
+              <tbody>
+                <tr><td><kbd>P</kbd></td><td>Play / pause</td></tr>
+                <tr><td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> <kbd>4</kbd></td><td>Speed 0.25&times; / 0.5&times; / 0.75&times; / 1&times;</td></tr>
+                <tr><td><kbd>+</kbd> / <kbd>&minus;</kbd></td><td>Zoom timeline in / out</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="timeline-container" id="timelineContainer">
+      <div id="timeRuler" style="position:absolute; top:0; left:0; width:600px; height:20px; pointer-events:none; z-index:9999;"></div>
+      <div class="timeline-track" id="timelineTrack"></div>
+    </div>
+    <!-- Custom Scrollbar -->
+    <div id="customScrollbar">
+      <div id="customScrollbarContent"></div>
+    </div>
+  </div>
+
+
+  <script>
+    // ============================================
+    // 3D ANNOTATION EDITOR - BABYLON.JS VERSION
+    // Fixed version with proper animation retargeting
+    // ============================================
+
+    // Global state
+    const TIER_HEIGHT = 100;  // Increased from 80 for better usability
+    let animationDuration = 5, subtitles = [], uniqueId = 0;
+    let selectedSubId = null;   // id of the currently selected gloss (cyan outline)
+
+    // ============================================
+    // SMART DROPDOWN POSITIONING
+    // ============================================
+    function positionDropdown(dropdown, anchorElement) {
+      if (!dropdown || !anchorElement) return;
+
+      const rect = anchorElement.getBoundingClientRect();
+      const dropdownRect = dropdown.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      // Check if dropdown would overflow right edge
+      const wouldOverflowRight = rect.right + dropdownRect.width + 20 > viewportWidth;
+
+      // Check if dropdown would overflow bottom edge
+      const wouldOverflowBottom = rect.top + dropdownRect.height > viewportHeight;
+
+      // Apply flip classes
+      if (wouldOverflowRight) {
+        dropdown.classList.add('flip-left');
+      } else {
+        dropdown.classList.remove('flip-left');
+      }
+
+      if (wouldOverflowBottom) {
+        dropdown.classList.add('flip-up');
+      } else {
+        dropdown.classList.remove('flip-up');
+      }
+    }
+
+    // Apply positioning to all visible dropdowns
+    function updateDropdownPositions() {
+      document.querySelectorAll('.glossary-dropdown, .subtitle-box .row').forEach(dropdown => {
+        if (dropdown.style.display !== 'none') {
+          const anchor = dropdown.closest('.subtitle-box');
+          if (anchor) {
+            positionDropdown(dropdown, anchor);
+          }
+        }
+      });
+    }
+
+    // Update positions on scroll and resize
+    window.addEventListener('scroll', updateDropdownPositions, { passive: true });
+    window.addEventListener('resize', updateDropdownPositions, { passive: true });
+    let autoLoopEnabled = true, loopSubtitle = null;
+    let pendingStartTime = null, waitingForEnd = false;
+    let lastMouseEvent = null;
+    let pendingPreviewDiv = document.createElement('div');
+    pendingPreviewDiv.id = "pendingPreviewDiv";
+    let busyMoving = 0;
+    let autosaveTimer = null;
+    let loopDirection = 1;
+    let buttonLoopActiveSub = null;
+    let buttonLoopInterval = null;
+    let wasPlayingBeforeButtonLoop = false;
+    let playbackSpeed = 1;
+
+    // Babylon.js variables (replacing video/canvas vars)
+    let engine = null;
+    let scene = null;
+    let currentAnimationGroup = null;
+    let animationFrameRate = 30;  // Default, may be updated from GLB
+    let animationFromFrame = 0;   // Start frame of animation
+    let animationToFrame = 0;     // End frame of animation
+    let isAnimationLoaded = false;
+    let currentTime = 0;
+
+    // Side canvas elements for start/end frame preview
+    const canvasLeft = document.getElementById('canvasLeft');
+    const canvasRight = document.getElementById('canvasRight');
+    const ctxLeft = canvasLeft.getContext('2d');
+    const ctxRight = canvasRight.getContext('2d');
+
+    // Character controller state (from blendAnims pattern)
+    let character = null;           // Base mesh result
+    let morphTargetManagers = [];   // Morph target managers from base mesh
+    let skeleton = null;            // Skeleton from base mesh
+    let baseCharacterLoaded = false;
+    let camera = null;              // ArcRotateCamera (module scope for hand focus)
+    let avatarRoot = null;          // TransformNode wrapping the base character
+    let lightingRig = null;         // Result of setupLighting()
+    let backdropMaterial = null;    // Backdrop PBR material (for the colour UI)
+    let trackedHand = null;         // "left" | "right" | null - hand the camera follows
+
+    // Base character URL - CC (Character Creator) avatar, same one the babyloncc/dist viewer uses.
+    const BASE_CHARACTER_URL = "/zin/PalmerPolo1024uastc.glb";
+    // CC helper meshes that should never render, and the metre→centimetre position scale
+    // for animations. Mirrors the proven CC retargeting pipeline in babyloncc/dist/index.html.
+    const EXCLUDED = ["cc_base_eyeocclusion","cc_base_tear_ducts","cc_base_tearline",
+      "chin_curtain_sparse","male_bushy","mustache_horseshoe","stubble_neck",
+      "cc_base_eye_primitive1","cc_base_eye_primitive3"];
+    const POS_SCALE = 100;
+
+    // ============================================
+    // BABYLONCC STUDIO-RENDER CONFIG
+    // Ported from github.com/J-Andersen-UvA/BabylonCC (src/config/*).
+    // Asset URLs are absolute so they resolve next to the base character.
+    // ============================================
+    const RENDER_CONFIG = {
+      hardwareScalingLevel: 1,
+      clearColor: "#1F242BFF",
+      imageProcessing: {
+        toneMappingEnabled: true,
+        exposure: 1.0,
+        contrast: 1.0,
+      },
+      lighting: {
+        // NOTE: served as .envbin (not .env) because Apache denies *.env files (they
+        // usually hold secrets). Babylon is told the real format via forcedExtension below.
+        environmentUrl: "/animMIDI/babyloncc/dist/environment.envbin",
+        iblIntensity: 0.35,
+        sunIntensity: 1.0,
+        sunDirection: { x: -0.4, y: -1.0, z: -0.3 },
+        hemiFillEnabled: true,
+        hemiIntensity: 0.25,
+        hemiGroundColor: "#262626",
+        hemiDiffuseColor: "#FFFFFF",
+        hemiSpecularColor: "#333333",
+        studioThreePoint: {
+          enabled: true,
+          target: { x: 0, y: 1.25, z: 0 },
+          key:  { position: { x: -2.4, y: 3.2, z: 2.8 }, intensity: 70, color: "#ffe5ba", angle: 0.85, exponent: 1.8 },
+          fill: { position: { x:  2.6, y: 2.1, z: 2.0 }, intensity: 50, color: "#DDEBFF", angle: 1.1,  exponent: 1.3 },
+          rim:  { position: { x:  1.5, y: 2.7, z: -2.8 }, intensity: 30, color: "#E8F5FF", angle: 0.75, exponent: 2.2 },
+        },
+      },
+      shadows: {
+        mapSize: 2048,
+        usePercentageCloserFiltering: true,
+        studio: { enabled: true, mapSize: 1024, key: true, fill: false, rim: true },
+      },
+    };
+
+    // Camera framing focuses on a chosen bone (CC spine), falling back to a fixed target.
+    const AVATAR_CAMERA_CONFIG = {
+      focusBoneNames: ["spine_05"],
+      fallbackTarget: { x: 0, y: 1.35, z: 0 },
+      targetOffset: { x: 0, y: 0.05, z: 0 },
+      alpha: Math.PI / 2,
+      beta: 1.6,
+      radius: 0.9725,  // user-tuned zoom distance (16:9 canvas framing)
+      // Optional manual yaw offset (degrees) applied AFTER the automatic eye-facing
+      // orientation. Leave at 0; only set this if the auto-orientation is consistently off.
+      facingYDegrees: 0,
+    };
+
+    // Avatar material tuning (matte default is commented; specular studio preset active).
+    const AVATAR_MATERIAL_CONFIG = {
+      specularIntensity: 0.15,
+      environmentIntensity: 0.25,
+      roughness: 0.48,
+      metallic: 0,
+    };
+    const AVATAR_MATERIAL_RULES = {
+      alphaBlendRules: [
+        { nameIncludes: ["hair"], backFaceCulling: true, renderingGroupId: 0 },
+        { nameIncludes: ["eyelash"] },
+      ],
+      opaqueFallback: true,
+      roughnessOverrides: [
+        { nameIncludes: ["ss_slash_neck_top"], minimumRoughness: 0.64 },
+        { nameIncludes: ["beard", "brow", "female_angled"], minimumRoughness: 0.6 },
+      ],
+      scalp: { nameIncludes: ["scalp"], renderingGroupId: 0, alphaIndex: 0 },
+    };
+
+    // Hand-focus button targets (CC hand bones).
+    const HAND_TRACKING = {
+      leftBoneNames: ["hand_l"],
+      rightBoneNames: ["hand_r"],
+      focusRadius: 1.35,
+      targetOffset: { x: 0, y: 0, z: 0 },
+    };
+
+    // Small helpers shared by the ported modules
+    const vec3FromConfig = (v) => new BABYLON.Vector3(v.x, v.y, v.z);
+
+    let glosses = [];
+    let currentZinArray = [];
+    let currentSentenceRowId = null; // sentences.ID for the loaded clip (for MCP status saves)
+    const zinDisplayElement = document.getElementById('zinDisplay');
+
+    // Dropdown filter options for Zoeken
+    let sterkeHandOptions = ["Sterke Hand", "A", "B", "C", "1", "5", "O"];
+    let zwakkeHandOptions = ["Zwakke Hand", "A", "B", "C", "1", "5", "O", "None"];
+    let handednessOptions = ["Handedness", "1h", "2h", "2ha", "2hs"];
+    let locatieOptions = ["Locatie", "Neutral space", "Head", "Trunk", "Arm", "Hand"];
+    let bewegingOptions = ["Beweging", "Up", "Down", "Left", "Right", "Forward", "Backward"];
+
+    // Add event listener for the "Go back to Zinnen" button
+    document.getElementById('backToZinnenBtn').addEventListener('click', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const filename = urlParams.get('filename');
+      let returnUrl = 'zinnen.html';
+      if (filename) {
+        returnUrl += `?edited=${filename}`;
+      }
+      window.location.href = returnUrl;
+    });
+
+    // ============================================
+    // BABYLON.JS SCENE INITIALIZATION
+    // ============================================
+
+    // Disable auto-play on GLB load - MUST be set before any loading
+    BABYLON.SceneLoader.OnPluginActivatedObservable.add(function(loader) {
+      if (loader.name === "gltf") {
+        loader.animationStartMode = BABYLON.GLTFLoaderAnimationStartMode.NONE;
+      }
+    });
+
+    // ============================================
+    // STUDIO LIGHTING RIG (ported from BabylonCC src/babylon/lighting.ts)
+    // Environment IBL + ACES tone mapping + sun shadows + optional hemi fill
+    // + three-point studio spotlights. Returns helpers to register shadow casters.
+    // ============================================
+    function setupLighting(scene, opts) {
+      const cfg = RENDER_CONFIG;
+      const L = cfg.lighting;
+
+      scene.environmentIntensity = L.iblIntensity;
+      scene.imageProcessingConfiguration.toneMappingEnabled = cfg.imageProcessing.toneMappingEnabled;
+      scene.imageProcessingConfiguration.toneMappingType = BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
+      scene.imageProcessingConfiguration.exposure = cfg.imageProcessing.exposure;
+      scene.imageProcessingConfiguration.contrast = cfg.imageProcessing.contrast;
+
+      // Image-based lighting from a prefiltered .env (ground projection off, so no skybox)
+      let environmentTexture;
+      if (L.environmentUrl) {
+        // forcedExtension ".env" so Babylon parses it as an environment texture even though
+        // the file is served with a .envbin extension (Apache blocks literal *.env).
+        environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(L.environmentUrl, scene, ".env");
+        environmentTexture.onLoadObservable.addOnce(() => {
+          scene.environmentTexture = environmentTexture;
+          console.log("[Lighting] environment ready");
+        });
+      }
+
+      // Key directional "sun" with the main shadow generator
+      const sun = new BABYLON.DirectionalLight("sun", vec3FromConfig(L.sunDirection).normalize(), scene);
+      sun.intensity = L.sunIntensity;
+      sun.position = new BABYLON.Vector3(50, 80, 50);
+      sun.shadowMinZ = 0.1;
+      sun.shadowMaxZ = 250;
+
+      const makeShadowGen = (light, mapSize) => {
+        const gen = new BABYLON.ShadowGenerator(mapSize, light);
+        gen.usePercentageCloserFiltering = cfg.shadows.usePercentageCloserFiltering;
+        gen.filteringQuality = BABYLON.ShadowGenerator.QUALITY_HIGH;
+        return gen;
+      };
+
+      const shadowGenerator = makeShadowGen(sun, cfg.shadows.mapSize);
+
+      // Hemispheric fill
+      let hemi;
+      if (L.hemiFillEnabled) {
+        hemi = new BABYLON.HemisphericLight("hemiFill", new BABYLON.Vector3(0, 1, 0), scene);
+        hemi.intensity = L.hemiIntensity;
+        hemi.groundColor = BABYLON.Color3.FromHexString(L.hemiGroundColor);
+        hemi.diffuse = BABYLON.Color3.FromHexString(L.hemiDiffuseColor);
+        hemi.specular = BABYLON.Color3.FromHexString(L.hemiSpecularColor);
+      }
+
+      // Three-point studio spotlights
+      const studioLights = [];
+      const studioShadowGenerators = [];
+      const tp = L.studioThreePoint;
+
+      const createStudioLight = (name, lo, target, castsShadow) => {
+        const pos = vec3FromConfig(lo.position);
+        const dir = target.subtract(pos).normalize();
+        const spot = new BABYLON.SpotLight(name, pos, dir, lo.angle, lo.exponent, scene);
+        spot.intensity = lo.intensity;
+        spot.diffuse = BABYLON.Color3.FromHexString(lo.color);
+        spot.specular = BABYLON.Color3.FromHexString(lo.color);
+        studioLights.push(spot);
+        if (cfg.shadows.studio.enabled && castsShadow) {
+          studioShadowGenerators.push(makeShadowGen(spot, cfg.shadows.studio.mapSize));
+        }
+      };
+
+      if (tp && tp.enabled !== false) {
+        const target = vec3FromConfig(tp.target);
+        createStudioLight("studioKey", tp.key, target, cfg.shadows.studio.key);
+        createStudioLight("studioFill", tp.fill, target, cfg.shadows.studio.fill);
+        createStudioLight("studioRim", tp.rim, target, cfg.shadows.studio.rim);
+      }
+
+      const addShadowCaster = (mesh) => {
+        shadowGenerator.addShadowCaster(mesh);
+        studioShadowGenerators.forEach(g => g.addShadowCaster(mesh));
+      };
+      const setShadowReceiver = (mesh, receive) => { mesh.receiveShadows = receive; };
+
+      return { sun, hemi, shadowGenerator, studioShadowGenerators, environmentTexture, addShadowCaster, setShadowReceiver };
+    }
+
+    // ============================================
+    // BACKDROP (ported from BabylonCC src/babylon/loadBackdrop.ts)
+    // Loads Backdrop.glb behind the avatar, applies a matte grey PBR material that
+    // receives shadows. Stores the material so the colour UI can recolour it live.
+    // ============================================
+    async function loadBackdrop(scene) {
+      const result = await BABYLON.SceneLoader.ImportMeshAsync("", "/animMIDI/babyloncc/dist/", "Backdrop.glb", scene);
+      const backdropRoot = new BABYLON.TransformNode("Backdrop", scene);
+      const mat = new BABYLON.PBRMaterial("Backdrop_Matte_Grey", scene);
+      mat.albedoColor = BABYLON.Color3.FromHexString("#36383b");
+      mat.roughness = 0.92;
+      mat.metallic = 0;
+      mat.specularIntensity = 0.18;
+      mat.environmentIntensity = 0.18;
+      mat.backFaceCulling = false;
+
+      const importedNodes = [...result.transformNodes, ...result.meshes];
+      const importedSet = new Set(importedNodes);
+      importedNodes
+        .filter(n => !n.parent || !importedSet.has(n.parent))
+        .forEach(n => { n.parent = backdropRoot; });
+
+      result.meshes.forEach(mesh => {
+        mesh.alwaysSelectAsActiveMesh = true;
+        mesh.receiveShadows = true;
+        mesh.material = mat;
+      });
+
+      backdropMaterial = mat;
+      console.log("[Backdrop] imported meshes:", result.meshes.length);
+      return { root: backdropRoot, material: mat };
+    }
+
+    // ============================================
+    // CAMERA / HAND FOCUS (ported from BabylonCC src/babylon/createScene.ts)
+    // ============================================
+    function boneTransformNode(bone) {
+      if (bone.getTransformNode) {
+        const n = bone.getTransformNode();
+        if (n) return n;
+      }
+      return bone._linkedTransformNode || null;
+    }
+
+    function findFocusTargetByNames(scene, avatarRoot, names) {
+      const focusNames = names.map(n => n.toLowerCase());
+      for (const sk of scene.skeletons) {
+        for (const bone of sk.bones) {
+          if (!focusNames.includes(bone.name.toLowerCase())) continue;
+          const node = boneTransformNode(bone);
+          if (node) return { position: node.getAbsolutePosition(), source: `bone:${bone.name}` };
+        }
+      }
+      const descendants = avatarRoot ? avatarRoot.getDescendants(false) : [];
+      const focusNode = descendants.find(n => focusNames.includes(n.name.toLowerCase()));
+      if (focusNode && focusNode.getAbsolutePosition) {
+        return { position: focusNode.getAbsolutePosition(), source: `node:${focusNode.name}` };
+      }
+      return null;
+    }
+
+    function focusCameraOnAvatar(scene, avatarRoot) {
+      const cam = scene.activeCamera;
+      if (!cam) return;
+      const ft = findFocusTargetByNames(scene, avatarRoot, AVATAR_CAMERA_CONFIG.focusBoneNames);
+      const target = ft ? ft.position : vec3FromConfig(AVATAR_CAMERA_CONFIG.fallbackTarget);
+      const finalTarget = target.add(vec3FromConfig(AVATAR_CAMERA_CONFIG.targetOffset));
+      cam.setTarget(finalTarget);
+      cam.alpha = AVATAR_CAMERA_CONFIG.alpha;
+      cam.beta = AVATAR_CAMERA_CONFIG.beta;
+      cam.radius = AVATAR_CAMERA_CONFIG.radius;
+      console.log("[Camera] focused:", ft ? ft.source : "fallback", finalTarget.toString());
+    }
+
+    function focusCameraOnAvatarBone(scene, avatarRoot, boneNames, options) {
+      options = options || {};
+      const cam = scene.activeCamera;
+      if (!cam) return false;
+      const ft = findFocusTargetByNames(scene, avatarRoot, boneNames);
+      if (!ft) {
+        if (!options.silent) console.warn("[Camera] hand focus target not found:", boneNames);
+        return false;
+      }
+      const targetOffset = options.targetOffset ? vec3FromConfig(options.targetOffset) : BABYLON.Vector3.Zero();
+      const finalTarget = ft.position.add(targetOffset);
+      cam.setTarget(finalTarget);
+      cam.alpha = options.preserveOrbit ? cam.alpha : AVATAR_CAMERA_CONFIG.alpha;
+      cam.beta = options.preserveOrbit ? cam.beta : AVATAR_CAMERA_CONFIG.beta;
+      if (options.radius != null) cam.radius = options.radius;
+      if (!options.silent) console.log("[Camera] hand focused:", ft.source, finalTarget.toString());
+      return true;
+    }
+
+    // ============================================
+    // EYE-FACING ORIENTATION
+    // Computes the direction the avatar's eyes actually look (from mesh + head-bone
+    // geometry) and rotates the avatar root so that direction points at the camera.
+    // Continuous (not 90°-snapped) and self-correcting, so it works regardless of how
+    // the GLB happens to import.
+    // ============================================
+    function groundDir(v) {
+      const g = new BABYLON.Vector3(v.x, 0, v.z);
+      const len = g.length();
+      return len < 1e-5 ? null : g.scaleInPlace(1 / len);
+    }
+
+    function getHeadBonePosition(scene) {
+      const names = new Set(["head", "cc_base_head", "cc_base_headnode", "facialbone_head"]);
+      for (const sk of scene.skeletons) {
+        for (const b of sk.bones) {
+          if (!names.has(b.name.toLowerCase())) continue;
+          const node = boneTransformNode(b);
+          if (node) return node.getAbsolutePosition();
+        }
+      }
+      return null;
+    }
+
+    // Returns { center, positions } of the (world-space) eye mesh centres, or null.
+    function getEyeGeometry(avatarRoot) {
+      const eyeMeshes = avatarRoot.getChildMeshes(false).filter(m => {
+        const n = m.name.toLowerCase();
+        return m.isEnabled() && n.includes("eye")
+          && !n.includes("eyelash") && !n.includes("occlusion") && !n.includes("tear");
+      });
+      if (!eyeMeshes.length) return null;
+
+      const positions = [];
+      const center = BABYLON.Vector3.Zero();
+      for (const m of eyeMeshes) {
+        m.computeWorldMatrix(true);
+        const c = m.getBoundingInfo().boundingBox.centerWorld;
+        positions.push(c);
+        center.addInPlace(c);
+      }
+      center.scaleInPlace(1 / eyeMeshes.length);
+      return { center, positions };
+    }
+
+    // Best-effort horizontal "forward" the eyes look along, in world space.
+    function computeEyeForward(scene, avatarRoot) {
+      const eyes = getEyeGeometry(avatarRoot);
+      if (!eyes) return null;
+      const headPos = getHeadBonePosition(scene);
+
+      // Primary: eyes sit in FRONT of the head joint, so eyeCenter - headPos is forward.
+      if (headPos) {
+        const f = groundDir(eyes.center.subtract(headPos));
+        if (f) return f;
+      }
+
+      // Fallback: forward is perpendicular to the inter-eye (ear-to-ear) axis.
+      if (eyes.positions.length >= 2) {
+        const interEye = groundDir(eyes.positions[1].subtract(eyes.positions[0]));
+        if (interEye) {
+          let f = groundDir(new BABYLON.Vector3(interEye.z, 0, -interEye.x)); // rotate 90° in ground plane
+          if (f && headPos) {
+            const ref = groundDir(eyes.center.subtract(headPos));
+            if (ref && BABYLON.Vector3.Dot(f, ref) < 0) f.scaleInPlace(-1);
+          }
+          if (f) return f;
+        }
+      }
+      return null;
+    }
+
+    // Rotate the avatar so its eye-forward points at the camera. Returns true on success.
+    function orientAvatarEyesToCamera(scene, avatarRoot) {
+      const cam = scene.activeCamera;
+      if (!cam || !avatarRoot) return false;
+
+      avatarRoot.computeWorldMatrix(true);
+      const forward = computeEyeForward(scene, avatarRoot);
+      if (!forward) {
+        console.warn("[Avatar] could not compute eye-facing direction");
+        return false;
+      }
+
+      const eyes = getEyeGeometry(avatarRoot);
+      const pivot = eyes ? eyes.center : avatarRoot.getAbsolutePosition();
+      const toCamera = groundDir(cam.position.subtract(pivot));
+      if (!toCamera) return false;
+
+      // Signed yaw (Babylon left-handed convention) to rotate `forward` onto `toCamera`.
+      const crossY = forward.x * toCamera.z - forward.z * toCamera.x;
+      const yaw = Math.atan2(crossY, BABYLON.Vector3.Dot(forward, toCamera));
+
+      avatarRoot.rotate(BABYLON.Axis.Y, yaw, BABYLON.Space.WORLD);
+      avatarRoot.computeWorldMatrix(true);
+      console.log("[Avatar] eyes->camera yaw:", BABYLON.Tools.ToDegrees(yaw).toFixed(1) + "°");
+      return true;
+    }
+
+    // ============================================
+    // ORIENTATION SNAP (ported from BabylonCC src/babylon/orientAvatarToCamera.ts)
+    // Rotates the avatar root by the nearest 90° so it faces the camera. Self-no-ops
+    // when already facing, so it is safe for this fixed-camera tool.
+    // ============================================
+    function snapAvatarToCameraInRightAngles(scene, avatarRoot) {
+      const RIGHT_ANGLE = Math.PI / 2;
+      const HEAD_BONE_NAMES = ["head", "cc_base_head", "cc_base_headnode"];
+      const camera = scene.activeCamera;
+      if (!camera || !avatarRoot) return false;
+
+      const projectToGround = v => new BABYLON.Vector3(v.x, 0, v.z);
+      const normalizeGround = v => {
+        const g = projectToGround(v);
+        const len = g.length();
+        return len < 0.0001 ? null : g.scale(1 / len);
+      };
+      const signedYaw = (from, to) => {
+        const crossY = from.x * to.z - from.z * to.x;
+        return Math.atan2(crossY, BABYLON.Vector3.Dot(from, to));
+      };
+      const findHeadPosition = () => {
+        const wanted = new Set(HEAD_BONE_NAMES);
+        for (const sk of scene.skeletons) {
+          for (const bone of sk.bones) {
+            if (!wanted.has(bone.name.toLowerCase())) continue;
+            const node = boneTransformNode(bone);
+            if (node) return node.getAbsolutePosition();
+          }
+        }
+        return null;
+      };
+      const findEyeCenter = () => {
+        const eyeMeshes = avatarRoot.getChildMeshes(false).filter(m => {
+          const n = m.name.toLowerCase();
+          return m.isEnabled() && n.includes("eye") && !n.includes("eyelash");
+        });
+        if (!eyeMeshes.length) return null;
+        const center = BABYLON.Vector3.Zero();
+        for (const m of eyeMeshes) {
+          m.computeWorldMatrix(true);
+          center.addInPlace(m.getBoundingInfo().boundingBox.centerWorld);
+        }
+        return center.scale(1 / eyeMeshes.length);
+      };
+      const inferForward = () => {
+        const head = findHeadPosition();
+        const eye = findEyeCenter();
+        if (head && eye) {
+          const f = normalizeGround(head.subtract(eye));
+          if (f) return { forward: f, source: "eyes-to-head" };
+        }
+        avatarRoot.computeWorldMatrix(true);
+        const f = normalizeGround(BABYLON.Vector3.TransformNormal(BABYLON.Vector3.Forward(), avatarRoot.getWorldMatrix()));
+        return f ? { forward: f, source: "avatar-forward-axis" } : null;
+      };
+
+      avatarRoot.computeWorldMatrix(true);
+      const toCamera = normalizeGround(camera.position.subtract(avatarRoot.getAbsolutePosition()));
+      const inferred = inferForward();
+      if (!toCamera || !inferred) {
+        console.warn("[Avatar] could not infer orientation for camera-facing snap");
+        return false;
+      }
+      const rawYaw = signedYaw(inferred.forward, toCamera);
+      const snappedYaw = Math.round(rawYaw / RIGHT_ANGLE) * RIGHT_ANGLE;
+      if (Math.abs(snappedYaw) < 0.0001) {
+        console.log("[Avatar] camera-facing snap: already facing camera", inferred.source);
+        return true;
+      }
+      avatarRoot.rotate(BABYLON.Axis.Y, snappedYaw, BABYLON.Space.WORLD);
+      avatarRoot.computeWorldMatrix(true);
+      console.log("[Avatar] camera-facing snap:", inferred.source, "deg:", BABYLON.Tools.ToDegrees(snappedYaw));
+      return true;
+    }
+
+    async function initializeBabylonScene() {
+      const canvas = document.getElementById("renderCanvas");
+
+      engine = new BABYLON.Engine(canvas, true, {
+        preserveDrawingBuffer: true,
+        stencil: true,
+        antialias: true,
+        powerPreference: "high-performance"
+      });
+      engine.setHardwareScalingLevel(RENDER_CONFIG.hardwareScalingLevel);
+
+      scene = new BABYLON.Scene(engine);
+      scene.clearColor = BABYLON.Color4.FromHexString(RENDER_CONFIG.clearColor);
+
+      // Enable animation interpolation for smooth seeking
+      BABYLON.Animation.AllowMatricesInterpolation = true;
+
+      // Studio lighting rig (env IBL + sun shadows + hemi fill + three-point spots).
+      // Replaces the old flat hemispheric + directional setup.
+      lightingRig = setupLighting(scene);
+
+      // Add ArcRotateCamera - framed to show hips to head (framing later refined by
+      // focusCameraOnAvatar once the avatar's spine bone is available)
+      camera = new BABYLON.ArcRotateCamera(
+        "camera",
+        Math.PI / 2,      // alpha: horizontal angle (front view)
+        Math.PI / 2,      // beta: vertical angle (straight on)
+        1.2,              // radius: distance from target (closer for tighter framing)
+        new BABYLON.Vector3(0, 1.3, 0),  // target: upper chest/neck area
+        scene
+      );
+      camera.attachControl(canvas, true);
+      camera.wheelDeltaPercentage = 0.015;
+      camera.panningSensibility = 0;
+      camera.minZ = 0.01;  // Fix near clipping when zoomed in close
+      camera.lowerRadiusLimit = 0.5;
+      camera.upperRadiusLimit = 10;
+
+      // Hand-follow loop: while a hand is locked, keep the camera aimed at it
+      // (preserving the user's current orbit). Mirrors BabylonCC App.tsx.
+      scene.onBeforeRenderObservable.add(() => {
+        if (!trackedHand || !avatarRoot) return;
+        const names = trackedHand === "left" ? HAND_TRACKING.leftBoneNames : HAND_TRACKING.rightBoneNames;
+        focusCameraOnAvatarBone(scene, avatarRoot, names, {
+          targetOffset: HAND_TRACKING.targetOffset,
+          preserveOrbit: true,
+          silent: true,
+        });
+      });
+
+      // Run render loop
+      engine.runRenderLoop(() => {
+        scene.render();
+      });
+
+      // Handle window resize
+      window.addEventListener("resize", () => {
+        engine.resize();
+      });
+
+      // ---- Dev helper: tune framing live, then copy it back to the config. ----
+      // Orbit/zoom the avatar to taste, then in the browser console run: dumpView()
+      // Paste the printed block to lock it in as AVATAR_CAMERA_CONFIG.
+      window.camera = camera;
+      window.scene = scene;
+      window.dumpView = () => {
+        const t = camera.getTarget();
+        const view = {
+          alpha: +camera.alpha.toFixed(4),
+          beta: +camera.beta.toFixed(4),
+          radius: +camera.radius.toFixed(4),
+          target: { x: +t.x.toFixed(4), y: +t.y.toFixed(4), z: +t.z.toFixed(4) },
+          canvasAspect: +(engine.getRenderWidth() / engine.getRenderHeight()).toFixed(4),
+        };
+        console.log("[View] copy this to me:\n" + JSON.stringify(view, null, 2));
+        return view;
+      };
+
+      console.log("Babylon.js scene initialized");
+    }
+
+    // ============================================
+    // CHARACTER CONTROLLER (from blendAnims pattern)
+    // ============================================
+
+    // Helper: Focus camera on mesh bounds
+    function focusCameraOnMesh(meshes) {
+      if (!meshes || meshes.length === 0) return;
+
+      let min = new BABYLON.Vector3(Infinity, Infinity, Infinity);
+      let max = new BABYLON.Vector3(-Infinity, -Infinity, -Infinity);
+
+      meshes.forEach(mesh => {
+        if (mesh.getBoundingInfo()) {
+          const meshMin = mesh.getBoundingInfo().boundingBox.minimumWorld;
+          const meshMax = mesh.getBoundingInfo().boundingBox.maximumWorld;
+          min = BABYLON.Vector3.Minimize(min, meshMin);
+          max = BABYLON.Vector3.Maximize(max, meshMax);
+        }
+      });
+
+      const center = BABYLON.Vector3.Center(min, max);
+      const camera = scene.activeCamera;
+      if (camera) {
+        camera.setTarget(center);
+        const size = max.subtract(min);
+        const maxDim = Math.max(size.x, size.y, size.z);
+        camera.radius = maxDim * 2;
+        camera.lowerRadiusLimit = maxDim * 0.5;
+        camera.upperRadiusLimit = maxDim * 4;
+      }
+    }
+
+    // Helper: Get morph target index by name
+    function getMorphTargetIndex(morphTargetManager, targetName) {
+      if (!morphTargetManager) return -1;
+      for (let i = 0; i < morphTargetManager.numTargets; i++) {
+        if (morphTargetManager.getTarget(i).name === targetName) {
+          return i;
+        }
+      }
+      return -1;
+    }
+
+    // Helper: Normalize bone name for matching (handle different naming conventions)
+    function normalizeBoneName(name) {
+      if (!name) return name;
+      // Strip common prefixes like "Armature|"
+      if (name.includes("|")) {
+        return name.split("|").pop();
+      }
+      // Handle mixamo prefix
+      if (name.startsWith("mixamorig:")) {
+        return name.replace("mixamorig:", "");
+      }
+      return name;
+    }
+
+    // Key function: Retarget animation to base character (from blendAnims)
+    function retargetAnimWithBlendshapes(animGroup, cloneName) {
+      let curMTM = 0;
+      let morphName = "";
+      let morphIndex = -1;
+      let mtm = null;
+      let boneMatches = 0;
+      let morphMatches = 0;
+      let noMatches = 0;
+
+      console.log("=== Starting Retarget ===");
+      console.log("Skeleton:", skeleton ? "loaded" : "NOT LOADED");
+      console.log("Skeleton bones count:", skeleton?.bones?.length || 0);
+      console.log("Morph target managers:", morphTargetManagers.length);
+
+      // Log first 5 bone names from skeleton for reference
+      if (skeleton && skeleton.bones) {
+        console.log("First 5 skeleton bone names:", skeleton.bones.slice(0, 5).map(b => b.name));
+        // Check linkedTransformNode status
+        const bonesWithLinks = skeleton.bones.filter(b => b._linkedTransformNode).length;
+        console.log(`Bones with linkedTransformNode: ${bonesWithLinks}/${skeleton.bones.length}`);
+        if (bonesWithLinks === 0) {
+          console.error("CRITICAL: No bones have _linkedTransformNode - retargeting will fail!");
+        }
+      }
+
+      // Analyze source animation
+      const boneAnims = animGroup.targetedAnimations.filter(ta =>
+        ta.animation?.targetProperty !== 'influence');
+      const morphAnims = animGroup.targetedAnimations.filter(ta =>
+        ta.animation?.targetProperty === 'influence');
+      console.log(`Source animation: ${boneAnims.length} bone anims, ${morphAnims.length} morph anims`);
+
+      if (boneAnims.length > 0) {
+        console.log("First 5 bone animation targets:", boneAnims.slice(0, 5).map(ta => ta.target?.name));
+      } else {
+        console.log("First 5 animation targets:", animGroup.targetedAnimations.slice(0, 5).map(ta => ta.target?.name));
+      }
+
+      // Resolve a source animation target to a node on the base character.
+      // Returns null when there's no match so we can SKIP it. Adding a
+      // null-target animation (which AnimationGroup.clone does) crashes Babylon's
+      // RuntimeAnimation ("Cannot read properties of null (reading 'position')")
+      // the moment the group is started/seeked — exactly what broke timeline
+      // hover after the animation character was switched.
+      const resolveTarget = (target) => {
+        if (!target) return null;
+
+        // Step 1: Try to map skeletal bone animations
+        if (skeleton) {
+          // Try exact match first
+          let boneIdx = skeleton.getBoneIndexByName(target.name);
+
+          // If not found, try normalized name (strip prefixes)
+          if (boneIdx === -1) {
+            const normalizedName = normalizeBoneName(target.name);
+            if (normalizedName !== target.name) {
+              boneIdx = skeleton.getBoneIndexByName(normalizedName);
+            }
+          }
+
+          if (boneIdx !== -1) {
+            const targetBone = skeleton.bones[boneIdx];
+            if (targetBone && targetBone._linkedTransformNode) {
+              boneMatches++;
+              return targetBone._linkedTransformNode;
+            }
+          }
+        }
+
+        // Step 2: Map morph target (blendshape) animations
+        if (morphTargetManagers.length > 0) {
+          if (morphName !== target.name) {
+            curMTM = 0;
+            morphName = target.name;
+          }
+
+          if (curMTM < morphTargetManagers.length) {
+            morphIndex = getMorphTargetIndex(morphTargetManagers[curMTM], target.name);
+
+            if (morphIndex !== -1) {
+              mtm = morphTargetManagers[curMTM].getTarget(morphIndex);
+              curMTM++;
+              morphMatches++;
+              return mtm;
+            }
+          }
+        }
+
+        noMatches++;
+        return null; // no match — skip it (never add a null-target animation)
+      };
+
+      // Build the retargeted group manually so unmatched targets are dropped
+      // rather than added with a null target.
+      const clonedAnimGroup = new BABYLON.AnimationGroup(cloneName, scene);
+      animGroup.targetedAnimations.forEach((ta) => {
+        if (!ta.animation) return;
+        const newTarget = resolveTarget(ta.target);
+        if (!newTarget) return;
+
+        const anim = ta.animation.clone();
+        // CC skeleton is in centimetres but FBX→GLB animations export positions in metres,
+        // so scale position keys by POS_SCALE (rotation/morph keys are unaffected).
+        if (anim.targetProperty === "position" && POS_SCALE !== 1) {
+          anim.setKeys(anim.getKeys().map(k => {
+            const v = k.value;
+            return (v && v.x !== undefined)
+              ? { frame: k.frame, value: new BABYLON.Vector3(v.x * POS_SCALE, v.y * POS_SCALE, v.z * POS_SCALE) }
+              : k;
+          }));
+        }
+        clonedAnimGroup.addTargetedAnimation(anim, newTarget);
+      });
+
+      console.log(`Retarget complete: ${boneMatches} bone matches, ${morphMatches} morph matches, ${noMatches} no matches, ${clonedAnimGroup.targetedAnimations.length} added`);
+
+      clonedAnimGroup.name = cloneName;
+      return clonedAnimGroup;
+    }
+
+    // Load base character mesh (skeleton + morph targets)
+    async function loadBaseCharacter() {
+      zinDisplayElement.textContent = 'Loading base character...';
+
+      try {
+        const loadedResults = await BABYLON.SceneLoader.ImportMeshAsync(
+          null,
+          BASE_CHARACTER_URL,
+          "",
+          scene
+        );
+
+        character = loadedResults;
+        skeleton = loadedResults.skeletons[0];
+
+        // Wrap the imported top-level nodes under a single root TransformNode so the
+        // camera-focus, hand-follow and orientation-snap helpers have something to target
+        // (mirrors BabylonCC loadAvatar.ts). We KEEP the CC avatar's 0.01 root scaling
+        // (it renders at ~metre scale, matching this tool's camera); position animations
+        // are scaled by POS_SCALE during retargeting to compensate. Do NOT rescale to 1.0.
+        avatarRoot = new BABYLON.TransformNode("Avatar", scene);
+        const importedNodes = [...loadedResults.transformNodes, ...loadedResults.meshes];
+        const importedSet = new Set(importedNodes);
+        importedNodes
+          .filter(n => n !== avatarRoot && (!n.parent || !importedSet.has(n.parent)))
+          .forEach(n => { n.parent = avatarRoot; });
+
+
+        // CC avatar handling (mirrors babyloncc/dist): hide helper meshes and tune
+        // materials via the ported AVATAR_MATERIAL_CONFIG / AVATAR_MATERIAL_RULES.
+        const RULES = AVATAR_MATERIAL_RULES;
+        loadedResults.meshes.forEach(mesh => {
+          mesh.alwaysSelectAsActiveMesh = true;
+
+          // Hide CC helper meshes that should never render (eye occlusion, tear line, ...)
+          const lower = mesh.name.toLowerCase();
+          if (EXCLUDED.some(ex => lower.includes(ex.toLowerCase()))) {
+            mesh.setEnabled(false);
+            return;
+          }
+
+          const mat = mesh.material;
+          if (!mat) return;
+          const name = (mesh.name + " " + mat.name).toLowerCase();
+
+          // Base studio material tuning
+          mat.specularIntensity = AVATAR_MATERIAL_CONFIG.specularIntensity;
+          mat.environmentIntensity = AVATAR_MATERIAL_CONFIG.environmentIntensity;
+          mat.roughness = AVATAR_MATERIAL_CONFIG.roughness;
+          mat.metallic = AVATAR_MATERIAL_CONFIG.metallic;
+
+          const alphaBlendRule = RULES.alphaBlendRules.find(r => r.nameIncludes.some(t => name.includes(t)));
+          const roughnessRule = RULES.roughnessOverrides.find(r => r.nameIncludes.some(t => name.includes(t)));
+
+          if (alphaBlendRule) {
+            if (typeof alphaBlendRule.backFaceCulling === "boolean") mat.backFaceCulling = alphaBlendRule.backFaceCulling;
+            if (typeof alphaBlendRule.renderingGroupId === "number") mesh.renderingGroupId = alphaBlendRule.renderingGroupId;
+            mat.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND;
+          } else if (roughnessRule) {
+            mat.roughness = Math.max(mat.roughness, roughnessRule.minimumRoughness);
+          } else if (RULES.scalp.nameIncludes.some(t => name.includes(t))) {
+            mesh.renderingGroupId = RULES.scalp.renderingGroupId;
+            mesh.alphaIndex = RULES.scalp.alphaIndex;
+          } else if (RULES.opaqueFallback) {
+            mat.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_OPAQUE;
+          }
+        });
+
+        // Register visible avatar meshes as shadow casters for the studio lights
+        if (lightingRig) {
+          loadedResults.meshes.forEach(mesh => {
+            if (mesh.isEnabled() && mesh.getTotalVertices && mesh.getTotalVertices() > 0) {
+              lightingRig.addShadowCaster(mesh);
+            }
+          });
+        }
+
+        // Extract morph target managers (for facial animations)
+        morphTargetManagers = loadedResults.meshes
+          .filter(mesh => mesh.morphTargetManager)
+          .map(mesh => mesh.morphTargetManager);
+
+        console.log("=== Base Character Loaded ===");
+        console.log("Skeleton bones:", skeleton ? skeleton.bones.length : 0);
+        console.log("Morph target managers:", morphTargetManagers.length);
+
+        // Verify linkedTransformNode setup
+        if (skeleton) {
+          const bonesWithLinks = skeleton.bones.filter(b => b._linkedTransformNode).length;
+          console.log(`Bones with linkedTransformNode: ${bonesWithLinks}/${skeleton.bones.length}`);
+          if (bonesWithLinks > 0) {
+            console.log("First bone with linkedTransformNode:",
+              skeleton.bones.find(b => b._linkedTransformNode)?.name);
+          }
+        }
+
+        // Frame the camera on the avatar's spine bone (BabylonCC camera-focus config),
+        // then rotate the avatar so its eyes actually face that camera, then re-frame.
+        focusCameraOnAvatar(scene, avatarRoot);
+        orientAvatarEyesToCamera(scene, avatarRoot);
+        // Optional manual fine-tune on top of the automatic eye-facing (default 0).
+        if (AVATAR_CAMERA_CONFIG.facingYDegrees) {
+          avatarRoot.rotate(BABYLON.Axis.Y, BABYLON.Tools.ToRadians(AVATAR_CAMERA_CONFIG.facingYDegrees), BABYLON.Space.WORLD);
+        }
+        focusCameraOnAvatar(scene, avatarRoot);
+
+        baseCharacterLoaded = true;
+        zinDisplayElement.textContent = 'Base character loaded. Load an animation GLB...';
+
+      } catch (error) {
+        console.error("Error loading base character:", error);
+        zinDisplayElement.textContent = 'Error loading base character: ' + error.message;
+        baseCharacterLoaded = false;
+      }
+    }
+
+    // ============================================
+    // ANIMATION GLB LOADING (with retargeting)
+    // ============================================
+    async function loadAnimationGLB(glbPath) {
+      if (!baseCharacterLoaded) {
+        alert("Please wait for base character to load first");
+        return;
+      }
+
+      zinDisplayElement.textContent = 'Loading animation...';
+
+      // Dispose previous animation (but keep base character)
+      if (currentAnimationGroup) {
+        currentAnimationGroup.dispose();
+        currentAnimationGroup = null;
+      }
+
+      try {
+        // Import animations and use result object (like compare.html does)
+        const importResult = await BABYLON.SceneLoader.ImportAnimationsAsync(
+          "",
+          glbPath,
+          scene,
+          false,  // don't overwrite existing animations
+          BABYLON.SceneLoaderAnimationGroupLoadingMode.NoSync
+        );
+
+        console.log("Animation imported, groups:", scene.animationGroups.length);
+
+        // Find the animation group from result or scene (with fallback)
+        let sourceAnimation = null;
+        const animGroups = importResult.animationGroups || scene.animationGroups;
+
+        for (let i = animGroups.length - 1; i >= 0; i--) {
+          if (animGroups[i].name === "Unreal Take") {
+            sourceAnimation = animGroups[i];
+            break;
+          }
+        }
+
+        // Fallback: use the last added animation group
+        if (!sourceAnimation && animGroups.length > 0) {
+          sourceAnimation = animGroups[animGroups.length - 1];
+        }
+
+        if (!sourceAnimation) {
+          zinDisplayElement.textContent = 'No animation found in GLB';
+          console.warn("No animation groups found in GLB");
+          return;
+        }
+
+        console.log("=== Source Animation Analysis ===");
+        console.log("Source animation:", sourceAnimation.name);
+        console.log("Source frame range:", sourceAnimation.from, "to", sourceAnimation.to);
+        console.log("Targeted animations count:", sourceAnimation.targetedAnimations.length);
+
+        // Analyze animation types
+        const boneAnims = sourceAnimation.targetedAnimations.filter(ta =>
+          ta.animation?.targetProperty !== 'influence');
+        const morphAnims = sourceAnimation.targetedAnimations.filter(ta =>
+          ta.animation?.targetProperty === 'influence');
+        console.log(`Animation breakdown: ${boneAnims.length} bone anims, ${morphAnims.length} morph anims`);
+
+        // Retarget animation to base character FIRST
+        const animName = glbPath.split('/').pop().replace('.glb', '').replace('.gltf', '');
+        currentAnimationGroup = retargetAnimWithBlendshapes(sourceAnimation, animName);
+
+        // Dispose the original (non-retargeted) animation
+        sourceAnimation.dispose();
+
+        // Get frame range from the RETARGETED animation group
+        console.log("Retargeted animation:", currentAnimationGroup.name);
+        console.log("Retargeted frame range:", currentAnimationGroup.from, "to", currentAnimationGroup.to);
+
+        // Use the retargeted animation's from/to values
+        animationFromFrame = currentAnimationGroup.from;
+        animationToFrame = currentAnimationGroup.to;
+
+        // Extract frame rate from animation (default 30, but use actual if available)
+        const firstAnim = currentAnimationGroup.targetedAnimations.find(ta => ta.animation);
+        if (firstAnim && firstAnim.animation.framePerSecond) {
+          animationFrameRate = firstAnim.animation.framePerSecond;
+          console.log("Detected animation frame rate:", animationFrameRate);
+        }
+
+        // If still 0, try to get from the animation keys
+        if (animationFromFrame === 0 && animationToFrame === 0) {
+          console.log("Retargeted animation has 0 range, analyzing all animations...");
+          animationFromFrame = Infinity;
+
+          // Group animations by type for debugging
+          let boneAnimCount = 0, morphAnimCount = 0, maxKeys = 0;
+
+          currentAnimationGroup.targetedAnimations.forEach((ta, index) => {
+            if (ta.animation) {
+              const keys = ta.animation.getKeys();
+              const targetName = ta.target?.name || 'unknown';
+              const prop = ta.animation.targetProperty;
+              const fps = ta.animation.framePerSecond;
+
+              // Track animation types
+              if (prop === 'influence') {
+                morphAnimCount++;
+              } else {
+                boneAnimCount++;
+              }
+
+              if (keys && keys.length > maxKeys) {
+                maxKeys = keys.length;
+              }
+
+              // Log first few bone animations (not morph)
+              if (prop !== 'influence' && boneAnimCount <= 5) {
+                console.log(`Bone anim: ${targetName}.${prop}, keys: ${keys?.length || 0}, fps: ${fps}`);
+                if (keys && keys.length > 0) {
+                  console.log(`  First key frame: ${keys[0].frame}, Last key frame: ${keys[keys.length-1].frame}`);
+                }
+              }
+
+              if (keys && keys.length > 1) {
+                const firstFrame = keys[0].frame;
+                const lastFrame = keys[keys.length - 1].frame;
+                if (firstFrame < animationFromFrame) {
+                  animationFromFrame = firstFrame;
+                }
+                if (lastFrame > animationToFrame) {
+                  animationToFrame = lastFrame;
+                }
+              }
+            }
+          });
+
+          console.log(`Animation breakdown: ${boneAnimCount} bone anims, ${morphAnimCount} morph anims, max keys per anim: ${maxKeys}`);
+
+          if (animationFromFrame === Infinity) {
+            animationFromFrame = 0;
+          }
+          console.log("Extracted frame range:", animationFromFrame, "to", animationToFrame);
+        }
+
+        // Stop auto-play, we control manually
+        currentAnimationGroup.stop();
+        currentAnimationGroup.goToFrame(animationFromFrame);
+
+        // Calculate duration
+        animationDuration = (animationToFrame - animationFromFrame) / animationFrameRate;
+
+        // Ensure minimum duration
+        if (animationDuration <= 0) {
+          console.warn("Animation duration is 0 or negative, setting default of 5 seconds");
+          animationDuration = 5; // fallback
+          animationToFrame = animationFrameRate * 5; // 5 seconds worth of frames
+        }
+
+        console.log("Final duration:", animationDuration, "seconds");
+
+        isAnimationLoaded = true;
+        currentTime = 0;
+
+        // Update timeline
+        updateTimelineWidth();
+        renderTimeRuler();
+        renderAll();
+
+        // Fetch sentence from server using base filename
+        const filenameMatch = animName.match(/M\d{8}_\d{4}/);
+        if (filenameMatch) {
+          try {
+            const zinResponse = await fetch(`getZinnen.php?action=fetchZinArrayByFilename&filename=${encodeURIComponent(filenameMatch[0] + '.wav')}`);
+            const zinData = await zinResponse.json();
+            if (zinData.success && zinData.zinArray) {
+              currentZinArray = zinData.zinArray;
+              zinDisplayElement.textContent = currentZinArray.join(' ');
+              currentSentenceRowId = zinData.sentenceRowId || null;
+              const mcpP = document.getElementById('mcpStatusPostprocessing');
+              const mcpG = document.getElementById('mcpStatusTijdAnnotatie');
+              const mcpGvg = document.getElementById('mcpStatusTijdAnnotatieGvg');
+              if (mcpP) mcpP.value = zinData.mcp_status_postprocessing || 'Niet Klaar';
+              if (mcpG) mcpG.value = zinData.mcp_status_tijd_annotatie || '';
+              if (mcpGvg) mcpGvg.value = zinData.mcp_status_tijd_annotatie_gvg || '';
+            } else {
+              zinDisplayElement.textContent = 'Animation: ' + animName;
+            }
+          } catch (err) {
+            console.error('Error fetching sentence:', err);
+            zinDisplayElement.textContent = 'Animation: ' + animName;
+          }
+        } else {
+          zinDisplayElement.textContent = 'Animation: ' + animName;
+        }
+
+      } catch (error) {
+        console.error("Error loading animation GLB:", error);
+        zinDisplayElement.textContent = 'Error loading animation: ' + error.message;
+        isAnimationLoaded = false;
+      }
+    }
+
+    // Legacy function name for compatibility
+    async function loadGLBAnimation(glbPath) {
+      return loadAnimationGLB(glbPath);
+    }
+
+    // ============================================
+    // ANIMATION SEEKING (replaces drawFrame)
+    // ============================================
+    function seekAnimation(time) {
+      if (!currentAnimationGroup || !isAnimationLoaded) return;
+
+      // Clamp time to valid range
+      time = Math.max(0, Math.min(time, animationDuration));
+
+      // Convert time to frame number using stored frame range
+      const targetFrame = animationFromFrame + (time * animationFrameRate);
+
+      // goToFrame only works if animation has been started
+      // Start and immediately pause to enable seeking (like compare.html does)
+      if (!currentAnimationGroup.isPlaying) {
+        currentAnimationGroup.start(false, 1.0, animationFromFrame, animationToFrame, false);
+        currentAnimationGroup.pause();
+      }
+
+      // Seek animation to frame
+      currentAnimationGroup.goToFrame(targetFrame);
+
+      // Update time display
+      document.getElementById('videoTimeDisplay').textContent = time.toFixed(2);
+    }
+
+    function setCanvasTime(time, who) {
+      // Clamp time within animation duration bounds
+      currentTime = Math.max(0, Math.min(time, animationDuration));
+      seekAnimation(currentTime);
+      updateSubtitleTrack();
+      updateCurrentTimeArrow();
+    }
+
+    // ============================================
+    // GLB FILE LOADING UI
+    // ============================================
+    document.getElementById('loadGLBBtn').addEventListener('click', () => {
+      if (!baseCharacterLoaded) {
+        alert("Base character still loading, please wait...");
+        return;
+      }
+      document.getElementById('glbFileInput').click();
+    });
+
+    document.getElementById('glbFileInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      await loadAnimationGLB(url);
+      // Note: Don't revoke URL immediately as Babylon may need it
+    });
+
+    // ============================================
+    // CAMERA FOCUS + BACKDROP COLOUR UI
+    // ============================================
+    function focusHand(side) {
+      if (!avatarRoot) return;
+      const names = side === "left" ? HAND_TRACKING.leftBoneNames : HAND_TRACKING.rightBoneNames;
+      const ok = focusCameraOnAvatarBone(scene, avatarRoot, names, {
+        radius: HAND_TRACKING.focusRadius,
+        targetOffset: HAND_TRACKING.targetOffset,
+      });
+      trackedHand = ok ? side : null;
+    }
+    document.getElementById('focusHandLeftBtn').addEventListener('click', () => focusHand("left"));
+    document.getElementById('focusHandRightBtn').addEventListener('click', () => focusHand("right"));
+    document.getElementById('resetFocusBtn').addEventListener('click', () => {
+      trackedHand = null;
+      if (avatarRoot) focusCameraOnAvatar(scene, avatarRoot);
+    });
+
+    // Backdrop colour: swatches + picker, recolour the live PBR material
+    (function initBackdropColourUI() {
+      const SWATCHES = ["#36383b", "#59524a", "#6b6964", "#7c817d", "#4c5a60", "#74665f"];
+      const setBackdropColor = (hex) => {
+        if (!backdropMaterial) return;
+        backdropMaterial.albedoColor = BABYLON.Color3.FromHexString(hex);
+        const picker = document.getElementById('backdropColorInput');
+        if (picker) picker.value = hex;
+        console.log("[Backdrop] color:", hex);
+      };
+      const container = document.getElementById('backdropSwatches');
+      if (container) {
+        SWATCHES.forEach(hex => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.title = `Backdrop ${hex}`;
+          b.setAttribute('aria-label', `Set backdrop colour ${hex}`);
+          b.style.cssText = `width:20px;height:20px;padding:0;border:1px solid #888;border-radius:3px;cursor:pointer;background:${hex};`;
+          b.addEventListener('click', () => setBackdropColor(hex));
+          container.appendChild(b);
+        });
+      }
+      const picker = document.getElementById('backdropColorInput');
+      if (picker) picker.addEventListener('input', (e) => setBackdropColor(e.target.value));
+    })();
+
+    // TIMELINE FUNCTIONS
+    // ============================================
+    const timelineContainer = document.getElementById('timelineContainer');
+    let pixelsPerSecond = 500;
+    const tierVisibility = { 0: true, 1: true, 2: true };
+    let syncEnabled = false;
+
+    function getScale() {
+      return pixelsPerSecond;
+    }
+    function timeToPx(time) { return time * getScale(); }
+    function pxToTime(px) { return px / getScale(); }
+
+    function updateTimelineWidth() {
+      const totalWidth = animationDuration * pixelsPerSecond;
+      document.getElementById('timelineTrack').style.width = totalWidth + "px";
+      document.getElementById('timeRuler').style.width = totalWidth + "px";
+      document.getElementById('customScrollbarContent').style.width = totalWidth + "px";
+    }
+
+    // Render time ruler
+    function renderTimeRuler() {
+      const ruler = document.getElementById('timeRuler');
+      ruler.innerHTML = "";
+      const tickInterval = 0.2;
+      for (let t = 0; t <= animationDuration; t += tickInterval) {
+        const tick = document.createElement('div');
+        tick.style.position = 'absolute';
+        tick.style.left = timeToPx(t) + 'px';
+        tick.style.top = '0px';
+        tick.style.width = '1px';
+        tick.style.height = '10px';
+        tick.style.backgroundColor = '#000';
+        ruler.appendChild(tick);
+        const label = document.createElement('div');
+        label.className = 'label';
+        label.style.position = 'absolute';
+        label.style.top = '10px';
+        label.textContent = (Math.abs(t - Math.round(t)) < 0.001) ? Math.round(t) : t.toFixed(1);
+        label.style.fontSize = (Math.abs(t - Math.round(t)) < 0.001) ? '10px' : '6px';
+        label.style.fontWeight = (Math.abs(t - Math.round(t)) < 0.001) ? 'bold' : 'normal';
+        label.style.left = (timeToPx(t) - 10) + 'px';
+        ruler.appendChild(label);
+      }
+      const centerLine = document.createElement('div');
+      centerLine.style.position = 'absolute';
+      centerLine.style.left = (animationDuration * getScale() / 2) + 'px';
+      centerLine.style.top = '0px';
+      centerLine.style.width = '2px';
+      centerLine.style.height = '20px';
+      centerLine.style.backgroundColor = 'red';
+      ruler.appendChild(centerLine);
+    }
+
+    // ============================================
+    // SUBTITLE EDITING HELPERS
+    // ============================================
+    let editingSubtitleId = null;
+
+    function deleteSubtitle(id) {
+      const sub = subtitles.find(s => s.id === id);
+      if (!sub) return;
+      if (syncEnabled) {
+        if (sub.cloneId) {
+          subtitles = subtitles.filter(s => s.id !== sub.id && s.id !== sub.cloneId);
+        } else if (sub.masterId) {
+          subtitles = subtitles.filter(s => s.id !== sub.id && s.id !== sub.masterId);
+        } else {
+          subtitles = subtitles.filter(s => s.id !== id);
+        }
+      } else {
+        subtitles = subtitles.filter(s => s.id !== id);
+      }
+      if (selectedSubId === id) { selectedSubId = null; onEndThreeCanvases(); }
+      renderAll();
+      uploadSubtitles();
+    }
+
+    function formatTime(seconds) {
+      let h = Math.floor(seconds / 3600),
+          m = Math.floor((seconds % 3600) / 60),
+          s = (seconds % 60).toFixed(3);
+      return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.padStart(6,'0')}`;
+    }
+
+    function generateWebVTT() {
+      let vtt = "WEBVTT\n\n";
+      subtitles.forEach((sub, index) => {
+        vtt += `${index+1}\n`;
+        vtt += `${formatTime(sub.start)} --> ${formatTime(sub.end)}\n`;
+        vtt += `${sub.text}\n\n`;
+      });
+      return vtt;
+    }
+
+    function updateSubtitleTrack() {
+      const overlay = document.getElementById('videoSubtitleOverlay');
+      const tier1Sub = subtitles.find(
+        sub => sub.tier === 1 && currentTime >= sub.start && currentTime <= sub.end
+      );
+      const tier2Sub = subtitles.find(
+        sub => sub.tier === 2 && currentTime >= sub.start && currentTime <= sub.end
+      );
+
+      overlay.innerHTML = "";
+
+      if (tier1Sub || tier2Sub) {
+        const container = document.createElement('div');
+        container.style.display = 'flex';
+        container.style.justifyContent = 'space-between';
+        container.style.width = '100%';
+
+        if (tier1Sub) {
+          const leftSpan = document.createElement('span');
+          leftSpan.style.textAlign = 'left';
+          leftSpan.textContent = tier1Sub.text;
+          container.appendChild(leftSpan);
+        }
+
+        if (tier2Sub) {
+          const rightSpan = document.createElement('span');
+          rightSpan.style.textAlign = 'right';
+          rightSpan.textContent = tier2Sub.text;
+          rightSpan.style.marginLeft = '10px';
+          container.appendChild(rightSpan);
+        }
+
+        overlay.appendChild(container);
+      }
+    }
+
+    // Current time arrow on timeline
+    const currentTimeArrow = document.createElement('div');
+    currentTimeArrow.id = "currentTimeArrow";
+    currentTimeArrow.innerText = "▼";
+    currentTimeArrow.style.position = "absolute";
+    currentTimeArrow.style.top = "0px";
+    currentTimeArrow.style.fontSize = "20px";
+    currentTimeArrow.style.color = "red";
+    currentTimeArrow.style.pointerEvents = "none";
+    currentTimeArrow.style.zIndex = "10000";
+    currentTimeArrow.style.transform = "translateX(-50%)"; // center the ▼ on the exact position
+    timelineContainer.appendChild(currentTimeArrow);
+
+    const currentTimeLine = document.createElement('div');
+    currentTimeLine.id = "currentTimeLine";
+    currentTimeLine.style.position = "absolute";
+    currentTimeLine.style.top = "20px";
+    currentTimeLine.style.width = "2px";
+    currentTimeLine.style.height = (TIER_HEIGHT * 3 - 20) + "px"; // span all three tiers
+    currentTimeLine.style.backgroundColor = "red";
+    currentTimeLine.style.pointerEvents = "none";
+    currentTimeLine.style.zIndex = "9999";
+    currentTimeLine.style.transform = "translateX(-50%)"; // center the 2px line on the exact position
+    timelineContainer.appendChild(currentTimeLine);
+
+    function updateCurrentTimeArrow() {
+      const absolutePosition = timeToPx(currentTime);
+      currentTimeArrow.style.left = absolutePosition + "px";
+      currentTimeLine.style.left = absolutePosition + "px"; // both centered via translateX(-50%)
+    }
+
+    timelineContainer.addEventListener('scroll', updateCurrentTimeArrow);
+
+    // Signbank preview container
+    const signbankPreviewContainer = document.getElementById('signbankPreviewContainer');
+    let currentGlossVideoUrl = null;
+
+    function showVideoPreview(element, videoUrl) {
+      currentGlossVideoUrl = videoUrl;
+      signbankPreviewContainer.style.display = 'block';
+      signbankPreviewContainer.innerHTML = `
+        <video width="100%" controls muted autoplay loop>
+          <source src="${videoUrl}" type="video/mp4">
+        </video>`;
+      const vid = signbankPreviewContainer.querySelector('video');
+      vid.loop = true;
+      vid.play().catch(() => {});
+    }
+
+    function hideVideoPreview() {
+      signbankPreviewContainer.style.display = 'none';
+      const vid = signbankPreviewContainer.querySelector('video');
+      if (vid) vid.pause();
+    }
+
+    function hideOtherDropdowns(currentBox) {
+      document.querySelectorAll('.glossary-dropdown').forEach(dd => {
+        if (!currentBox || !currentBox.contains(dd)) {
+          dd.style.display = 'none';
+        }
+      });
+      document.querySelectorAll('.subtitle-box .row').forEach(row => {
+        if (!currentBox || !currentBox.contains(row)) {
+          row.style.display = 'none';
+        }
+      });
+      document.querySelectorAll('.subtitle-box .dropdown').forEach(dropdown => {
+        if (!currentBox || !currentBox.contains(dropdown)) {
+          dropdown.style.display = 'none';
+        }
+      });
+    }
+
+    // Timeline mouse event updates canvas time
+    function updateCanvasTimeByEvent(e) {
+      const rect = timelineContainer.getBoundingClientRect();
+      const scrollLeft = timelineContainer.scrollLeft;
+      const offsetX = e.clientX - rect.left + scrollLeft;
+      const newTime = Math.max(0, Math.min(pxToTime(offsetX), animationDuration));
+      setCanvasTime(newTime, "mousemove");
+    }
+
+    function updatePreviewDiv(e) {
+      if (!waitingForEnd) return;
+      const rect = timelineContainer.getBoundingClientRect();
+      const mouseTime = pxToTime(e.clientX - rect.left + timelineContainer.scrollLeft);
+      let startTime = pendingStartTime, endTime = mouseTime;
+      if (endTime < startTime) {
+        pendingPreviewDiv.style.left = timeToPx(endTime) + 'px';
+        pendingPreviewDiv.style.width = (timeToPx(startTime) - timeToPx(endTime)) + 'px';
+      } else {
+        pendingPreviewDiv.style.left = timeToPx(startTime) + 'px';
+        pendingPreviewDiv.style.width = (timeToPx(endTime) - timeToPx(startTime)) + 'px';
+      }
+      const tier = timelineAddButton.dataset.tier || 0;
+      pendingPreviewDiv.style.top = (tier * TIER_HEIGHT) + 'px';
+      pendingPreviewDiv.style.height = TIER_HEIGHT + 'px';
+      pendingPreviewDiv.style.display = 'block';
+    }
+
+    function updateSubtitleBoxWidth(sub) {
+      const box = document.querySelector(`.subtitle-box[data-id="${sub.id}"]`);
+      if (box) {
+        box.style.width = timeToPx(sub.end - sub.start) + 'px';
+      }
+      updateSubtitleTrack();
+      renderTimeRuler();
+    }
+
+    function updateSubtitleBoxDimensions(sub) {
+      const box = document.querySelector(`.subtitle-box[data-id="${sub.id}"]`);
+      if (box) {
+        box.style.left = timeToPx(sub.start) + 'px';
+        box.style.width = timeToPx(sub.end - sub.start) + 'px';
+        box.style.top = (sub.tier * TIER_HEIGHT) + 'px';
+      }
+    }
+
+    // Capture 3D scene to 2D canvas at specific time
+    function captureSceneToCanvas(canvasCtx, time) {
+        if (!currentAnimationGroup || !isAnimationLoaded) return;
+        const savedTime = currentTime;
+        const targetFrame = animationFromFrame + (time * animationFrameRate);
+        currentAnimationGroup.goToFrame(targetFrame);
+        scene.render();
+        const renderCanvas = document.getElementById("renderCanvas");
+        // Center-crop the largest square from the 16:9 render so the square side
+        // previews show the (centered) signer without horizontal distortion.
+        const side = Math.min(renderCanvas.width, renderCanvas.height);
+        const sx = (renderCanvas.width - side) / 2;
+        const sy = (renderCanvas.height - side) / 2;
+        const dim = Math.round(side / 2);
+        canvasCtx.canvas.width = dim;
+        canvasCtx.canvas.height = dim;
+        canvasCtx.drawImage(renderCanvas, sx, sy, side, side, 0, 0, dim, dim);
+        // Restore original time
+        const restoreFrame = animationFromFrame + (savedTime * animationFrameRate);
+        currentAnimationGroup.goToFrame(restoreFrame);
+    }
+
+    function setSideCaps(show) {
+        const cl = document.getElementById('capLeft'), cr = document.getElementById('capRight');
+        if (cl) cl.style.display = show ? 'block' : 'none';
+        if (cr) cr.style.display = show ? 'block' : 'none';
+    }
+
+    function updateThreeCanvases(sub) {
+        if (!sub) return;
+        canvasLeft.style.display = 'block';
+        captureSceneToCanvas(ctxLeft, sub.start);
+        canvasRight.style.display = 'block';
+        captureSceneToCanvas(ctxRight, sub.end);
+        setSideCaps(true);
+    }
+
+    function onEndThreeCanvases() {
+        if (!dragActive && !leftResizeActive && !rightResizeActive) {
+            const sel = getSelectedSub();
+            if (sel) { updateThreeCanvases(sel); return; }   // keep showing the selected gloss
+            canvasLeft.style.display = 'none';
+            canvasRight.style.display = 'none';
+            ctxLeft.clearRect(0, 0, canvasLeft.width, canvasLeft.height);
+            ctxRight.clearRect(0, 0, canvasRight.width, canvasRight.height);
+            setSideCaps(false);
+            busyMoving = 0;
+        }
+    }
+
+    // ============================================
+    // RENDER ALL SUBTITLES
+    // ============================================
+    function renderAll() {
+      const timelineTrack = document.getElementById('timelineTrack');
+      timelineTrack.innerHTML = "";
+      if (waitingForEnd) timelineTrack.appendChild(pendingPreviewDiv);
+
+      const tracks = ["Nederlands", "Gebaar-voor-Gebaar", "Signbank ID glossen"];
+      const tierColors = ['var(--tier-0-color)', 'var(--tier-1-color)', 'var(--tier-2-color)'];
+      tracks.forEach((label, index) => {
+        if (!tierVisibility[index]) return;
+        const bg = document.createElement('div');
+        bg.style.position = 'absolute';
+        bg.className = `tier-label tier-${index}`;
+        bg.style.top = (index * TIER_HEIGHT) + 'px';
+        bg.style.left = '0';
+        bg.style.width = '100%';
+        bg.style.height = TIER_HEIGHT + 'px';
+        bg.style.backgroundColor = tierColors[index];
+        bg.style.opacity = '0.7';
+        bg.style.zIndex = '1';
+        bg.style.pointerEvents = 'none';
+        bg.innerText = label;
+        bg.style.fontSize = '14px';
+        bg.style.fontWeight = '500';
+        bg.style.lineHeight = TIER_HEIGHT + 'px';
+        bg.style.paddingLeft = '10px';
+        bg.style.borderBottom = '1px solid rgba(0,0,0,0.1)';
+        timelineTrack.appendChild(bg);
+      });
+
+      subtitles.forEach(sub => {
+        if (!tierVisibility[sub.tier]) return;
+        const box = document.createElement('div');
+        box.className = 'subtitle-box';
+        box.style.left = timeToPx(sub.start) + 'px';
+        box.style.width = timeToPx(sub.end - sub.start) + 'px';
+        box.style.top = (sub.tier * TIER_HEIGHT) + 'px';
+        box.style.height = TIER_HEIGHT + 'px';
+        box.dataset.id = sub.id;
+        // Use tier-specific border colors for uncommitted, gray for committed
+        const tierBorderColors = ['#1976d2', '#f57c00', '#388e3c'];
+        box.style.borderColor = sub.committed ? '#888' : tierBorderColors[sub.tier] || '#666';
+        box.style.zIndex = '1001';
+
+        box.addEventListener('mouseenter', e => {
+          hideOtherDropdowns(box);
+          updateCanvasTimeByEvent(e);
+          busyMoving = 1;
+          if (!dragActive && !leftResizeActive && !rightResizeActive) updateThreeCanvases(sub);
+        });
+        box.addEventListener('mousemove', updateCanvasTimeByEvent);
+        box.addEventListener('mouseleave', () => {
+          if (buttonLoopActiveSub && buttonLoopActiveSub.id === sub.id) {
+            clearInterval(buttonLoopInterval);
+            buttonLoopInterval = null;
+            buttonLoopActiveSub = null;
+            const loopBtn = box.querySelector('.loop-btn');
+            if (loopBtn) loopBtn.textContent = 'Loop';
+            if (wasPlayingBeforeButtonLoop) {
+              wasPlayingBeforeButtonLoop = false;
+              if (!playing) playBtn.click();
+            }
+          }
+          loopSubtitle = null;
+          loopDirection = 1;
+          onEndThreeCanvases();
+          hideVideoPreview();
+        });
+
+        const dropdown = document.createElement('div');
+        dropdown.style.position = 'absolute';
+        dropdown.className = 'dropdown subtitle-dropdown';
+        dropdown.style.top = TIER_HEIGHT + 'px';
+        dropdown.style.left = '0px';
+        dropdown.style.display = 'none';
+        dropdown.style.zIndex = '1002';
+        dropdown.style.whiteSpace = 'nowrap';  // Prevent wrapping
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'x';
+        deleteBtn.style.background = 'red';
+        deleteBtn.style.color = 'white';
+        deleteBtn.style.border = 'none';
+        deleteBtn.style.cursor = 'pointer';
+        deleteBtn.style.zIndex = '1003';
+        deleteBtn.className = 'delBtn';
+        deleteBtn.addEventListener('click', e => { e.stopPropagation(); deleteSubtitle(sub.id); });
+        dropdown.appendChild(deleteBtn);
+
+        const loopBtn = document.createElement('button');
+        loopBtn.textContent = (buttonLoopActiveSub && buttonLoopActiveSub.id === sub.id) ? 'Stop Loop' : 'Loop';
+        loopBtn.className = 'btn btn-sm btn-secondary loop-btn';
+        loopBtn.style.marginLeft = '5px';
+        loopBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          handleLoopButtonClick(sub, loopBtn);
+        });
+        dropdown.appendChild(loopBtn);
+
+        box.addEventListener('mouseenter', () => {
+          hideOtherDropdowns(box);
+          dropdown.style.display = 'flex';
+          timelineAddButton.style.display = 'none';
+          if (autoLoopEnabled && playing && !buttonLoopActiveSub) {
+            loopSubtitle = sub;
+            loopDirection = 1;
+            setCanvasTime(sub.start, "mouseenter-autoloop");
+          }
+          busyMoving = 1;
+          // Apply smart positioning to any visible dropdowns
+          requestAnimationFrame(() => {
+            const glossaryDD = box.querySelector('.glossary-dropdown');
+            if (glossaryDD && glossaryDD.style.display !== 'none') {
+              positionDropdown(glossaryDD, box);
+            }
+            const extraRow = box.querySelector('.row');
+            if (extraRow && extraRow.style.display !== 'none') {
+              positionDropdown(extraRow, box);
+            }
+          });
+          if (sub.tier === 2) {
+            let query = content.textContent.trim().toLowerCase();
+            if (query) {
+              const matches = glosses.filter(entry =>
+                entry['Annotation ID Gloss: Dutch']?.toLowerCase() === query
+              );
+              if (matches.length) { showVideoPreview(box, matches[0].Video); }
+            }
+          }
+        });
+
+        const dragHandle = document.createElement('div');
+        dragHandle.className = 'drag-handle';
+        dragHandle.addEventListener('mousedown', e => initDrag(e, sub.id));
+        box.appendChild(dragHandle);
+
+        const content = document.createElement('div');
+        content.className = 'content';
+        content.contentEditable = false;   // select on single-click; edit on double-click / Enter
+        content.innerText = sub.text;
+        content.addEventListener('blur', () => {
+          sub.text = content.innerText;
+          sub.committed = true;
+          syncTwin(sub);
+          document.getElementById('videoSubtitleOverlay').innerText = sub.text;
+          uploadSubtitles();
+          renderAll();
+        });
+        // Esc / Enter leave edit mode (blur autosaves + renderAll re-creates non-editable)
+        content.addEventListener('keydown', (e) => {
+          const dd = box.querySelector('.glossary-dropdown');
+          if ((e.key === 'Escape' || e.key === 'Enter')) {
+            if (dd && dd.style.display !== 'none') return; // dropdown open: let it handle first
+            e.preventDefault();
+            content.blur();
+          }
+        });
+        content.addEventListener('input', () => {
+          sub.text = content.innerText;
+          uploadSubtitles();
+        });
+        box.appendChild(content);
+
+        if (sub.tier === 2) {
+          const glossaryDD = document.createElement('div');
+          glossaryDD.className = 'glossary-dropdown';
+          glossaryDD.style.position = 'absolute';
+          glossaryDD.style.top = '50%';
+          glossaryDD.style.transform = 'translateY(-50%)';
+          glossaryDD.style.left = '100%';
+          glossaryDD.style.marginLeft = '10px';
+          glossaryDD.style.minWidth = '200px';
+          glossaryDD.style.maxHeight = '200px';
+          glossaryDD.style.overflowY = 'auto';
+          glossaryDD.style.overflowX = 'hidden';
+          glossaryDD.style.background = '#fff';
+          glossaryDD.style.border = '2px solid #007bff';
+          glossaryDD.style.borderRadius = '4px';
+          glossaryDD.style.display = 'none';
+          glossaryDD.style.zIndex = '5000';
+          box.appendChild(glossaryDD);
+
+          content.addEventListener('input', () => {
+            let query = content.textContent.trim().toLowerCase();
+            glossaryDD.innerHTML = "";
+            if (!query) {
+              glossaryDD.style.display = 'none';
+              return;
+            }
+            const matches = glosses.filter(entry => {
+              if (entry['Annotation ID Gloss: Dutch']?.toLowerCase().includes(query)) {
+                return true;
+              }
+              const senses = entry['Senses: Dutch'];
+              if (senses && typeof senses === 'object') {
+                for (const senseKey in senses) {
+                  const senseValue = senses[senseKey].toLowerCase();
+                  const senseTerms = senseValue.split(',').map(term => term.trim());
+                  if (senseTerms.some(term => term.includes(query))) {
+                    return true;
+                  }
+                }
+              }
+              return false;
+            });
+            if (matches.length) {
+              matches.slice(0, 10).forEach(entry => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'glossary-item';
+                const glossText = document.createElement('span');
+                glossText.textContent = entry['Annotation ID Gloss: Dutch'];
+                glossText.style.fontWeight = 'bold';
+                itemDiv.appendChild(glossText);
+                const senses = entry['Senses: Dutch'];
+                if (senses && typeof senses === 'object' && Object.keys(senses).length > 0) {
+                  const senseText = Object.values(senses).join('; ');
+                  const senseSpan = document.createElement('span');
+                  senseSpan.style.fontSize = '0.9em';
+                  senseSpan.style.color = '#666';
+                  senseSpan.style.marginLeft = '8px';
+                  senseSpan.style.fontStyle = 'italic';
+                  senseSpan.textContent = `(${senseText.toLowerCase()})`;
+                  itemDiv.appendChild(senseSpan);
+                }
+                itemDiv.addEventListener('mouseenter', () => showVideoPreview(itemDiv, entry.Video));
+                itemDiv.addEventListener('mouseleave', hideVideoPreview);
+                itemDiv.addEventListener('mousedown', function(e) {
+                  e.preventDefault();
+                  content.textContent = entry['Annotation ID Gloss: Dutch'];
+                  sub.text = entry['Annotation ID Gloss: Dutch'];
+                  glossaryDD.style.display = 'none';
+                  content.dispatchEvent(new Event('blur', { bubbles: true }));
+                  hideVideoPreview();
+                });
+                glossaryDD.appendChild(itemDiv);
+              });
+              glossaryDD.style.display = 'block';
+              // Apply smart positioning
+              requestAnimationFrame(() => positionDropdown(glossaryDD, box));
+            } else {
+              glossaryDD.style.display = 'none';
+            }
+          });
+
+          // Zoeken button for advanced search
+          const zoekenBtn = document.createElement('button');
+          zoekenBtn.textContent = 'Zoeken';
+          zoekenBtn.style.background = '#007bff';
+          zoekenBtn.style.color = '#fff';
+          zoekenBtn.style.border = 'none';
+          zoekenBtn.style.cursor = 'pointer';
+          zoekenBtn.style.fontSize = '10px';
+          zoekenBtn.style.marginLeft = '5px';
+
+          // Suggesties button
+          const suggestiesBtn = document.createElement('button');
+          suggestiesBtn.textContent = 'Suggesties';
+          suggestiesBtn.style.background = '#28a745';
+          suggestiesBtn.style.color = '#fff';
+          suggestiesBtn.style.border = 'none';
+          suggestiesBtn.style.cursor = 'pointer';
+          suggestiesBtn.style.fontSize = '10px';
+          suggestiesBtn.style.marginLeft = '5px';
+
+          // Extra row for dropdowns and results — vertically centered beside the box
+          // (same as subBeta8) so it isn't clipped by the timeline's bottom scrollbar
+          const extraRow = document.createElement('div');
+          extraRow.className = 'row extra-results-panel';
+          extraRow.style.display = 'none';
+          extraRow.style.position = 'absolute';
+          extraRow.style.top = '50%';
+          extraRow.style.transform = 'translateY(-50%)';
+          extraRow.style.left = '100%';
+          extraRow.style.marginLeft = '10px';
+          extraRow.style.minWidth = '400px';
+          extraRow.style.maxHeight = '200px';
+          extraRow.style.overflowY = 'auto';
+          extraRow.style.overflowX = 'hidden';
+          extraRow.style.background = '#fff';
+          extraRow.style.border = '2px solid #007bff';
+          extraRow.style.borderRadius = '4px';
+          extraRow.style.zIndex = '5000';
+          extraRow.style.padding = '10px';
+
+          const extraDropdowns = document.createElement('div');
+          extraDropdowns.className = 'additional-dropdowns col-md-6';
+          extraDropdowns.style.paddingRight = '10px';
+
+          const addDropdown = (labelText, optionsArray) => {
+            const select = document.createElement('select');
+            select.style.fontSize = '10px';
+            select.setAttribute('data-filter', labelText);
+            select.onchange = function() {
+              filterGlosses(labelText, select.value, box);
+            };
+            optionsArray.forEach(opt => {
+              const option = document.createElement('option');
+              option.value = opt;
+              option.textContent = opt;
+              select.appendChild(option);
+            });
+            extraDropdowns.appendChild(select);
+          };
+
+          addDropdown("sterke hand", sterkeHandOptions);
+          addDropdown("zwakke hand", zwakkeHandOptions);
+          addDropdown("handedness", handednessOptions);
+          addDropdown("Locatie", locatieOptions);
+          addDropdown("Beweging", bewegingOptions);
+
+          const filteredResults = document.createElement('div');
+          filteredResults.id = 'filtered-results';
+          filteredResults.className = 'col-md-6';
+          extraRow.appendChild(filteredResults);
+
+          const suggestiesResults = document.createElement('div');
+          suggestiesResults.id = 'suggesties-results';
+          suggestiesResults.className = 'col-md-6';
+          extraRow.appendChild(suggestiesResults);
+
+          zoekenBtn.addEventListener('mouseenter', () => {
+            extraRow.style.display = 'flex';
+            filteredResults.style.display = 'block';
+            suggestiesResults.style.display = 'none';
+            box.style.zIndex = '6000';   // bring the box (and its panel) to the front
+          });
+
+          suggestiesBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            extraRow.style.display = 'flex';
+            filteredResults.style.display = 'none';
+            suggestiesResults.style.display = 'block';
+            box.style.zIndex = '6000';   // bring the box (and its panel) to the front
+            showSuggestions(box);
+          });
+
+          extraRow.appendChild(extraDropdowns);
+          dropdown.appendChild(zoekenBtn);
+          dropdown.appendChild(suggestiesBtn);
+          box.appendChild(extraRow);  // Append to box (like subBeta8) so it centers beside the box
+        }
+
+        box.appendChild(dropdown);
+
+        const leftHandle = document.createElement('div');
+        leftHandle.className = 'resize-handle left';
+        leftHandle.addEventListener('mousedown', e => initLeftResize(e, sub.id));
+        box.appendChild(leftHandle);
+
+        const rightHandle = document.createElement('div');
+        rightHandle.className = 'resize-handle right';
+        rightHandle.addEventListener('mousedown', e => initRightResize(e, sub.id));
+        box.appendChild(rightHandle);
+
+        // Single-click selects the gloss (cyan outline); double-click edits its text
+        box.addEventListener('mousedown', (e) => {
+          if (e.target.closest('.resize-handle, .drag-handle, .dropdown, button')) return;
+          selectSub(sub.id);
+        });
+        box.addEventListener('dblclick', (e) => {
+          if (e.target.closest('.resize-handle, .drag-handle, .dropdown, button')) return;
+          selectSub(sub.id);
+          enterEditMode(box);
+        });
+
+        timelineTrack.appendChild(box);
+      });
+
+      applySelectionHighlight();
+
+      updateSubtitleTrack();
+      renderTimeRuler();
+    }
+
+    // ============================================
+    // SELECTION + KEYBOARD EDITING (ported from subBeta8)
+    // ============================================
+    function getSelectedSub() { return subtitles.find(s => s.id === selectedSubId) || null; }
+    function applySelectionHighlight() {
+      document.querySelectorAll('.subtitle-box').forEach(b => {
+        b.classList.toggle('selected-sub', String(b.dataset.id) === String(selectedSubId));
+      });
+    }
+    function selectSub(id, opts = {}) {
+      selectedSubId = id;
+      applySelectionHighlight();
+      const sub = getSelectedSub();
+      if (sub) {
+        if (opts.snapPlayhead) setCanvasTime(sub.start, 'select');
+        const box = document.querySelector('.subtitle-box[data-id="' + id + '"]');
+        if (box && box.scrollIntoView) box.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        updateThreeCanvases(sub);
+      }
+    }
+    function updateTwinBox(s) {
+      const tw = s.cloneId ? subtitles.find(x => x.id === s.cloneId)
+               : s.masterId ? subtitles.find(x => x.id === s.masterId) : null;
+      if (tw) updateSubtitleBoxDimensions(tw);
+    }
+    function enterEditMode(box) {
+      if (!box) return;
+      const c = box.querySelector('.content');
+      if (!c) return;
+      c.contentEditable = true;
+      c.focus();
+      const range = document.createRange();
+      range.selectNodeContents(c);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+    // Nudge helpers. Step = one animation frame; boundaries freeze against locked
+    // neighbours on the same tier (never push or overlap them).
+    function stepSize() { return 1 / (animationFrameRate || 30); }
+    function snapStep(t) { const s = stepSize(); return Math.round(t / s) * s; }
+    function nudgeLeftBoundary(sub, frames) {
+      const step = stepSize();
+      let ns = snapStep(sub.start + frames * step);
+      let leftLimit = 0;
+      subtitles.forEach(s => {
+        if (s.tier === sub.tier && s.id !== sub.id && s.end <= sub.end && s.end > leftLimit) leftLimit = s.end;
+      });
+      ns = Math.max(leftLimit, ns);
+      ns = Math.max(0, Math.min(ns, sub.end - step));
+      sub.start = ns;
+      updateSubtitleBoxDimensions(sub); syncTwin(sub); updateTwinBox(sub);
+      setCanvasTime(sub.start, 'keyboard'); updateThreeCanvases(sub); uploadSubtitles();
+    }
+    function nudgeRightBoundary(sub, frames) {
+      const step = stepSize();
+      let ne = snapStep(sub.end + frames * step);
+      let rightLimit = animationDuration;
+      subtitles.forEach(s => {
+        if (s.tier === sub.tier && s.id !== sub.id && s.start >= sub.start && s.start < rightLimit) rightLimit = s.start;
+      });
+      ne = Math.min(rightLimit, ne);
+      ne = Math.min(animationDuration, Math.max(ne, sub.start + step));
+      sub.end = ne;
+      updateSubtitleBoxWidth(sub); syncTwin(sub); updateTwinBox(sub);
+      setCanvasTime(sub.end, 'keyboard'); updateThreeCanvases(sub); uploadSubtitles();
+    }
+    function nudgeWholeBlock(sub, frames) {
+      const step = stepSize();
+      const len = sub.end - sub.start;
+      let ns = snapStep(sub.start + frames * step);
+      let leftLimit = 0, rightLimit = animationDuration;
+      subtitles.forEach(s => {
+        if (s.tier !== sub.tier || s.id === sub.id) return;
+        if (s.end <= sub.start && s.end > leftLimit) leftLimit = s.end;
+        if (s.start >= sub.end && s.start < rightLimit) rightLimit = s.start;
+      });
+      ns = Math.max(leftLimit, Math.min(ns, rightLimit - len));
+      ns = Math.max(0, Math.min(ns, animationDuration - len));
+      sub.start = ns; sub.end = ns + len;
+      updateSubtitleBoxDimensions(sub); syncTwin(sub); updateTwinBox(sub);
+      setCanvasTime(sub.start, 'keyboard'); updateThreeCanvases(sub); uploadSubtitles();
+    }
+
+    // ============================================
+    // DRAGGING
+    // ============================================
+    let dragActive = false, dragId = null, dragStartX = 0, dragStartY = 0, origStart = 0, origTier = 0, duration = 0;
+
+    function initDrag(e, id) {
+      const sub = subtitles.find(s => s.id === id);
+      e.stopPropagation();
+      dragActive = true;
+      dragId = id;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      origStart = sub.start;
+      origTier = sub.tier;
+      duration = sub.end - sub.start;
+      busyMoving = 1;
+      document.addEventListener('mousemove', onDrag);
+      document.addEventListener('mouseup', endDrag);
+      e.preventDefault();
+    }
+
+    function onDrag(e) {
+      if (!dragActive) return;
+      const sub = subtitles.find(s => s.id === dragId);
+      let dx = e.clientX - dragStartX, dy = e.clientY - dragStartY;
+      // Update tier first so neighbour lookups use the destination tier
+      let newTier = origTier + Math.round(dy / TIER_HEIGHT);
+      sub.tier = Math.min(Math.max(0, newTier), 2);
+      let newStart = origStart + pxToTime(dx);
+      newStart = Math.max(0, Math.min(newStart, animationDuration - duration));
+      // Freeze against same-tier neighbours: confine the box to its current gap
+      // (neighbours stay locked in place; the dragged box stops when it touches one)
+      let leftLimit = 0, rightLimit = animationDuration;
+      subtitles.forEach(s => {
+        if (s.tier !== sub.tier || s.id === sub.id) return;
+        if (s.end <= sub.start && s.end > leftLimit) leftLimit = s.end;
+        if (s.start >= sub.end && s.start < rightLimit) rightLimit = s.start;
+      });
+      newStart = Math.max(leftLimit, Math.min(newStart, rightLimit - duration));
+      newStart = Math.max(0, Math.min(newStart, animationDuration - duration));
+      sub.start = newStart;
+      sub.end = newStart + duration;
+      syncTwin(sub);
+      updateSubtitleBoxDimensions(sub);
+      if (sub.cloneId) {
+        const twin = subtitles.find(s => s.id === sub.cloneId);
+        if (twin) updateSubtitleBoxDimensions(twin);
+      } else if (sub.masterId) {
+        const master = subtitles.find(s => s.id === sub.masterId);
+        if (master) updateSubtitleBoxDimensions(master);
+      }
+      const rect = timelineContainer.getBoundingClientRect();
+      const newTime = pxToTime(e.clientX - rect.left);
+      setCanvasTime(newTime, "drag");
+      updateThreeCanvases(sub);
+      hideVideoPreview();
+      uploadSubtitles();
+    }
+
+    function endDrag() {
+      dragActive = false;
+      dragId = null;
+      document.removeEventListener('mousemove', onDrag);
+      document.removeEventListener('mouseup', endDrag);
+      onEndThreeCanvases();
+      uploadSubtitles();
+    }
+
+    // ============================================
+    // LEFT RESIZE
+    // ============================================
+    let leftResizeActive = false, leftResizeId = null, leftResizeStartX = 0, origSubStart = 0;
+
+    function initLeftResize(e, id) {
+      const sub = subtitles.find(s => s.id === id);
+      e.stopPropagation();
+      autoLoopEnabled = false;
+      hideVideoPreview();
+      leftResizeActive = true;
+      leftResizeId = id;
+      leftResizeStartX = e.clientX;
+      origSubStart = sub.start;
+      busyMoving = 1;
+      document.addEventListener('mousemove', onLeftResize);
+      document.addEventListener('mouseup', endLeftResize);
+      e.preventDefault();
+    }
+
+    function onLeftResize(e) {
+      if (!leftResizeActive) return;
+      const sub = subtitles.find(s => s.id === leftResizeId);
+      let dt = pxToTime(e.clientX - leftResizeStartX);
+      let newStart = origSubStart + dt;
+      // Freeze against the nearest left-hand neighbour on this tier (it stays locked)
+      let leftLimit = 0;
+      subtitles.forEach(s => {
+        if (s.tier === sub.tier && s.id !== sub.id && s.end <= sub.end && s.end > leftLimit) leftLimit = s.end;
+      });
+      newStart = Math.max(leftLimit, newStart);
+      newStart = Math.max(0, Math.min(newStart, sub.end - 0.01));
+      sub.start = newStart;
+      syncTwin(sub);
+      const rect = timelineContainer.getBoundingClientRect();
+      const newTime = pxToTime(e.clientX - rect.left + timelineContainer.scrollLeft);
+      setCanvasTime(newTime, "leftResize");
+      updateThreeCanvases(sub);
+      updateSubtitleBoxDimensions(sub);
+      if (sub.cloneId) {
+        const twin = subtitles.find(s => s.id === sub.cloneId);
+        if (twin) updateSubtitleBoxDimensions(twin);
+      } else if (sub.masterId) {
+        const master = subtitles.find(s => s.id === sub.masterId);
+        if (master) updateSubtitleBoxDimensions(master);
+      }
+      uploadSubtitles();
+    }
+
+    function endLeftResize() {
+      leftResizeActive = false;
+      leftResizeId = null;
+      autoLoopEnabled = true;
+      document.removeEventListener('mousemove', onLeftResize);
+      document.removeEventListener('mouseup', endLeftResize);
+      onEndThreeCanvases();
+      uploadSubtitles();
+    }
+
+    // ============================================
+    // RIGHT RESIZE
+    // ============================================
+    let rightResizeActive = false, rightResizeId = null, rightResizeStartX = 0, origSubEnd = 0;
+
+    function initRightResize(e, id) {
+      const sub = subtitles.find(s => s.id === id);
+      e.stopPropagation();
+      autoLoopEnabled = false;
+      hideVideoPreview();
+      rightResizeActive = true;
+      rightResizeId = id;
+      rightResizeStartX = e.clientX;
+      origSubEnd = sub.end;
+      busyMoving = 1;
+      document.addEventListener('mousemove', onRightResize);
+      document.addEventListener('mouseup', endRightResize);
+      e.preventDefault();
+    }
+
+    function onRightResize(e) {
+      if (!rightResizeActive) return;
+      const sub = subtitles.find(s => s.id === rightResizeId);
+      let dt = pxToTime(e.clientX - rightResizeStartX);
+      let newEnd = origSubEnd + dt;
+      // Freeze against the nearest right-hand neighbour on this tier (it stays locked)
+      let rightLimit = animationDuration;
+      subtitles.forEach(s => {
+        if (s.tier === sub.tier && s.id !== sub.id && s.start >= sub.start && s.start < rightLimit) rightLimit = s.start;
+      });
+      newEnd = Math.min(rightLimit, newEnd);
+      newEnd = Math.min(animationDuration, Math.max(newEnd, sub.start + 0.01));
+      sub.end = newEnd;
+      syncTwin(sub);
+      const rect = timelineContainer.getBoundingClientRect();
+      const newTime = pxToTime(e.clientX - rect.left + timelineContainer.scrollLeft);
+      setCanvasTime(newTime, "rightResize");
+      updateThreeCanvases(sub);
+      updateSubtitleBoxWidth(sub);
+      if (sub.cloneId) {
+        const twin = subtitles.find(s => s.id === sub.cloneId);
+        if (twin) updateSubtitleBoxDimensions(twin);
+      } else if (sub.masterId) {
+        const master = subtitles.find(s => s.id === sub.masterId);
+        if (master) updateSubtitleBoxDimensions(master);
+      }
+      uploadSubtitles();
+    }
+
+    function endRightResize() {
+      rightResizeActive = false;
+      rightResizeId = null;
+      autoLoopEnabled = true;
+      document.removeEventListener('mousemove', onRightResize);
+      document.removeEventListener('mouseup', endRightResize);
+      onEndThreeCanvases();
+      uploadSubtitles();
+    }
+
+    // ============================================
+    // TIMELINE ADD BUTTON
+    // ============================================
+    const timelineAddButton = document.createElement('button');
+    timelineAddButton.id = 'timelineAddBtn';
+    timelineAddButton.textContent = '+';
+    timelineAddButton.style.position = 'absolute';
+    timelineAddButton.style.display = 'none';
+    timelineAddButton.style.zIndex = '1000';
+    timelineAddButton.addEventListener('click', timelineAddClick);
+    timelineContainer.appendChild(timelineAddButton);
+
+    const timelineTrack = document.getElementById('timelineTrack');
+
+    // General mousemove handler to update arrow position when hovering over timeline
+    timelineTrack.addEventListener('mousemove', function(e) {
+      if (waitingForEnd || dragActive || leftResizeActive || rightResizeActive) return;
+      updateCanvasTimeByEvent(e);
+    });
+
+    timelineTrack.addEventListener('click', function(e) {
+      if (e.target.closest('.subtitle-box')) return;
+      const rect = timelineContainer.getBoundingClientRect();
+      const offsetX = e.clientX - rect.left + timelineContainer.scrollLeft;
+      const offsetY = e.clientY - rect.top;
+      const tier = Math.floor(offsetY / TIER_HEIGHT);
+      timelineAddButton.dataset.tier = tier;
+      timelineAddButton.style.left = (offsetX - timelineAddButton.offsetWidth/2) + 'px';
+      timelineAddButton.style.top = (offsetY - timelineAddButton.offsetHeight/2) + 'px';
+      timelineAddButton.style.display = 'block';
+      pendingStartTime = null;
+      waitingForEnd = false;
+      timelineAddButton.textContent = '+';
+      pendingPreviewDiv.style.display = 'none';
+      e.stopPropagation();
+    });
+
+    timelineContainer.addEventListener('mousemove', function(e) {
+      if (waitingForEnd) {
+        const rect = timelineContainer.getBoundingClientRect();
+        const offsetX = e.clientX - rect.left + timelineContainer.scrollLeft;
+        const offsetY = e.clientY - rect.top;
+        timelineAddButton.style.left = (offsetX - timelineAddButton.offsetWidth/2) + 'px';
+        timelineAddButton.style.top = (offsetY - timelineAddButton.offsetHeight/2) + 'px';
+        updateCanvasTimeByEvent(e);
+        updatePreviewDiv(e);
+      }
+    });
+
+    function timelineAddClick(e) {
+      e.stopPropagation();
+      const buttonCenterX = parseFloat(timelineAddButton.style.left) + timelineAddButton.offsetWidth / 2;
+      const currentTimeForAdd = Math.max(0, Math.min(pxToTime(buttonCenterX), animationDuration - 0.01));
+      const tier = parseInt(timelineAddButton.dataset.tier, 10) || 0;
+
+      if (!waitingForEnd) {
+        pendingStartTime = currentTimeForAdd;
+        waitingForEnd = true;
+        timelineAddButton.textContent = "Set";
+        setCanvasTime(pendingStartTime, "click");
+        pendingPreviewDiv.style.display = 'block';
+        pendingPreviewDiv.style.left = timeToPx(pendingStartTime) + 'px';
+        pendingPreviewDiv.style.width = '0px';
+        pendingPreviewDiv.style.top = (tier * TIER_HEIGHT) + 'px';
+        pendingPreviewDiv.style.height = TIER_HEIGHT + 'px';
+        timelineContainer.addEventListener('mousemove', updatePreviewDiv);
+      } else {
+        let newStart = pendingStartTime;
+        let newEnd = currentTimeForAdd;
+        if (newEnd <= newStart) newEnd = newStart + 0.2;
+        if (tier === 1 || tier === 2) {
+          if (syncEnabled) {
+            uniqueId++;
+            const master = { id: uniqueId, text: '', start: newStart, end: newEnd, tier: 1, committed: false };
+            uniqueId++;
+            const twin = { id: uniqueId, text: '', start: newStart, end: newEnd, tier: 2, committed: false, masterId: master.id };
+            master.cloneId = twin.id;
+            subtitles.push(master, twin);
+          } else {
+            uniqueId++;
+            subtitles.push({ id: uniqueId, text: '', start: newStart, end: newEnd, tier: tier, committed: false });
+          }
+        } else {
+          uniqueId++;
+          subtitles.push({ id: uniqueId, text: '', start: newStart, end: newEnd, tier: tier, committed: false });
+        }
+        pendingStartTime = null;
+        waitingForEnd = false;
+        timelineAddButton.style.display = 'none';
+        pendingPreviewDiv.style.display = 'none';
+        timelineContainer.removeEventListener('mousemove', updatePreviewDiv);
+        renderAll();
+      }
+    }
+
+    timelineContainer.addEventListener('click', function(e) {
+      if (e.target === timelineContainer && editingSubtitleId !== null) {
+        const sub = subtitles.find(s => s.id === editingSubtitleId);
+        if (sub) { sub.committed = true; }
+        editingSubtitleId = null;
+        renderAll();
+      }
+    });
+
+    function syncTwin(updatedSub) {
+      if (!syncEnabled) return;
+      let master, twin;
+      if (updatedSub.tier === 1) {
+        master = updatedSub;
+        twin = subtitles.find(s => s.id === updatedSub.cloneId);
+      } else if (updatedSub.tier === 2) {
+        twin = updatedSub;
+        master = subtitles.find(s => s.id === updatedSub.masterId);
+      }
+      if (master && twin) {
+        master.start = updatedSub.start;
+        master.end = updatedSub.end;
+        twin.start = updatedSub.start;
+        twin.end = updatedSub.end;
+      }
+    }
+
+    function downloadSubtitle() {
+      const params = new URLSearchParams(window.location.search);
+      let filename = params.get('filename');
+      if (filename) {
+        filename = filename.replace(/\.wav$/, '');
+      } else {
+        filename = '3d_annotation';
+      }
+      const trackNames = ["Gebaar-voor-Gebaar", "Nederlands", "Signbank ID glossen"];
+      trackNames.forEach((trackName, tid) => {
+        const subsForTrack = subtitles.filter(sub => sub.tier === tid);
+        if (!subsForTrack.length) return;
+        let vtt = "WEBVTT\n\n";
+        subsForTrack.forEach((sub, idx) => {
+          vtt += `${idx+1}\n`;
+          vtt += `${formatTime(sub.start)} --> ${formatTime(sub.end)}\n`;
+          vtt += `${sub.text}\n\n`;
+        });
+        const blob = new Blob([vtt], { type: 'text/vtt' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${filename} ${trackName}.vtt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    // ============================================
+    // SPEED CONTROLS
+    // ============================================
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const speed = parseFloat(this.dataset.speed);
+        playbackSpeed = speed;
+        document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        if (playing) {
+          clearInterval(playInterval);
+          playInterval = setInterval(() => {
+            let newTime;
+            if (loopSubtitle && autoLoopEnabled) {
+              newTime = currentTime + (loopDirection * (playbackSpeed / animationFrameRate));
+              if (loopDirection === 1 && newTime >= loopSubtitle.end) {
+                newTime = loopSubtitle.end;
+                loopDirection = -1;
+              } else if (loopDirection === -1 && newTime <= loopSubtitle.start) {
+                newTime = loopSubtitle.start;
+                loopDirection = 1;
+              }
+              setCanvasTime(newTime, "playing-hover-loop-speed-change");
+            } else {
+              newTime = currentTime + (playbackSpeed / animationFrameRate);
+              if (newTime >= animationDuration) newTime = 0;
+              setCanvasTime(newTime, "playing-speed-change");
+            }
+          }, 1000 / animationFrameRate);
+        }
+        if (buttonLoopInterval && buttonLoopActiveSub) {
+          clearInterval(buttonLoopInterval);
+          buttonLoopInterval = setInterval(() => {
+            if (!buttonLoopActiveSub) {
+              clearInterval(buttonLoopInterval);
+              buttonLoopInterval = null;
+              return;
+            }
+            let newTime = currentTime + (playbackSpeed / animationFrameRate);
+            if (newTime >= buttonLoopActiveSub.end) {
+              newTime = buttonLoopActiveSub.start;
+            }
+            setCanvasTime(newTime, "button-loop-speed-change");
+          }, 1000 / animationFrameRate);
+        }
+        console.log("Selected playback speed:", playbackSpeed);
+      });
+    });
+
+    // Zoom button event listeners
+    document.getElementById('zoomInBtn').addEventListener('click', function() {
+      pixelsPerSecond = Math.min(1000, pixelsPerSecond + 50);
+      updateTimelineWidth();
+      renderTimeRuler();
+      renderAll();
+      updateCurrentTimeArrow();
+    });
+
+    document.getElementById('zoomOutBtn').addEventListener('click', function() {
+      pixelsPerSecond = Math.max(50, pixelsPerSecond - 50);
+      updateTimelineWidth();
+      renderTimeRuler();
+      renderAll();
+      updateCurrentTimeArrow();
+    });
+
+    // Shift all subtitles buttons
+    function shiftAllSubtitles(seconds) {
+      subtitles.forEach(sub => {
+        sub.start = Math.max(0, sub.start + seconds);
+        sub.end = Math.max(sub.start + 0.01, sub.end + seconds);
+      });
+      renderAll();
+      uploadSubtitles();
+    }
+
+    document.getElementById('shiftAllMinus1').addEventListener('click', function() {
+      shiftAllSubtitles(-1);
+    });
+
+    document.getElementById('shiftAllMinus01').addEventListener('click', function() {
+      shiftAllSubtitles(-0.1);
+    });
+
+    document.getElementById('shiftAllPlus01').addEventListener('click', function() {
+      shiftAllSubtitles(0.1);
+    });
+
+    document.getElementById('shiftAllPlus1').addEventListener('click', function() {
+      shiftAllSubtitles(1);
+    });
+
+    // ============================================
+    // SUBTITLE PARSING AND UPLOAD
+    // ============================================
+    function parseTimeStamp(timeStr) {
+      const [h, m, s] = timeStr.split(':');
+      const [sec, ms] = s.split(',');
+      return parseInt(h)*3600 + parseInt(m)*60 + parseInt(sec) + parseInt(ms)/1000;
+    }
+
+    function parseTimeRange(rangeStr) {
+      if (!rangeStr || typeof rangeStr !== 'string') return { start: 0, end: 0 };
+      const parts = rangeStr.split('-->');
+      if (parts.length !== 2) return { start: 0, end: 0 };
+      return { start: parseTimeStamp(parts[0].trim()), end: parseTimeStamp(parts[1].trim()) };
+    }
+
+    function transformSubtitles(rawSubtitles) {
+      const trackMapping = {
+        'Nederlands': 0,
+        'Gebaar-voor-Gebaar': 1,
+        'Signbank ID glossen': 2
+      };
+      const transformed = [];
+      Object.keys(rawSubtitles).forEach(trackKey => {
+        const tier = trackMapping[trackKey] || 0;
+        const data = rawSubtitles[trackKey];
+        if (!data || data.length === 0) return;
+        if (Array.isArray(data)) {
+          uniqueId++;
+          const { start, end } = parseTimeRange(data[1]);
+          const text = data[2] || '';
+          transformed.push({ id: uniqueId, text, start, end, tier, committed: true });
+        } else if (typeof data === 'object') {
+          const keys = Object.keys(data).filter(k => !isNaN(k)).sort((a, b) => parseInt(a) - parseInt(b));
+          for (let i = 0; i < keys.length; i += 3) {
+            uniqueId++;
+            const timing = data[keys[i + 1]];
+            const { start, end } = parseTimeRange(timing);
+            const text = data[keys[i + 2]] || '';
+            transformed.push({ id: uniqueId, text, start, end, tier, committed: true });
+          }
+        }
+      });
+      const tierCounters = {};
+      transformed.forEach(sub => {
+        tierCounters[sub.tier] = (tierCounters[sub.tier] || 0) + 1;
+        sub.id = `tier${sub.tier}_${tierCounters[sub.tier]}`;
+      });
+      return transformed;
+    }
+
+    async function fetchSubtitlesFromServer() {
+      const params = new URLSearchParams(window.location.search);
+      let fileParam = params.get('filename') || '';
+      // Fallback: extract filename from glb parameter if filename not provided
+      if (!fileParam) {
+        const glbParam = params.get('glb') || '';
+        if (glbParam) {
+          // Extract filename without path and extension (e.g., M20241210_0289_251118_0)
+          fileParam = glbParam.split('/').pop().replace(/\.[^.]+$/, '');
+        }
+      }
+      try {
+        const response = await fetch(`getZinnen.php?action=fetchSubtitles&filename=${encodeURIComponent(fileParam)}`);
+        const data = await response.json();
+        if (data.success && data.subtitles) {
+          subtitles = transformSubtitles(data.subtitles);
+          renderAll();
+          // Verify SRT file integrity on load
+          verifySubtitlesOnDisk();
+        } else {
+          console.error('Failed to load subtitles', data.error);
+        }
+      } catch (err) {
+        console.error('Error fetching subtitles', err);
+      }
+    }
+    fetchSubtitlesFromServer();
+
+    // Resolve the save filename (supports ?filename= and ?glb= fallback), sanitized.
+    function getSaveFilename() {
+      const params = new URLSearchParams(window.location.search);
+      let fileParam = params.get('filename') || '';
+      if (!fileParam) {
+        const glbParam = params.get('glb') || '';
+        if (glbParam) {
+          fileParam = glbParam.split('/').pop().replace(/\.[^.]+$/, '');
+        }
+      }
+      return fileParam.replace(/\s+/g, '_');
+    }
+
+    // Toast notification (success / error)
+    function showToast(message, type = 'success', duration = 2500) {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = 'toast-msg ' + type;
+      toast.textContent = message;
+      container.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.add('show'));
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, duration);
+    }
+
+    // Verify the annotation files actually landed on disk after saving
+    async function verifySubtitlesOnDisk() {
+      const fileParam = getSaveFilename();
+      if (!fileParam) return;
+      try {
+        const response = await fetch(`getZinnen.php?action=verifySubtitles&filename=${encodeURIComponent(fileParam)}`);
+        const data = await response.json();
+        if (data.success && data.verified === false && data.mismatches) {
+          console.warn('SRT mismatch detected:', data.mismatches);
+          showToast('Let op: opgeslagen bestand wijkt af van editor!', 'error', 5000);
+        }
+      } catch (err) {
+        console.error('Verification error', err);
+      }
+    }
+
+    // Track unsaved changes so we can guarantee a save before the user leaves
+    let hasUnsavedChanges = false;
+    let isSavingBeforeUnload = false;
+
+    // Last-resort synchronous save when the tab/window is closing
+    window.addEventListener('beforeunload', function () {
+      if (hasUnsavedChanges && !isSavingBeforeUnload) {
+        const fileParam = getSaveFilename();
+        if (fileParam) {
+          const blob = new Blob([JSON.stringify({ subtitles: subtitles })], { type: 'application/json' });
+          navigator.sendBeacon('getZinnen.php?action=saveSubtitlesAndEAFFiles&filename=' + encodeURIComponent(fileParam), blob);
+        }
+      }
+    });
+
+    // Intercept in-page navigation links to save before leaving
+    document.addEventListener('click', function (e) {
+      const link = e.target.closest('a[href]');
+      if (!link || !hasUnsavedChanges) return;
+      const href = link.getAttribute('href');
+      if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+      e.preventDefault();
+      isSavingBeforeUnload = true;
+      saveAndNavigate(href);
+    });
+
+    async function saveAndNavigate(destination) {
+      try {
+        clearTimeout(autosaveTimer);
+        await performUpload();
+        showToast('Opgeslagen!', 'success', 1000);
+        setTimeout(() => { window.location.href = destination; }, 300);
+      } catch (err) {
+        showToast('Opslaan mislukt!', 'error', 4000);
+        isSavingBeforeUnload = false;
+        if (confirm('Opslaan is mislukt. Toch de pagina verlaten?')) {
+          hasUnsavedChanges = false;
+          window.location.href = destination;
+        }
+      }
+    }
+
+    // Save on browser back/forward as well
+    window.addEventListener('popstate', function () {
+      if (hasUnsavedChanges) {
+        saveAndNavigate(document.location.href);
+      }
+    });
+
+    // Re-verify on disk when returning to the tab (no pending edits)
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible' && !hasUnsavedChanges) {
+        verifySubtitlesOnDisk();
+      }
+    });
+
+    function uploadSubtitles() {
+      hasUnsavedChanges = true;
+      clearTimeout(autosaveTimer);
+      autosaveTimer = setTimeout(() => { performUpload().catch(() => {}); }, 1000);
+    }
+
+    async function performUpload() {
+      const sanitizedFileParam = getSaveFilename();
+      if (!sanitizedFileParam) {
+        console.warn("Cannot save subtitles without a filename.");
+        return;
+      }
+      try {
+        console.log("Performing autosave:", subtitles);
+        const response = await fetch('getZinnen.php?action=saveSubtitlesAndEAFFiles&filename='+sanitizedFileParam, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subtitles: subtitles })
+        });
+        const data = await response.json();
+        if (data.success) {
+          console.log("Autosave successful.");
+          hasUnsavedChanges = false;
+          document.getElementById('saveSubtitlesBtn').textContent = "Autosave Enabled";
+          showToast('Saving successful', 'success');
+          // Confirm the files really landed on disk
+          verifySubtitlesOnDisk();
+        } else {
+          console.error("Autosave failed:", data.error);
+          document.getElementById('saveSubtitlesBtn').textContent = "Save Failed!";
+          showToast('Save failed: ' + data.error, 'error', 5000);
+          throw new Error(data.error || 'Save failed');
+        }
+      } catch (err) {
+        console.error('Upload error', err);
+        document.getElementById('saveSubtitlesBtn').textContent = "Save Error!";
+        showToast('Network error - changes NOT saved!', 'error', 5000);
+        throw err;
+      }
+    }
+
+    function addSubtitle() {
+      uniqueId++;
+      const newStart = 0, defaultDur = 0.2;
+      subtitles.push({ id: uniqueId, text: '', start: newStart, end: newStart + defaultDur, tier: 0 });
+      renderAll();
+      uploadSubtitles();
+    }
+
+    // ============================================
+    // GLOSSARY SEARCH FUNCTIONS
+    // ============================================
+
+    // Filter glosses based on senses
+    function filterSensesList(searchTerm, container) {
+        let lowerSearchTerm = searchTerm.toLowerCase().trim();
+        if (!lowerSearchTerm) return [];
+        const specialChars = /[^\w\s]/g;
+        lowerSearchTerm = lowerSearchTerm.replace(specialChars, '');
+        return glosses.filter(gloss => {
+            const senses = gloss["Senses: Dutch"];
+            if (senses && typeof senses === 'object') {
+                for (const key in senses) {
+                    const senseText = senses[key]?.toLowerCase();
+                    if (senseText) {
+                        const senseWords = senseText.split(',').map(word => word.trim());
+                        if (senseWords.includes(lowerSearchTerm)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
+    // Show suggestions based on zinArray
+    function showSuggestions(container) {
+        const suggestiesContainer = container.querySelector('#suggesties-results');
+        if (!suggestiesContainer) return;
+
+        suggestiesContainer.innerHTML = '<i>Loading suggestions...</i>';
+        let allSuggestions = [];
+        let processedWords = new Set();
+
+        currentZinArray.forEach(word => {
+            let lowerWord = word.toLowerCase().trim();
+            const specialChars = /[^\w\s]/g;
+            lowerWord = lowerWord.replace(specialChars, '');
+            if (lowerWord && !processedWords.has(lowerWord)) {
+                const matches = filterSensesList(lowerWord, container);
+                allSuggestions = allSuggestions.concat(matches);
+                processedWords.add(lowerWord);
+            }
+        });
+
+        // Remove duplicate glosses
+        const uniqueSuggestions = allSuggestions.filter((gloss, index, self) =>
+            index === self.findIndex((g) => (g.id === gloss.id))
+        );
+
+        displayGlosses(uniqueSuggestions, container, suggestiesContainer);
+    }
+
+    // Filter glosses by dropdown selections
+    function filterGlosses(filterId, filterValue, container) {
+        let strong = container.querySelector('select[data-filter="sterke hand"]')?.value || "";
+        let handed = container.querySelector('select[data-filter="handedness"]')?.value || "";
+        let weak   = container.querySelector('select[data-filter="zwakke hand"]')?.value || "";
+        let movement = container.querySelector('select[data-filter="Beweging"]')?.value || "";
+        let location = container.querySelector('select[data-filter="Locatie"]')?.value || "";
+        strong = strong.replace("Sterke Hand", "");
+        handed = handed.replace("Handedness", "");
+        weak = weak.replace("Zwakke Hand", "");
+        movement = movement.replace("Beweging", "");
+        location = location.replace("Locatie", "");
+
+        const filtered = glosses.filter(g => {
+            if (strong && g["Strong Hand"] !== strong) return false;
+            if (handed && g["Handedness"] !== handed) return false;
+            if (weak && g["Weak Hand"] !== weak) return false;
+            if (movement && g["Movement Direction"] !== movement) return false;
+            if (location && g["Location"] !== location) return false;
+            return true;
+        });
+
+        const filteredResults = container.querySelector('#filtered-results');
+        if (filteredResults) {
+            displayGlosses(filtered, container, filteredResults);
+        }
+    }
+
+    // Display glosses in target element
+    function displayGlosses(matches, container, targetElement) {
+        if (!targetElement) {
+            console.error("Target element for displayGlosses not found in container:", container);
+            return;
+        }
+        targetElement.innerHTML = "";
+
+        if (matches.length) {
+            matches.slice(0, 50).forEach(entry => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'glossary-item';
+                itemDiv.textContent = entry['Annotation ID Gloss: Dutch'];
+                const senses = entry["Senses: Dutch"];
+                if (senses && typeof senses === 'object' && Object.keys(senses).length > 0) {
+                    const senseText = Object.values(senses).join('; ');
+                    itemDiv.title = `Senses: ${senseText}`;
+                    const senseSpan = document.createElement('span');
+                    senseSpan.style.fontSize = '0.8em';
+                    senseSpan.style.color = 'gray';
+                    senseSpan.style.marginLeft = '5px';
+                    senseSpan.textContent = `(${senseText.substring(0, 20)}${senseText.length > 20 ? '...' : ''})`;
+                    itemDiv.appendChild(senseSpan);
+                }
+
+                itemDiv.addEventListener('mouseenter', () => showVideoPreview(itemDiv, entry.Video));
+                itemDiv.addEventListener('mouseleave', hideVideoPreview);
+                itemDiv.addEventListener('mousedown', function(e) {
+                    e.preventDefault();
+                    const content = container.querySelector('.content');
+                    content.textContent = entry['Annotation ID Gloss: Dutch'];
+                    content.dispatchEvent(new Event('blur', { bubbles: true }));
+                    hideVideoPreview();
+                    const extraRow = container.querySelector('.row');
+                    if (extraRow) extraRow.style.display = 'none';
+                });
+                targetElement.appendChild(itemDiv);
+            });
+            targetElement.style.display = 'block';
+        } else {
+            targetElement.innerHTML = '<i>No matches found.</i>';
+            targetElement.style.display = 'block';
+        }
+    }
+
+    document.getElementById('saveSubtitlesBtn').addEventListener('click', uploadSubtitles);
+    document.getElementById('downloadSubtitleBtn').addEventListener('click', downloadSubtitle);
+    document.getElementById('addSubtitleBtn').addEventListener('click', addSubtitle);
+    renderAll();
+
+    // ============================================
+    // PLAYBACK CONTROLS
+    // ============================================
+    let playing = false, playInterval = null;
+    const playBtn = document.getElementById('playBtn');
+
+    playBtn.addEventListener('click', () => {
+      if (buttonLoopInterval) {
+        clearInterval(buttonLoopInterval);
+        buttonLoopInterval = null;
+        const currentlyLoopingSubId = buttonLoopActiveSub ? buttonLoopActiveSub.id : null;
+        buttonLoopActiveSub = null;
+        const allLoopBtns = document.querySelectorAll('.loop-btn');
+        allLoopBtns.forEach(btn => {
+          const parentBox = btn.closest('.subtitle-box');
+          if (parentBox && parentBox.dataset.id === currentlyLoopingSubId) {
+            btn.textContent = 'Loop';
+          }
+        });
+      }
+      playing = !playing;
+      if (playing) {
+        playBtn.innerText = '(P) Pause';
+        loopSubtitle = null;
+        loopDirection = 1;
+        playInterval = setInterval(() => {
+          let newTime;
+          if (loopSubtitle && autoLoopEnabled) {
+            newTime = currentTime + (loopDirection * (playbackSpeed / animationFrameRate));
+            if (loopDirection === 1 && newTime >= loopSubtitle.end) {
+              newTime = loopSubtitle.end;
+              loopDirection = -1;
+            } else if (loopDirection === -1 && newTime <= loopSubtitle.start) {
+              newTime = loopSubtitle.start;
+              loopDirection = 1;
+            }
+            setCanvasTime(newTime, "playing-hover-loop");
+          } else {
+            newTime = currentTime + (playbackSpeed / animationFrameRate);
+            if (newTime >= animationDuration) {
+              newTime = 0;
+            }
+            setCanvasTime(newTime, "playing");
+          }
+        }, 1000 / animationFrameRate);
+      } else {
+        playBtn.innerText = '(P) Play';
+        clearInterval(playInterval);
+        playInterval = null;
+        loopSubtitle = null;
+        loopDirection = 1;
+      }
+    });
+
+    // Hotkey listener
+    document.addEventListener('keydown', (e) => {
+      if (e.target.isContentEditable || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+        return;
+      }
+      if (e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        playBtn.click();
+      }
+      const speedKeys = { '1': '0.25', '2': '0.5', '3': '0.75', '4': '1' };
+      if (speedKeys[e.key]) {
+        e.preventDefault();
+        const speed = speedKeys[e.key];
+        const speedButton = document.querySelector(`.speed-btn[data-speed="${speed}"]`);
+        if (speedButton) {
+          speedButton.click();
+        }
+      }
+      if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        document.getElementById('zoomInBtn').click();
+      } else if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        document.getElementById('zoomOutBtn').click();
+      }
+
+      // Arrow keys nudge the selected gloss boundary (freezes against locked neighbours)
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        const sub = getSelectedSub();
+        if (!sub) return;
+        const dir = (e.key === 'ArrowRight') ? 1 : -1;
+        e.preventDefault();
+        if (e.ctrlKey || e.metaKey) nudgeWholeBlock(sub, dir);   // whole block
+        else if (e.shiftKey)        nudgeRightBoundary(sub, dir); // right edge
+        else                        nudgeLeftBoundary(sub, dir);  // left edge
+        return;
+      }
+
+      // Tab / Shift+Tab: walk glosses in the same tier (time order), clamp at ends
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const cur = getSelectedSub();
+        if (!cur) {
+          if (!subtitles.length) return;
+          const nearest = subtitles.slice().sort((a, b) =>
+            Math.abs(a.start - currentTime) - Math.abs(b.start - currentTime))[0];
+          selectSub(nearest.id, { snapPlayhead: true });
+          return;
+        }
+        const tierBlocks = subtitles.filter(s => s.tier === cur.tier).sort((a, b) => a.start - b.start);
+        const idx = tierBlocks.findIndex(s => s.id === cur.id);
+        const nextIdx = e.shiftKey ? idx - 1 : idx + 1;
+        if (nextIdx < 0 || nextIdx >= tierBlocks.length) return; // clamp at ends
+        selectSub(tierBlocks[nextIdx].id, { snapPlayhead: true });
+        return;
+      }
+
+      // Enter edits the selected gloss's text
+      if (e.key === 'Enter') {
+        const sub = getSelectedSub();
+        if (!sub) return;
+        e.preventDefault();
+        const box = document.querySelector('.subtitle-box[data-id="' + sub.id + '"]');
+        enterEditMode(box);
+        return;
+      }
+    });
+
+    // Load glosses
+    fetch('../glosses_transformed.json')
+      .then(res => res.json())
+      .then(data => {
+        glosses = data.map(item => {
+          const key = Object.keys(item)[0];
+          return { id: key, ...item[key] };
+        });
+      });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('mousedown', function(e) {
+      if (!e.target.closest('.subtitle-box')) {
+        document.querySelectorAll('.dropdown').forEach(dd => dd.style.display = 'none');
+      }
+    });
+
+    // Loop button handler
+    function handleLoopButtonClick(sub, buttonElement) {
+      if (buttonLoopInterval) {
+        clearInterval(buttonLoopInterval);
+        buttonLoopInterval = null;
+        const currentlyLoopingSubId = buttonLoopActiveSub ? buttonLoopActiveSub.id : null;
+        buttonLoopActiveSub = null;
+        const allLoopBtns = document.querySelectorAll('.loop-btn');
+        allLoopBtns.forEach(btn => {
+          const parentBox = btn.closest('.subtitle-box');
+          if (parentBox && parentBox.dataset.id === currentlyLoopingSubId) {
+            btn.textContent = 'Loop';
+          }
+        });
+        if (currentlyLoopingSubId === sub.id) {
+          if (wasPlayingBeforeButtonLoop) {
+            wasPlayingBeforeButtonLoop = false;
+            if (!playing) playBtn.click();
+          }
+          return;
+        }
+      }
+      if (playing) {
+        wasPlayingBeforeButtonLoop = true;
+        playing = false;
+        clearInterval(playInterval);
+        playBtn.innerText = '(P) Play';
+      } else {
+        wasPlayingBeforeButtonLoop = false;
+      }
+      buttonLoopActiveSub = sub;
+      buttonElement.textContent = 'Stop Loop';
+      setCanvasTime(sub.start, "button-loop-start");
+      buttonLoopInterval = setInterval(() => {
+        if (!buttonLoopActiveSub) {
+          clearInterval(buttonLoopInterval);
+          buttonLoopInterval = null;
+          return;
+        }
+        let newTime = currentTime + (playbackSpeed / animationFrameRate);
+        if (newTime >= buttonLoopActiveSub.end) {
+          newTime = buttonLoopActiveSub.start;
+        }
+        setCanvasTime(newTime, "button-loop");
+      }, 1000 / animationFrameRate);
+    }
+
+    // Scroll synchronization
+    const customScrollbar = document.getElementById('customScrollbar');
+    let isSyncingScroll = false;
+
+    timelineContainer.addEventListener('scroll', () => {
+      if (isSyncingScroll) return;
+      isSyncingScroll = true;
+      customScrollbar.scrollLeft = timelineContainer.scrollLeft;
+      isSyncingScroll = false;
+    });
+
+    customScrollbar.addEventListener('scroll', () => {
+      if (isSyncingScroll) return;
+      isSyncingScroll = true;
+      timelineContainer.scrollLeft = customScrollbar.scrollLeft;
+      isSyncingScroll = false;
+    });
+
+    // ============================================
+    // VJEPA AUTO-SEGMENT (re-time the Signbank ID glossen tier)
+    // ============================================
+    // The recorded animations always contain the same signs but with slightly
+    // different timings each re-capture. Auto-Segment re-runs the VJEPA sign
+    // segmenter on the rendered mp4 and snaps the Signbank ID glossen boxes
+    // (tier 2 only) onto the freshly detected boundaries, keeping their text.
+    // Auto-Segment 2D does the same from the razer RIGHT studio recording
+    // (covers animations without a record3D render); its timeline is anchored
+    // to the first Signbank box since the recording starts before the signing.
+    const SEG_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+      ? 'http://localhost:8001' : 'https://signcollect.nl/sign-segmenter';
+    const SIGNBANK_TIER = 2;          // "Signbank ID glossen"
+    let autoSegSnapshot = null;       // deep copy of subtitles before the first Auto-Segment
+
+    // Basename of the loaded animation, from ?glb= (or ?filename=).
+    function animBasename() {
+      const params = new URLSearchParams(window.location.search);
+      const glbParam = params.get('glb') || '';
+      if (glbParam) return glbParam.split('/').pop().replace(/\.[^.]+$/, '');
+      return (params.get('filename') || '').replace(/\.[^.]+$/, '');
+    }
+
+    // The render lives at /zin/record3D/out/<basename>.mp4.
+    function autoSegVideoUrl() {
+      const base = animBasename();
+      if (!base) return null;
+      return 'record3D/out/' + encodeURIComponent(base) + '.mp4';
+    }
+
+    // The 2D studio stream of the same capture lives in razerFiles with an
+    // unpredictable timestamp suffix; getRazerVideo.php globs it for us.
+    async function razerVideoUrl() {
+      const base = animBasename();
+      if (!base) return null;
+      const r = await fetch('getRazerVideo.php?base=' + encodeURIComponent(base) + '&view=RIGHT');
+      if (!r.ok) return null;
+      const data = await r.json();
+      return data.success ? data.url : null;
+    }
+
+    async function fetchSegments(videoUrl) {
+      const vidResp = await fetch(videoUrl);
+      if (!vidResp.ok) throw new Error('video HTTP ' + vidResp.status);
+      const blob = await vidResp.blob();                 // segmenter auto-converts fps server-side
+      const r = await fetch(SEG_BASE + '/segment', { method: 'POST', body: blob });
+      if (!r.ok) throw new Error('segment HTTP ' + r.status);
+      const data = await r.json();
+      const segs = Array.isArray(data.segments) ? data.segments : [];
+      return segs.map(([s, e]) => ({ start: +s, end: +e }))
+                 .sort((a, b) => a.start - b.start);
+    }
+
+    async function runAutoSegment(btnId, getVideoUrl, alignToTier) {
+      const btn = document.getElementById(btnId);
+      const otherBtn = document.getElementById(btnId === 'autoSegBtn' ? 'autoSeg2DBtn' : 'autoSegBtn');
+      const revertBtn = document.getElementById('revertAutoSegBtn');
+
+      const origLabel = btn.textContent;
+      btn.disabled = true; otherBtn.disabled = true; btn.textContent = 'Segmenting…';
+      try {
+        const videoUrl = await getVideoUrl();
+        if (!videoUrl) { showToast('No recorded video found for this animation', 'error', 4000); return; }
+        const segs = await fetchSegments(videoUrl);
+        if (!segs.length) { showToast('Segmenter returned no segments', 'error', 4000); return; }
+
+        // Snapshot the original timings once, so Revert always returns to the
+        // pre-Auto-Segment state even across repeated runs.
+        if (!autoSegSnapshot) autoSegSnapshot = JSON.parse(JSON.stringify(subtitles));
+
+        // Re-time ONLY the Signbank ID glossen tier. Override each existing box's
+        // timing with the matching detected segment (keeping its text), then append
+        // any extra detected segments as new empty boxes.
+        const boxes = subtitles.filter(s => s.tier === SIGNBANK_TIER)
+                               .sort((a, b) => a.start - b.start);
+
+        // The 2D razer recordings start before the signing does, so their timeline
+        // is offset from the (trimmed) animation by an unknown constant. Shift all
+        // detected segments so the first one starts where the first Signbank box
+        // starts; relative timings from the 2D video are preserved exactly.
+        if (alignToTier) {
+          const anchor = boxes.length ? boxes[0].start : 0;
+          const shift = anchor - segs[0].start;
+          for (const s of segs) {
+            s.start = Math.round((s.start + shift) * 1000) / 1000;
+            s.end = Math.round((s.end + shift) * 1000) / 1000;
+          }
+        }
+
+        const n = Math.min(boxes.length, segs.length);
+        for (let i = 0; i < n; i++) {
+          boxes[i].start = segs[i].start;
+          boxes[i].end = segs[i].end;
+        }
+        let added = 0;
+        for (let i = n; i < segs.length; i++) {
+          uniqueId++;
+          subtitles.push({ id: 'autoseg_' + uniqueId, text: '', start: segs[i].start, end: segs[i].end, tier: SIGNBANK_TIER, committed: true });
+          added++;
+        }
+
+        renderAll();
+        uploadSubtitles();
+        revertBtn.disabled = false;
+
+        let msg = `Re-timed ${n} Signbank sign(s)`;
+        if (added) msg += `, added ${added} new segment(s)`;
+        if (boxes.length > segs.length) msg += `; ${boxes.length - segs.length} extra box(es) kept their timing`;
+        showToast(msg + '.', 'success', 5000);
+      } catch (err) {
+        console.error('Auto-Segment failed', err);
+        showToast('Auto-Segment failed: ' + err.message, 'error', 5000);
+      } finally {
+        btn.disabled = false; otherBtn.disabled = false; btn.textContent = origLabel;
+      }
+    }
+
+    function revertAutoSegment() {
+      if (!autoSegSnapshot) return;
+      subtitles = JSON.parse(JSON.stringify(autoSegSnapshot));
+      renderAll();
+      uploadSubtitles();
+      document.getElementById('revertAutoSegBtn').disabled = true;
+      showToast('Reverted Signbank timings to the original.', 'success', 3500);
+    }
+
+    async function view2DVideo() {
+      const url = await razerVideoUrl();
+      if (!url) { showToast('No 2D studio video found for this animation', 'error', 4000); return; }
+      window.open(url, '_blank');
+    }
+
+    document.getElementById('autoSegBtn').addEventListener('click',
+      () => runAutoSegment('autoSegBtn', async () => autoSegVideoUrl(), false));
+    document.getElementById('autoSeg2DBtn').addEventListener('click',
+      () => runAutoSegment('autoSeg2DBtn', razerVideoUrl, true));
+    document.getElementById('revertAutoSegBtn').addEventListener('click', revertAutoSegment);
+    document.getElementById('view2DBtn').addEventListener('click', view2DVideo);
+
+    // ============================================
+    // MCP STATUS DROPDOWNS (persist to sentences table, same pattern as subBeta8)
+    // ============================================
+    function saveMcpStatus(action, paramName, value) {
+      if (!currentSentenceRowId) return;
+      const formData = new FormData();
+      formData.append('rowId', currentSentenceRowId);
+      formData.append(paramName, value);
+      fetch('getZinnen.php?action=' + action, { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => { if (!data.success) console.error('MCP status save failed:', data.error); })
+        .catch(err => console.error('MCP status save error:', err));
+    }
+    (function wireMcpStatus() {
+      const p = document.getElementById('mcpStatusPostprocessing');
+      const g = document.getElementById('mcpStatusTijdAnnotatie');
+      const gvg = document.getElementById('mcpStatusTijdAnnotatieGvg');
+      if (p) p.addEventListener('change', () => saveMcpStatus('saveMcpStatusPostprocessing', 'mcpStatusPostprocessing', p.value));
+      if (g) g.addEventListener('change', () => saveMcpStatus('saveMcpStatusTijdAnnotatie', 'mcpStatusTijdAnnotatie', g.value));
+      if (gvg) gvg.addEventListener('change', () => saveMcpStatus('saveMcpStatusTijdAnnotatieGvg', 'mcpStatusTijdAnnotatieGvg', gvg.value));
+    })();
+
+    // ============================================
+    // INITIALIZATION
+    // ============================================
+    // Initialize scene and load base character, then optionally load animation
+    (async function() {
+      // Initialize Babylon.js scene
+      await initializeBabylonScene();
+
+      // Load the studio backdrop behind the avatar (best-effort; non-fatal)
+      try {
+        await loadBackdrop(scene);
+      } catch (err) {
+        console.warn("[Backdrop] failed to load:", err);
+      }
+
+      // Load base character (skeleton + morph targets)
+      await loadBaseCharacter();
+
+      // Check for animation GLB parameter
+      const params = new URLSearchParams(window.location.search);
+      const glbParam = params.get('glb');
+      if (glbParam) {
+        await loadAnimationGLB(glbParam);
+      }
+    })();
+
+  </script>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

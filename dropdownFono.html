@@ -1,0 +1,81 @@
+<div id="dropdown-container">
+    <label>Sterke Hand:</label>
+    <select id="sterke-hand"></select>
+    <label>Handedness:</label>
+    <select id="handedness"></select>
+    <label>Zwakke Hand:</label>
+    <select id="zwakke-hand"></select>
+    <label>Movement:</label>
+    <select id="movement"></select>
+    <label>Location:</label>
+    <select id="location"></select>
+  </div>
+  <div id="filtered-results"></div>
+  
+  <script>
+    let glosses = [];
+  
+    function getUniqueValues(key) {
+      const values = new Set();
+      glosses.forEach(g => {
+        if (g[key]) values.add(g[key]);
+      });
+      return Array.from(values);
+    }
+  
+    function populateDropdown(dropdownId, key) {
+      const dropdown = document.getElementById(dropdownId);
+      dropdown.innerHTML = `<option value="">All</option>`;
+      getUniqueValues(key).forEach(val => {
+        const option = document.createElement('option');
+        option.value = val;
+        option.textContent = val;
+        dropdown.appendChild(option);
+      });
+    }
+  
+    fetch('../glosses_transformed.json')
+      .then(res => res.json())
+      .then(data => {
+        glosses = data.map(item => {
+          const key = Object.keys(item)[0];
+          return { id: key, ...item[key] };
+        });
+        populateDropdown('handedness', 'Handedness');
+        populateDropdown('sterke-hand', 'Strong Hand');
+        populateDropdown('zwakke-hand', 'Weak Hand');
+        populateDropdown('movement', 'Movement Direction');
+        populateDropdown('location', 'Location');
+        displayGlosses(glosses);
+      });
+  
+    function filterGlosses() {
+      const strong = document.getElementById('sterke-hand').value;
+      const handed = document.getElementById('handedness').value;
+      const weak = document.getElementById('zwakke-hand').value;
+      const movement = document.getElementById('movement').value;
+      const location = document.getElementById('location').value;
+  
+      const filtered = glosses.filter(g => {
+        if (strong && g["Strong Hand"] !== strong) return false;
+        if (handed && g["Handedness"] !== handed) return false;
+        if (weak && g["Weak Hand"] !== weak) return false;
+        if (movement && g["Movement Direction"] !== movement) return false;
+        if (location && g["Location"] !== location) return false;
+        return true;
+      });
+      displayGlosses(filtered);
+    }
+  
+    function displayGlosses(list) {
+      document.getElementById('filtered-results').innerHTML =
+        list.map(g => `<div>${g["Lemma ID Gloss: Dutch"]}</div>`).join('');
+    }
+  
+    document.getElementById('sterke-hand').addEventListener('change', filterGlosses);
+    document.getElementById('handedness').addEventListener('change', filterGlosses);
+    document.getElementById('zwakke-hand').addEventListener('change', filterGlosses);
+    document.getElementById('movement').addEventListener('change', filterGlosses);
+    document.getElementById('location').addEventListener('change', filterGlosses);
+  </script>
+  

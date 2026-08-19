@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/userProtect.js"></script>
+  <meta charset="UTF-8">
+  <title>ZINinNGT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Bootstrap CSS -->
+  <link 
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" 
+    rel="stylesheet" 
+    crossorigin="anonymous">
+  
+  <!-- Video.js CSS -->
+  <link 
+    href="https://vjs.zencdn.net/8.21.1/video-js.css" 
+    rel="stylesheet" />
+  
+  <!-- Font Awesome CSS -->
+  <link 
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+    rel="stylesheet" 
+    crossorigin="anonymous" 
+    referrerpolicy="no-referrer" />
+
+  <!-- Custom CSS -->
+  <style>
+    :root {
+      --primary-teal: #008080;
+      --dark-bg: #121212;
+      --light-bg: #f8f9fa;
+      --text-color: #ffffff;
+    }
+
+    body {
+      background: var(--light-bg);
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      color: #333;
+    }
+
+    header.navbar {
+      background: var(--primary-teal);
+      color: var(--text-color);
+    }
+
+    header.navbar .navbar-brand {
+      color: var(--text-color);
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    header.navbar .form-control {
+      border-radius: 20px;
+      border: none;
+      padding: 0.4rem 1rem;
+    }
+
+    header.navbar .form-control::placeholder {
+      color: #ccc;
+    }
+
+    .content-container {
+      padding: 1rem;
+    }
+
+    #controls {
+      margin-bottom: 1rem;
+    }
+
+    #showFavorites {
+      color: var(--primary-teal);
+      border-color: var(--primary-teal);
+    }
+    #showFavorites.active {
+      background-color: var(--primary-teal);
+      color: #fff;
+    }
+
+    #prevPage, #nextPage {
+      background-color: var(--primary-teal);
+      color: #fff;
+      border: none;
+    }
+    #prevPage:disabled, #nextPage:disabled {
+      opacity: 0.5;
+    }
+
+    .zin-button {
+      transition: transform 0.2s;
+      position: relative;
+      background: #fff;
+      border: 1px solid #ddd;
+      text-align: left;
+      padding: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #000;
+    }
+
+    .zin-button:hover {
+      transform: scale(1.02);
+      border-color: var(--primary-teal);
+    }
+
+    .zin-button h5 {
+      margin-bottom: 0.5rem;
+      color: #000;
+    }
+
+    .zin-theme {
+      color: var(--primary-teal);
+      font-size: 0.9rem;
+      margin-top: 0.3rem;
+    }
+
+    .favorite-icon {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    .favorite-icon.favorited {
+      color: var(--primary-teal);
+    }
+    .favorite-icon:not(.favorited) {
+      color: #ccc;
+    }
+
+    #loading .spinner-border {
+      width: 3rem;
+      height: 3rem;
+    }
+
+    .modal-content {
+      background-color: var(--dark-bg);
+      border: none;
+    }
+    .modal-title {
+      color: #fff;
+    }
+    .btn-close-white {
+      filter: invert(100%);
+    }
+
+    #subtitleSelect {
+      background: #fff;
+      border-radius: 20px;
+      border: none;
+      padding: 0.4rem 1rem;
+      width: auto;
+    }
+
+    .video-js {
+      position: relative;
+      width: 100%;
+      height: 0;
+      padding-top: 100%;
+      background: #000;
+    }
+    .video-js video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #prevButton, #nextButton, #cameraButton {
+      background-color: var(--primary-teal) !important;
+      color: #fff !important;
+      border: none !important;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #666;
+      padding: 1rem 0;
+    }
+
+    /* Hover dropdown inside modal */
+    .modal-header .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .modal-header .dropdown .dropdown-toggle {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 1.25rem;
+      cursor: pointer;
+    }
+
+    .modal-header .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 0.5rem;
+      background: #fff;
+      min-width: 150px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+      border: none;
+      border-radius: 0.25rem;
+      overflow: hidden;
+    }
+
+    .modal-header .dropdown-menu .dropdown-item {
+      color: #333;
+    }
+
+    .modal-header .dropdown:hover .dropdown-menu {
+      display: block;
+    }
+
+    .modal-header .dropdown-menu .dropdown-item:hover {
+      background: var(--light-bg);
+    }
+
+  </style>
+</head>
+<body>
+  
+  <header class="navbar navbar-expand-lg navbar-dark">
+  <script src="/userProtect.js"></script>
+    <div class="container-fluid px-3">
+      <a class="navbar-brand" href="#">ZINinNGT</a>
+      <form class="d-flex ms-auto" role="search" style="max-width: 250px;">
+        <input id="searchInput" class="form-control" type="search" placeholder="Zoek een video" aria-label="Search">
+      </form>
+    </div>
+  </header>
+
+  <div class="content-container container">
+    <!-- Loading Indicator -->
+    <div id="loading" class="text-center my-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2">Zinnen laden...</p>
+    </div>
+
+    <!-- Controls: thema select, favorites, pagination -->
+    <div id="controls" class="d-none mb-3">
+      <div class="row g-2 align-items-center">
+        <div class="col-auto">
+          <select id="themaSelect" class="form-select">
+            <option value="All">Alle Thema's</option>
+          </select>
+        </div>
+        <div class="col-auto">
+          <button id="showFavorites" class="btn btn-outline-secondary btn-sm">
+            <i class="fa fa-heart"></i> Favorieten
+          </button>
+        </div>
+        <div class="col text-end">
+          <button id="prevPage" class="btn btn-secondary btn-sm" disabled>Vorige</button>
+          <button id="nextPage" class="btn btn-secondary btn-sm" disabled>Volgende</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zinnen List -->
+    <div id="thema-container" style="display: none;"></div>
+  </div>
+
+  <!-- Video Modal -->
+  <div class="modal fade" id="videoModal" tabindex="-1" aria-labelledby="videoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+      <div class="modal-content bg-dark">
+        <div class="modal-header border-0">
+          <h5 class="modal-title" id="videoModalLabel">Zin Titel</h5>
+          <!-- Hover dropdown menu -->
+          <div class="dropdown ms-3">
+            <button class="dropdown-toggle" type="button">
+              <i class="fas fa-ellipsis-h"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item video-aanvragen-link" href="#">Video aanvragen</a></li>
+              <li><a class="dropdown-item contact-link" href="#">Contact</a></li>
+              <li><a class="dropdown-item privacy-link" href="#">Privacy policy</a></li>
+            </ul>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Subtitle Selection -->
+          <div class="mb-3 d-flex justify-content-end">
+            <select id="subtitleSelect" class="form-select w-auto">
+              <option value="none">Geen ondertitels</option>
+              <option value="gloss">Gloss</option>
+              <option value="nl">Nederlands</option>
+              <option value="nl-nl">Nederlands voor Nederlands</option>
+            </select>
+          </div>
+          <video id="videoPlayer" class="video-js vjs-default-skin"></video>
+          <div class="mt-3 d-flex justify-content-center">
+            <button id="prevButton" class="btn btn-secondary btn-lg" aria-label="Previous Video">
+              <i class="fas fa-arrow-left"></i>
+            </button>
+            <button id="cameraButton" class="btn btn-primary btn-lg" aria-label="Switch Video">
+              <i class="fas fa-camera"></i>
+            </button>
+            <button id="nextButton" class="btn btn-secondary btn-lg" aria-label="Next Video">
+              <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video Aanvragen Modal -->
+  <div class="modal fade" id="videoAanvragenModal" tabindex="-1" aria-labelledby="videoAanvragenModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-header border-0">
+          <h5 class="modal-title" id="videoAanvragenModalLabel">Video Aanvragen</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Sluiten"></button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="mb-3">
+              <label for="requestTitle" class="form-label">Titel van gewenste video</label>
+              <input type="text" class="form-control" id="requestTitle" placeholder="Voer de titel in">
+            </div>
+            <div class="mb-3">
+              <label for="requestDescription" class="form-label">Omschrijving</label>
+              <textarea class="form-control" id="requestDescription" rows="3" placeholder="Omschrijf de gewenste video..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Aanvragen</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact Modal -->
+  <div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-header border-0">
+          <h5 class="modal-title" id="contactModalLabel">Contact</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Sluiten"></button>
+        </div>
+        <div class="modal-body">
+          <p>Universiteit van Amsterdam - Pineapple faculty</p>
+          <p>Adres: Spuistraat 134, 1012 VB Amsterdam</p>
+          <p>Tel: +31 (0)20 525 9111</p>
+          <p>Email: info@uva.nl</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Privacy Policy Modal -->
+  <div class="modal fade" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content bg-dark text-white">
+        <div class="modal-header border-0">
+          <h5 class="modal-title" id="privacyModalLabel">Privacybeleid</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Sluiten"></button>
+        </div>
+        <div class="modal-body">
+          <h6>Inleiding</h6>
+          <p>Dit privacybeleid legt uit hoe we uw persoonlijke gegevens verwerken...</p>
+          <p>Wij respecteren uw privacy en verwerken persoonsgegevens alleen voor het doel waarvoor ze zijn verstrekt...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    App versie: 1.00
+  </footer>
+
+  <!-- jQuery -->
+  <script 
+    src="https://code.jquery.com/jquery-3.6.0.min.js" 
+    crossorigin="anonymous"></script>
+  
+  <!-- Bootstrap JS Bundle -->
+  <script 
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" 
+    crossorigin="anonymous"></script>
+  
+  <!-- Video.js JS -->
+  <script src="https://vjs.zencdn.net/8.21.1/video.min.js"></script>
+  
+  <!-- Custom JS -->
+  <script>
+    let allZinnen = [];
+    let themaGroups = {};
+    let filteredZinnen = [];
+    let itemsPerPage = 9;
+    let currentPage = 1;
+    let showingFavorites = false;
+    let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+    let currentThemaFilter = 'All';
+    let searchQuery = '';
+    let viewCounts = JSON.parse(localStorage.getItem('viewCounts')) || {};
+
+    $(document).ready(function() {
+      window.player = videojs('videoPlayer', {
+        controls: true,
+        preload: 'auto',
+        fluid: false,
+        autoplay: false,
+        language: 'nl'
+      });
+
+      fetchRSS();
+
+      $('#prevPage').click(function() {
+        if (currentPage > 1) {
+          currentPage--;
+          displayPage();
+        }
+      });
+      $('#nextPage').click(function() {
+        currentPage++;
+        displayPage();
+      });
+
+      $('#showFavorites').click(function() {
+        showingFavorites = !showingFavorites;
+        currentPage = 1;
+        filterAndDisplay();
+        $(this).toggleClass('active');
+        $(this).html(showingFavorites 
+          ? '<i class="fa fa-heart"></i> Alle zinnen' 
+          : '<i class="fa fa-heart"></i> Favorieten');
+      });
+
+      $('#subtitleSelect').change(function() {
+        loadSelectedSubtitles();
+      });
+      
+      $('#thema-container').on('click', '.zin-button', function(e) {
+        if ($(e.target).hasClass('favorite-icon') || $(e.target).closest('.dropdown').length > 0) return;
+        const zin = $(this).data('zin');
+        openVideoModal(zin);
+      });
+
+      $('#thema-container').on('click', '.favorite-icon', function(e) {
+        e.stopPropagation();
+        const zin = $(this).closest('.zin-button').data('zin');
+        toggleFavorite(zin.guid);
+        updateFavoriteIcon($(this), zin.guid);
+      });
+
+      $('#thema-container').on('click', '.video-aanvragen-link', function(e) {
+        e.preventDefault();
+        const videoAanvragenModal = new bootstrap.Modal(document.getElementById('videoAanvragenModal'));
+        videoAanvragenModal.show();
+      });
+      $('#thema-container').on('click', '.contact-link', function(e) {
+        e.preventDefault();
+        const contactModal = new bootstrap.Modal(document.getElementById('contactModal'));
+        contactModal.show();
+      });
+      $('#thema-container').on('click', '.privacy-link', function(e) {
+        e.preventDefault();
+        const privacyModal = new bootstrap.Modal(document.getElementById('privacyModal'));
+        privacyModal.show();
+      });
+
+      // Also handle from modal dropdown
+      $('.modal-header').on('click', '.video-aanvragen-link', function(e) {
+        e.preventDefault();
+        const videoAanvragenModal = new bootstrap.Modal(document.getElementById('videoAanvragenModal'));
+        videoAanvragenModal.show();
+      });
+      $('.modal-header').on('click', '.contact-link', function(e) {
+        e.preventDefault();
+        const contactModal = new bootstrap.Modal(document.getElementById('contactModal'));
+        contactModal.show();
+      });
+      $('.modal-header').on('click', '.privacy-link', function(e) {
+        e.preventDefault();
+        const privacyModal = new bootstrap.Modal(document.getElementById('privacyModal'));
+        privacyModal.show();
+      });
+
+      $('#cameraButton').on('click', switchVideo);
+      $('#prevButton').on('click', prevVideo);
+      $('#nextButton').on('click', nextVideo);
+
+      $('#videoModal').on('hidden.bs.modal', resetPlayer);
+
+      $('#themaSelect').change(function() {
+        currentThemaFilter = $(this).val();
+        currentPage = 1;
+        filterAndDisplay();
+      });
+
+      $('#searchInput').on('keyup', function() {
+        searchQuery = $(this).val().toLowerCase();
+        currentPage = 1;
+        filterAndDisplay();
+      });
+    });
+
+    function fetchRSS() {
+      $('#thema-container').hide();
+      $('#loading').show();
+      
+      $.ajax({
+        url: 'https://leffe.science.uva.nl:8043/zin/getZinnen.php?action=generateRSS&nocache=' + new Date().getTime(),
+        method: 'GET',
+        dataType: 'xml',
+        cache: false,
+        success: function(data) {
+          parseRSS(data);
+          $('#loading').hide();
+          $('#thema-container').show();
+          $('#controls').removeClass('d-none');
+        },
+        error: function(xhr, status, error) {
+          console.error('Failed to fetch RSS feed:', error);
+          $('#thema-container').html('<p class="text-danger">Failed to load zinnen. Please try again later.</p>');
+          $('#loading').hide();
+        }
+      });
+    }
+
+    function parseRSS(xml) {
+      const zinnen = [];
+      $(xml).find('item').each(function() {
+        const title = $(this).find('title').text();
+        const description = $(this).find('description').text();
+        const category = $(this).find('category').text() || 'Uncategorized';
+        const guid = $(this).find('guid').text();
+        
+        const enclosures = [];
+        $(this).find('enclosure').each(function() {
+          const url = $(this).attr('url');
+          const length = $(this).attr('length') || '';
+          const type = $(this).attr('type') || '';
+          enclosures.push({ url, length, type });
+        });
+
+        const formattedZin = ucfirst(title);
+        zinnen.push({ title: formattedZin, description, category, guid, enclosures });
+      });
+
+      allZinnen = zinnen;
+      themaGroups = groupByCategory(zinnen);
+      populateThemaSelect(Object.keys(themaGroups));
+      filterAndDisplay();
+    }
+
+    function ucfirst(str) {
+      if (!str) return '';
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    function groupByCategory(zinnen) {
+      const groups = {};
+      zinnen.forEach(zin => {
+        if (!groups[zin.category]) {
+          groups[zin.category] = [];
+        }
+        groups[zin.category].push(zin);
+      });
+      return groups;
+    }
+
+    function populateThemaSelect(themas) {
+      const $select = $('#themaSelect');
+      $select.empty();
+      $select.append('<option value="All">Alle Thema\'s</option>');
+      themas.forEach(t => {
+        $select.append(`<option value="${t}">${t}</option>`);
+      });
+    }
+
+    function filterAndDisplay() {
+      if (showingFavorites) {
+        filteredZinnen = allZinnen.filter(z => isFavorite(z.guid));
+      } else {
+        filteredZinnen = allZinnen.filter(zin => {
+          let matchThema = (currentThemaFilter === 'All') || (zin.category === currentThemaFilter);
+          let matchSearch = (searchQuery === '') ||
+                            (zin.title.toLowerCase().includes(searchQuery)) ||
+                            (zin.description.toLowerCase().includes(searchQuery));
+          return matchThema && matchSearch;
+        });
+      }
+
+      currentPage = 1;
+      displayPage();
+    }
+
+    function displayPage() {
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const pageZinnen = filteredZinnen.slice(startIndex, endIndex);
+
+      let html = '';
+      html += `<p class="text-center mb-4">Totaal beschikbare zinnen: <strong>${filteredZinnen.length}</strong></p>`;
+      html += `<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">`;
+
+      pageZinnen.forEach(zin => {
+        const count = viewCounts[zin.guid] || 0;
+        html += `
+          <div class="col">
+            <div class="zin-button" data-zin='${JSON.stringify(zin)}'>
+              <h5 class="mb-2">${zin.title}</h5>
+              <p class="zin-theme">${zin.category}</p>
+              <p class="view-count text-muted" style="font-size:0.9rem;">${count} keer bekeken</p>
+              <i class="favorite-icon ${isFavorite(zin.guid) ? 'fas' : 'far'} fa-heart ${isFavorite(zin.guid) ? 'favorited' : ''}"></i>
+            </div>
+          </div>
+        `;
+      });
+
+      html += `</div>`;
+
+      $('#thema-container').html(html);
+
+      // Update pagination buttons
+      $('#prevPage').prop('disabled', currentPage === 1);
+      $('#nextPage').prop('disabled', endIndex >= filteredZinnen.length);
+    }
+
+    function toggleFavorite(guid) {
+      if (favorites.includes(guid)) {
+        favorites = favorites.filter(f => f !== guid);
+      } else {
+        favorites.push(guid);
+      }
+      localStorage.setItem('favorites', JSON.stringify(favorites));
+    }
+
+    function isFavorite(guid) {
+      return favorites.includes(guid);
+    }
+
+    function updateFavoriteIcon($icon, guid) {
+      const fav = isFavorite(guid);
+      $icon.removeClass('far fas favorited');
+      $icon.addClass(fav ? 'fas favorited' : 'far');
+    }
+
+    function openVideoModal(zin) {
+  resetPlayer();
+  
+  // Check if there are any enclosures before proceeding
+  if (!zin.enclosures || zin.enclosures.length === 0) {
+    console.warn('No video enclosures found for this zin:', zin.title);
+    return; // Stop here if no enclosures
+  }
+
+  // Increment view count, update display, etc.
+  const guid = zin.guid;
+  viewCounts[guid] = (viewCounts[guid] || 0) + 1;
+  localStorage.setItem('viewCounts', JSON.stringify(viewCounts));
+  displayPage();
+  $('#videoModalLabel').text(zin.title);
+
+  // Directly use enclosures without filtering
+  window.currentVideoEnclosures = zin.enclosures.slice();
+  window.currentVideoIndex = 0;
+  window.currentZin = zin;
+
+  // Preload
+  zin.enclosures.forEach(enc => {
+    if (enc.url) {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'video';
+      link.href = enc.url;
+      document.head.appendChild(link);
+    }
+  });
+
+  // Load first video
+  const firstEnc = window.currentVideoEnclosures[0];
+  if (!firstEnc || !firstEnc.url) {
+    console.warn('First enclosure is invalid or has no URL.');
+    return;
+  }
+
+  player.src({ src: firstEnc.url, type: firstEnc.type || 'video/mp4' });
+  loadSelectedSubtitles();
+
+  const videoModal = new bootstrap.Modal(document.getElementById('videoModal'), {keyboard:true});
+  videoModal.show();
+  player.play().catch(console.error);
+}
+
+
+function loadVideoSource(enclosure) {
+  // Ensure there's a URL
+  if (!enclosure || !enclosure.url) {
+    console.error('No enclosure or URL found for video.');
+    return;
+  }
+
+  // Fallback to MP4 if no type
+  let type = enclosure.type || 'video/mp4';
+
+  player.src({ src: enclosure.url, type: type });
+  loadSelectedSubtitles();
+}
+
+    function loadSelectedSubtitles() {
+      player.textTracks().tracks_.forEach(track => {
+        player.removeRemoteTextTrack(track);
+      });
+
+      const selectedSubtitle = $('#subtitleSelect').val();
+      if (selectedSubtitle === 'none') return;
+
+      const srtEnclosures = window.currentZin.enclosures.filter(enc => {
+        const lowerUrl = enc.url.toLowerCase();
+        if (selectedSubtitle === 'gloss' && lowerUrl.includes('gloss')) return true;
+        if (selectedSubtitle === 'nl' && lowerUrl.includes('nederlands.srt')) return true;
+        if (selectedSubtitle === 'nl-nl' && lowerUrl.includes('nederlands_voor_nederlands')) return true;
+        return false;
+      });
+
+      srtEnclosures.forEach(enc => {
+        player.addRemoteTextTrack({
+          kind: 'subtitles',
+          src: enc.url,
+          srclang: 'nl',
+          label: 'Dutch',
+          default: false
+        }, false);
+      });
+    }
+
+    function switchVideo() {
+      if (!window.currentVideoEnclosures || window.currentVideoEnclosures.length <= 1) return;
+      window.currentVideoIndex = (window.currentVideoIndex + 1) % window.currentVideoEnclosures.length;
+      const enc = window.currentVideoEnclosures[window.currentVideoIndex];
+      loadVideoSource(enc);
+      player.currentTime(0);
+      player.play().catch(console.error);
+    }
+
+    function prevVideo() {
+      if (!window.currentVideoEnclosures || window.currentVideoEnclosures.length <= 1) return;
+      window.currentVideoIndex = (window.currentVideoIndex - 1 + window.currentVideoEnclosures.length) % window.currentVideoEnclosures.length;
+      const enc = window.currentVideoEnclosures[window.currentVideoIndex];
+      loadVideoSource(enc);
+      player.currentTime(0);
+      player.play().catch(console.error);
+    }
+
+    function nextVideo() {
+      switchVideo();
+    }
+
+    function resetPlayer() {
+      player.pause();
+      player.currentTime(0);
+      player.src([]);
+      player.textTracks().tracks_.forEach(track => {
+        player.removeRemoteTextTrack(track);
+      });
+    }
+  </script>
+</body>
+</html>
