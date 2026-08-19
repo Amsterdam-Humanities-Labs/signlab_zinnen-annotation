@@ -33,20 +33,29 @@ function mocap_parse_take($filename) {
     return ['base' => $m[1], 'date' => $m[2], 'take' => (int)$m[3], 'ext' => $m[4]];
 }
 
-// Bumped whenever the shape of a build_index take entry changes. mocap_get_index
+// Bumped whenever the shape of a build_index take entry changes, or the
+// index's own top-level shape does (e.g. the 'ok' flag below). mocap_get_index
 // refuses to trust a cached index whose 'schema' doesn't match, so a cache written
 // by older code is rebuilt instead of silently trusted with fields missing.
-if (!defined('MOCAP_INDEX_SCHEMA')) define('MOCAP_INDEX_SCHEMA', 2);
+if (!defined('MOCAP_INDEX_SCHEMA')) define('MOCAP_INDEX_SCHEMA', 3);
 
 /**
  * Scan the take and baked directories once and build a base -> takes index.
  *
- * @return array ['built_at' => int, 'schema' => int, 'bases' => [base => [ ['take','date','fbx','glb'], ... ]]]
+ * scandir() returns false (not an empty array) when a directory cannot be
+ * read at all — gone, permission denied, or the rclone mount hiccuping. That
+ * must not be conflated with a directory that scans cleanly and simply has
+ * nothing in it, so 'ok' is false only for a genuine scan failure: callers
+ * can then tell "nothing is baked" apart from "the scan itself failed" and
+ * must refuse to cache or report the latter as an ordinary empty result.
+ *
+ * @return array ['built_at' => int, 'schema' => int, 'ok' => bool, 'bases' => [base => [ ['take','date','fbx','glb'], ... ]]]
  */
 function mocap_build_index($fbxDir, $glbDir) {
     $glb = [];
     $glbEntries = @scandir($glbDir);
-    if ($glbEntries !== false) {
+    $glbOk = ($glbEntries !== false);
+    if ($glbOk) {
         foreach ($glbEntries as $f) {
             $p = mocap_parse_take($f);
             if ($p !== null && $p['ext'] === 'glb') {
@@ -57,7 +66,8 @@ function mocap_build_index($fbxDir, $glbDir) {
 
     $bases = [];
     $fbxEntries = @scandir($fbxDir);
-    if ($fbxEntries !== false) {
+    $fbxOk = ($fbxEntries !== false);
+    if ($fbxOk) {
         foreach ($fbxEntries as $f) {
             $p = mocap_parse_take($f);
             if ($p === null || $p['ext'] !== 'fbx') { continue; }
@@ -71,11 +81,16 @@ function mocap_build_index($fbxDir, $glbDir) {
         }
     }
 
-    return ['built_at' => time(), 'schema' => MOCAP_INDEX_SCHEMA, 'bases' => $bases];
+    return ['built_at' => time(), 'schema' => MOCAP_INDEX_SCHEMA, 'ok' => $fbxOk && $glbOk, 'bases' => $bases];
 }
 
 /**
  * Return the index, using a JSON cache younger than $ttl seconds when possible.
+ *
+ * A failed scan (mocap_build_index()'s 'ok' === false) is never written to the
+ * cache: caching it would serve "nothing is baked" for the full TTL after a
+ * transient rclone mount hiccup, indistinguishable from a genuinely empty
+ * corpus. Callers must check the returned 'ok' flag themselves.
  */
 function mocap_get_index($cacheFile, $fbxDir, $glbDir, $ttl = MOCAP_CACHE_TTL, $force = false) {
     if (!$force && file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $ttl) {
@@ -89,9 +104,11 @@ function mocap_get_index($cacheFile, $fbxDir, $glbDir, $ttl = MOCAP_CACHE_TTL, $
 
     $index = mocap_build_index($fbxDir, $glbDir);
 
-    $dir = dirname($cacheFile);
-    if (!is_dir($dir)) { @mkdir($dir, 0775, true); }
-    @file_put_contents($cacheFile, json_encode($index), LOCK_EX);
+    if ($index['ok']) {
+        $dir = dirname($cacheFile);
+        if (!is_dir($dir)) { @mkdir($dir, 0775, true); }
+        @file_put_contents($cacheFile, json_encode($index), LOCK_EX);
+    }
 
     return $index;
 }
