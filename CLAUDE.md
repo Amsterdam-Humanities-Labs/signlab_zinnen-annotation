@@ -32,6 +32,7 @@ This is a web-based sign language annotation tool for creating and editing subti
 - `editZin`: Update sentence data
 - `uploadEAF`/`downloadEAF`: Handle EAF file operations
 - `findGloss`/`findgvg`: Search functionality for glosses
+- `listMocapFiles`: List zin videos with their latest mocap take, baked GLB and gloss SRT, filtered by MCP status columns (see `mocapFiles.php`)
 
 ### File Structure
 - **eaf/zin/**: Contains EAF annotation files and SRT subtitle exports
@@ -57,6 +58,8 @@ This is a web-based sign language annotation tool for creating and editing subti
 - Built-in backup system for EAF files
 - Responsive design for various screen sizes
 - Real-time preview of gloss/gesture annotations
+- `/web/gebarenoverleg_media` is an rclone mount where `find` silently returns nothing; use `scandir`/`glob` for any directory enumeration there
+- MCP status columns live on `sentences`, but mocap/SRT rows are `videos` — a sentence may have several videos, so always state which unit a count refers to
 
 ## Common Operations
 - **Creating subtitles**: Use timeline interface to add/edit subtitle boxes
