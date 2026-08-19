@@ -59,6 +59,7 @@ function mocap_build_index($fbxDir, $glbDir) {
             $key = $p['base'] . '_' . $p['date'] . '_' . $p['take'];
             $bases[$p['base']][] = [
                 'take' => $p['take'],
+                'date' => $p['date'],
                 'fbx'  => $f,
                 'glb'  => isset($glb[$key]) ? $glb[$key] : null,
             ];
@@ -90,9 +91,23 @@ function mocap_get_index($cacheFile, $fbxDir, $glbDir, $ttl = MOCAP_CACHE_TTL, $
 }
 
 /**
- * Highest-numbered take for a base, with whether that take has been baked.
+ * Latest take for a base, and separately its latest baked take.
  *
- * @return array|null ['takeNumber','fbxFilename','baked','glbFilename'] or null
+ * Take numbers restart per recording session (per date), so they do not by
+ * themselves order takes across sessions: a base can have take 5 on an old
+ * date and take 1 on a newer date, and the newer date's take 1 is the real
+ * latest take. Takes are therefore ordered by the pair (date, take); date is
+ * a fixed-width yymmdd string, so PHP's lexicographic array comparison
+ * orders (date, take) pairs correctly.
+ *
+ * The latest take overall and the latest take that has a GLB can differ: a
+ * newer take may have been recorded but never baked, while an older take on
+ * the same base was. Reporting baked=false there would hide a usable
+ * animation, so glbFilename/glbUrl always point at the newest take that
+ * actually has a GLB, and glbIsLatestTake tells the caller whether that GLB
+ * belongs to the newest take or an older one.
+ *
+ * @return array|null ['takeNumber','fbxFilename','baked','glbFilename','glbIsLatestTake'] or null
  */
 function mocap_latest_take($index, $base) {
     if (!isset($index['bases'][$base]) || !count($index['bases'][$base])) {
@@ -100,14 +115,156 @@ function mocap_latest_take($index, $base) {
     }
 
     $best = null;
+    $bestBaked = null;
     foreach ($index['bases'][$base] as $take) {
-        if ($best === null || $take['take'] > $best['take']) { $best = $take; }
+        if ($best === null || [$take['date'], $take['take']] > [$best['date'], $best['take']]) {
+            $best = $take;
+        }
+        if ($take['glb'] !== null
+            && ($bestBaked === null || [$take['date'], $take['take']] > [$bestBaked['date'], $bestBaked['take']])) {
+            $bestBaked = $take;
+        }
     }
 
     return [
-        'takeNumber'  => $best['take'],
-        'fbxFilename' => $best['fbx'],
-        'baked'       => $best['glb'] !== null,
-        'glbFilename' => $best['glb'],
+        'takeNumber'      => $best['take'],
+        'fbxFilename'     => $best['fbx'],
+        'baked'           => $bestBaked !== null,
+        'glbFilename'     => $bestBaked !== null ? $bestBaked['glb'] : null,
+        'glbIsLatestTake' => $bestBaked !== null
+            && $bestBaked['date'] === $best['date']
+            && $bestBaked['take'] === $best['take'],
+    ];
+}
+
+/**
+ * List zin videos joined to their sentence status, latest mocap take and gloss SRT.
+ *
+ * Status columns live on `sentences`; the rows returned here are `videos`.
+ * A sentence with two baked takes appears as two rows. Rows with a NULL
+ * m_file have no file to resolve a base/take from and are skipped.
+ */
+function mocap_file_list($conn, $index, $opts) {
+    $page  = max(1, (int)($opts['page'] ?? 1));
+    $limit = (int)($opts['limit'] ?? 100);
+    if ($limit < 1)   { $limit = 100; }
+    if ($limit > 500) { $limit = 500; }
+
+    $where  = ["mt.zOg = 'Zin'", "mt.added = 1"];
+    $params = [];
+    $types  = '';
+
+    foreach (['mcpStatusTijdAnnotatie' => 'mcp_status_tijd_annotatie',
+              'mcpStatusTijdAnnotatieGvg' => 'mcp_status_tijd_annotatie_gvg'] as $opt => $col) {
+        if (empty($opts[$opt])) { continue; }
+        $value = $opts[$opt];
+        if ($value === 'Niet Klaar') {
+            // An empty or NULL cell means Niet Klaar, matching getZinnen.php:1215.
+            $where[] = "(s.$col = ? OR s.$col IS NULL OR s.$col = '')";
+        } else {
+            $where[] = "s.$col = ?";
+        }
+        $types .= 's';
+        $params[] = $value;
+    }
+
+    if (!empty($opts['mcpStatusPostprocessing'])) {
+        // Stored numerically, matching getZinnen.php:1232.
+        $v = $opts['mcpStatusPostprocessing'];
+        if ($v === '__NULL__' || $v === 'Niet Klaar') {
+            $where[] = "s.mcp_status_postprocessing IS NULL";
+        } else {
+            if ($v === 'Klaar')            { $v = 1; }
+            elseif ($v === 'Check nodig')  { $v = 2; }
+            $where[] = "s.mcp_status_postprocessing = ?";
+            $types .= 'i';
+            $params[] = (int)$v;
+        }
+    }
+
+    if (!empty($opts['search'])) {
+        $where[] = "LOWER(s.zinArray) LIKE ?";
+        $types .= 's';
+        $params[] = '%' . strtolower($opts['search']) . '%';
+    }
+
+    $sql = "SELECT mt.ID AS video_id, mt.m_file, mt.m_transcription AS sentence_id,
+                   s.zinArray, s.thema,
+                   s.status_video, s.status_annotatie, s.status_glos, s.status_gvg,
+                   s.mcp_status_postprocessing, s.mcp_status_tijd_annotatie,
+                   s.mcp_status_tijd_annotatie_gvg
+            FROM matched_transcriptions mt
+            JOIN sentences s ON mt.m_transcription = s.ID
+            WHERE " . implode(' AND ', $where) . "
+            ORDER BY mt.ID DESC";
+
+    $stmt = $conn->prepare($sql);
+    if ($stmt === false) {
+        return ['total' => 0, 'page' => $page, 'limit' => $limit, 'count' => 0,
+                'videos' => [], 'error' => 'Prepare failed: ' . $conn->error];
+    }
+    if ($types !== '') { $stmt->bind_param($types, ...$params); }
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    // baked and hasGloss are filesystem facts, not SQL predicates, so the full
+    // candidate set is filtered in PHP and paginated afterwards. The candidate
+    // set is a few thousand rows at most.
+    $rows = [];
+    $onlyBaked = (($opts['baked'] ?? null) === '1');
+    $onlyGloss = (($opts['hasGloss'] ?? null) === '1');
+
+    while ($row = $result->fetch_assoc()) {
+        if ($row['m_file'] === null) { continue; }
+        $base = preg_replace('/\.(wav|mp4)$/i', '', basename($row['m_file']));
+        $take = mocap_latest_take($index, $base);
+
+        $baked = ($take !== null && $take['baked']);
+        if ($onlyBaked && !$baked) { continue; }
+
+        $glossSrtName = $base . '_Signbank_ID_glossen.srt';
+        $hasGloss = file_exists(MOCAP_EAF_DIR . $glossSrtName);
+        if ($onlyGloss && !$hasGloss) { continue; }
+
+        $zinWords = json_decode($row['zinArray'] ?? '[]', true);
+        $zin = (json_last_error() === JSON_ERROR_NONE && is_array($zinWords) && count($zinWords))
+            ? ucfirst(implode(' ', $zinWords))
+            : '';
+
+        $rows[] = [
+            'sentence_id' => (int)$row['sentence_id'],
+            'video_id'    => (int)$row['video_id'],
+            'm_file'      => $row['m_file'],
+            'base'        => $base,
+            'zin'         => $zin,
+            'thema'       => $row['thema'],
+            'status_video'      => $row['status_video'],
+            'status_annotatie'  => $row['status_annotatie'],
+            'status_glos'       => $row['status_glos'],
+            'status_gvg'        => $row['status_gvg'],
+            'mcp_status_postprocessing'     => $row['mcp_status_postprocessing'] === null
+                                                ? null : (int)$row['mcp_status_postprocessing'],
+            'mcp_status_tijd_annotatie'     => $row['mcp_status_tijd_annotatie'],
+            'mcp_status_tijd_annotatie_gvg' => $row['mcp_status_tijd_annotatie_gvg'],
+            'takeNumber'  => $take === null ? null : $take['takeNumber'],
+            'fbxFilename' => $take === null ? null : $take['fbxFilename'],
+            'baked'       => $baked,
+            'glbUrl'      => $baked ? (MOCAP_GLB_URL . $take['glbFilename']) : null,
+            'glbIsLatestTake' => $baked ? $take['glbIsLatestTake'] : false,
+            'hasGloss'    => $hasGloss,
+            'glossSrtUrl' => $hasGloss ? (MOCAP_SRT_URL . $glossSrtName) : null,
+        ];
+    }
+    $stmt->close();
+
+    $total = count($rows);
+    $slice = array_slice($rows, ($page - 1) * $limit, $limit);
+
+    return [
+        'total'  => $total,
+        'page'   => $page,
+        'limit'  => $limit,
+        'count'  => count($slice),
+        'videos' => array_values($slice),
     ];
 }
