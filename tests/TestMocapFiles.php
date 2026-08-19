@@ -155,20 +155,65 @@ class TestMocapFiles {
         return $c;
     }
 
+    /**
+     * Independently derive a baked-video count straight off the DB and the
+     * index, bypassing mocap_file_list's own SQL/filtering entirely. Used as
+     * a drift-proof cross-check: it moves in lockstep with mocap_file_list's
+     * count only if the underlying logic (join, ordering) is actually
+     * correct, so it keeps catching a real regression no matter how many
+     * videos get baked over time. Units are VIDEOS, not sentences.
+     */
+    private function countBakedIndependently($conn, $index, $klaarOnly) {
+        $sql = "SELECT mt.m_file FROM matched_transcriptions mt
+                JOIN sentences s ON mt.m_transcription = s.ID
+                WHERE mt.zOg = 'Zin' AND mt.added = 1";
+        if ($klaarOnly) { $sql .= " AND s.mcp_status_tijd_annotatie = 'Klaar'"; }
+
+        $result = $conn->query($sql);
+        $count = 0;
+        while ($row = $result->fetch_assoc()) {
+            if ($row['m_file'] === null) { continue; }
+            $base = preg_replace('/\.(wav|mp4)$/i', '', basename($row['m_file']));
+            $take = mocap_latest_take($index, $base);
+            if ($take !== null && $take['baked']) { $count++; }
+        }
+        return $count;
+    }
+
     public function testFileListReproducesMeasuredBaseline() {
         $conn = $this->liveConn();
         if ($conn === null) { $this->assertTrue(false, "could not connect to database"); return; }
-        $index = mocap_get_index(MOCAP_CACHE, MOCAP_FBX_DIR, MOCAP_GLB_DIR, 600, true);
 
-        // Baseline measured 2026-08-19. Units are VIDEOS, not sentences.
+        // A private cache path: this force-rebuild must not overwrite the
+        // production cache at MOCAP_CACHE while the suite runs.
+        $tmpCache = sys_get_temp_dir() . '/test_mocap_baseline_' . getmypid() . '.json';
+        $index = mocap_get_index($tmpCache, MOCAP_FBX_DIR, MOCAP_GLB_DIR, 600, true);
+
         $baked = mocap_file_list($conn, $index, ['baked' => '1', 'limit' => 1]);
-        $this->assertEquals(568, $baked['total'], "baked=1 total, in videos");
-
         $klaar = mocap_file_list($conn, $index, [
             'baked' => '1', 'mcpStatusTijdAnnotatie' => 'Klaar', 'limit' => 1,
         ]);
-        $this->assertEquals(410, $klaar['total'], "baked=1 + tijd annotatie Klaar, in videos");
 
+        // Drift-proof cross-check: must hold regardless of how many videos
+        // have been baked since the numbers below were measured.
+        $expectedBaked = $this->countBakedIndependently($conn, $index, false);
+        $expectedKlaar = $this->countBakedIndependently($conn, $index, true);
+        $this->assertEquals($expectedBaked, $baked['total'],
+            "baked=1 total matches an independently derived count");
+        $this->assertEquals($expectedKlaar, $klaar['total'],
+            "baked=1 + tijd annotatie Klaar total matches an independently derived count");
+
+        // Floor against the baseline measured 2026-08-19: baking only adds
+        // videos, so these totals must never drop below what was true then.
+        // A drop below the floor means a real regression, not normal growth,
+        // which the exact-equality assertion above this replaced could not
+        // tell apart from ordinary baking progress.
+        $this->assertTrue($baked['total'] >= 568,
+            "baked=1 total must not drop below the 2026-08-19 baseline of 568 (got {$baked['total']})");
+        $this->assertTrue($klaar['total'] >= 410,
+            "baked=1 + Klaar total must not drop below the 2026-08-19 baseline of 410 (got {$klaar['total']})");
+
+        @unlink($tmpCache);
         $conn->close();
     }
 
@@ -182,7 +227,7 @@ class TestMocapFiles {
 
         $row = $res['videos'][0];
         foreach (['sentence_id','video_id','m_file','base','zin','thema','takeNumber',
-                  'fbxFilename','baked','glbUrl','hasGloss','glossSrtUrl',
+                  'fbxFilename','baked','glbUrl','glbIsLatestTake','hasGloss','glossSrtUrl',
                   'mcp_status_postprocessing','mcp_status_tijd_annotatie',
                   'mcp_status_tijd_annotatie_gvg'] as $k) {
             $this->assertTrue(array_key_exists($k, $row), "row has key $k");
@@ -193,6 +238,51 @@ class TestMocapFiles {
             file_exists(MOCAP_GLB_DIR . basename($row['glbUrl'])),
             "glbUrl points at a file that actually exists"
         );
+
+        // glbIsLatestTake is the observable the session-ordering fix introduced:
+        // pin it against real data by finding at least one baked video whose GLB
+        // comes from an older take than the latest recorded one. Page through the
+        // whole baked set (the per-call limit caps at 500) rather than assuming
+        // one page is enough.
+        $sawStaleGlb = false;
+        $page = 1;
+        do {
+            $chunk = mocap_file_list($conn, $index, ['baked' => '1', 'limit' => 500, 'page' => $page]);
+            foreach ($chunk['videos'] as $r) {
+                if ($r['glbIsLatestTake'] === false) { $sawStaleGlb = true; break 2; }
+            }
+            $page++;
+        } while (!empty($chunk['videos']) && $page <= 10);
+        $this->assertEquals(true, $sawStaleGlb,
+            "at least one baked video has glbIsLatestTake=false (glb from an older take)");
+
+        $conn->close();
+    }
+
+    public function testNullMFileRowsAreSkippedWithoutWarnings() {
+        $conn = $this->liveConn();
+        if ($conn === null) { $this->assertTrue(false, "could not connect to database"); return; }
+        $index = mocap_get_index(MOCAP_CACHE, MOCAP_FBX_DIR, MOCAP_GLB_DIR, 600, false);
+
+        $nullResult = $conn->query(
+            "SELECT COUNT(*) c FROM matched_transcriptions mt
+             JOIN sentences s ON mt.m_transcription = s.ID
+             WHERE mt.zOg = 'Zin' AND mt.added = 1 AND mt.m_file IS NULL"
+        );
+        $nullCount = (int)$nullResult->fetch_assoc()['c'];
+        $this->assertTrue($nullCount > 0,
+            "fixture assumption: at least one active zin row has a NULL m_file (found $nullCount)");
+
+        $warnings = 0;
+        set_error_handler(function () use (&$warnings) { $warnings++; return true; });
+        $res = mocap_file_list($conn, $index, ['limit' => 500]);
+        restore_error_handler();
+
+        $this->assertEquals(0, $warnings,
+            "mocap_file_list must not emit any PHP warning/notice for NULL m_file rows");
+        foreach ($res['videos'] as $row) {
+            $this->assertTrue($row['m_file'] !== null, "no returned row has a NULL m_file");
+        }
 
         $conn->close();
     }

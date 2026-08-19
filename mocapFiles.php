@@ -33,10 +33,15 @@ function mocap_parse_take($filename) {
     return ['base' => $m[1], 'date' => $m[2], 'take' => (int)$m[3], 'ext' => $m[4]];
 }
 
+// Bumped whenever the shape of a build_index take entry changes. mocap_get_index
+// refuses to trust a cached index whose 'schema' doesn't match, so a cache written
+// by older code is rebuilt instead of silently trusted with fields missing.
+if (!defined('MOCAP_INDEX_SCHEMA')) define('MOCAP_INDEX_SCHEMA', 2);
+
 /**
  * Scan the take and baked directories once and build a base -> takes index.
  *
- * @return array ['built_at' => int, 'bases' => [base => [ ['take','fbx','glb'], ... ]]]
+ * @return array ['built_at' => int, 'schema' => int, 'bases' => [base => [ ['take','date','fbx','glb'], ... ]]]
  */
 function mocap_build_index($fbxDir, $glbDir) {
     $glb = [];
@@ -66,7 +71,7 @@ function mocap_build_index($fbxDir, $glbDir) {
         }
     }
 
-    return ['built_at' => time(), 'bases' => $bases];
+    return ['built_at' => time(), 'schema' => MOCAP_INDEX_SCHEMA, 'bases' => $bases];
 }
 
 /**
@@ -76,7 +81,8 @@ function mocap_get_index($cacheFile, $fbxDir, $glbDir, $ttl = MOCAP_CACHE_TTL, $
     if (!$force && file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $ttl) {
         $raw = @file_get_contents($cacheFile);
         $decoded = json_decode($raw, true);
-        if (is_array($decoded) && isset($decoded['bases'])) {
+        if (is_array($decoded) && isset($decoded['bases'])
+            && ($decoded['schema'] ?? null) === MOCAP_INDEX_SCHEMA) {
             return $decoded;
         }
     }
@@ -96,9 +102,13 @@ function mocap_get_index($cacheFile, $fbxDir, $glbDir, $ttl = MOCAP_CACHE_TTL, $
  * Take numbers restart per recording session (per date), so they do not by
  * themselves order takes across sessions: a base can have take 5 on an old
  * date and take 1 on a newer date, and the newer date's take 1 is the real
- * latest take. Takes are therefore ordered by the pair (date, take); date is
- * a fixed-width yymmdd string, so PHP's lexicographic array comparison
- * orders (date, take) pairs correctly.
+ * latest take. Takes are therefore ordered by the pair (date, take). The
+ * date string is not guaranteed to be a fixed-width yymmdd (mocap_parse_take's
+ * \d+ accepts any digit run, and the live index has at least one entry with
+ * date="1") — this still orders correctly because PHP 8 compares two
+ * all-digit strings numerically, not byte-by-byte, so "9" > "260101" is
+ * false the same way 9 > 260101 is false. Do not "harden" this into
+ * strcmp()/string comparison; that would break on differing widths.
  *
  * The latest take overall and the latest take that has a GLB can differ: a
  * newer take may have been recorded but never baked, while an older take on
@@ -204,7 +214,12 @@ function mocap_file_list($conn, $index, $opts) {
                 'videos' => [], 'error' => 'Prepare failed: ' . $conn->error];
     }
     if ($types !== '') { $stmt->bind_param($types, ...$params); }
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        $error = 'Execute failed: ' . $stmt->error;
+        $stmt->close();
+        return ['total' => 0, 'page' => $page, 'limit' => $limit, 'count' => 0,
+                'videos' => [], 'error' => $error];
+    }
     $result = $stmt->get_result();
 
     // baked and hasGloss are filesystem facts, not SQL predicates, so the full
