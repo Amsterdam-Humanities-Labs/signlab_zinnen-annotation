@@ -103,12 +103,20 @@ cases.
 | `mcpStatusTijdAnnotatieGvg` | as above | unset |
 | `mcpStatusPostprocessing` | `1`, `2`, `__NULL__` (plus legacy string labels) | unset |
 | `baked` | `1` = only rows with a post-processed GLB | unset |
+| `hasGloss` | `1` = only rows whose gloss SRT exists on disk | unset |
 | `search` | substring match on `zinArray` | unset |
 | `page` | integer >= 1 | 1 |
 | `limit` | 1..500 | 100 |
 
+`baked` and `hasGloss` are deliberately separate predicates. They select the
+same 568 videos today, but they are produced by independent pipelines and the
+endpoint must not conflate them; blendBaking passes both.
+
 `Niet Klaar` on either `mcp_status_tijd_annotatie` column must also match
-`NULL` and `''`, matching the existing behaviour at `getZinnen.php:1215`.
+`NULL` and `''`, matching the existing behaviour at `getZinnen.php:1215`. The
+observed domain of `mcp_status_tijd_annotatie` on 2026-08-19 is exactly `NULL`
+(3,720 sentences), `'Klaar'` (410), and `''` (4) — no `'Check nodig'` rows
+exist yet, so that filter legitimately returns zero.
 `mcp_status_postprocessing` is numeric (`1` = Klaar, `2` = Check nodig, `NULL`
 = Niet Klaar) and accepts the legacy string labels, matching
 `getZinnen.php:1232`.
