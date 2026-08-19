@@ -37,7 +37,7 @@ Taken 2026-08-19 against the live database and filesystem.
 | GLB files in `fbx/post_processed/` | files | 780 (751 distinct bases) |
 | FBX files at top level of `fbx/` | files | 25,886 (9,300 matching the take pattern) |
 | Base glosses in the baked subset | glosses | 677 |
-| Base glosses corpus-wide | glosses | 1,519 (from 1,970 distinct cue strings) |
+| Base glosses corpus-wide | glosses | 1,513 (from 1,970 distinct cue strings) |
 | Wall time to parse all 568 gloss SRTs | seconds | 2.07 |
 
 The unit column is load-bearing. A sentence can have several videos, so the
@@ -167,9 +167,32 @@ Cache is used when younger than the TTL (600 s) and rebuilt otherwise; a
 `refreshIndex=1` parameter forces a rebuild. Per-row `glob()` is specifically
 avoided: at 568 rows against an rclone mount it is the dominant cost.
 
-Take number is the trailing integer before `.fbx`, per the existing
-`/_(\d+)\.fbx$/` pattern. Highest take wins. A base with no matching FBX yields
-`takeNumber: null, fbxFilename: null, baked: false`.
+**Take numbers restart per session date, so they do not order takes on their
+own.** `M20250610_9187` has three sessions — `251105` (takes 0-5), `260211`
+(takes 0-1) and `260713` (takes 0-1). Ordering by take number alone selects
+take 5 of the oldest session and misses the newest session entirely. Takes are
+therefore ordered by the pair `(date, take)`, both drawn from the filename.
+
+Two distinct takes matter per base:
+
+- **latest take** — the greatest `(date, take)`. Supplies `takeNumber` and
+  `fbxFilename`.
+- **latest baked take** — the greatest `(date, take)` among takes that have a
+  post-processed GLB. Supplies `glbUrl`, and its existence defines `baked`.
+
+They differ for 20 of the 568 baked videos, where a newer take was recorded but
+never baked. Reporting `baked: false` for those would hide a perfectly usable
+animation, so `glbUrl` points at the newest GLB that actually exists and
+`glbIsLatestTake: false` marks the row as baked from an older take. A base with
+no matching FBX yields `takeNumber: null, fbxFilename: null, baked: false`.
+
+Counted three ways against live data, all in videos: 568 have a GLB for some
+take; 548 have one for the newest session's newest take; 521 have one for the
+highest take number ignoring sessions. All three yield the same 410 for
+`mcp_status_tijd_annotatie = 'Klaar'`. The endpoint reports 568.
+
+`m_file` is NULL for 9 active zin video rows. They are skipped rather than
+passed to `basename()`, which would emit a deprecation warning on PHP 8.3.
 
 ## Component 2 — `/web/blendBaking/`
 
@@ -218,11 +241,11 @@ observed in live data: `PT-1hand:1`, `PO+PT`, `MOVE+C`, `MOVE+geld`,
 `MOVE+Baby_snavel`, `#J`, `-`, `nvt`. `MOOI-a` must fold to the same base as
 `MOOI-A`. Note that stripping is deliberately lossy for a base gloss that
 legitimately ends in `-` plus one letter; no such gloss exists in the current
-1,519, and the variants column preserves the original strings either way.
+1,513, and the variants column preserves the original strings either way.
 
 ### Categories
 
-`categories.json` maps all 1,519 corpus-wide base glosses — not only the 677
+`categories.json` maps all 1,513 corpus-wide base glosses — not only the 677
 currently baked, so the file stays useful as more videos bake — to a category
 slug. Structure:
 
