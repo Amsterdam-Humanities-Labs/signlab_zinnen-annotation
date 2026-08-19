@@ -31,3 +31,6 @@ db_credentials.py
 db_credentials.php
 __pycache__/
 *.pyc
+
+# generated mocap take index (rebuilt on a TTL by mocapFiles.php)
+cache/mocap_index.json

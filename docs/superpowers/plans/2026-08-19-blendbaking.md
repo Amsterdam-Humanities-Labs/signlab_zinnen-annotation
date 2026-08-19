@@ -15,6 +15,7 @@
 - **Never use `find` under `/web/gebarenoverleg_media/`.** It is an rclone mount where `find` silently returns zero results in directories containing tens of thousands of files. Use `scandir`/`glob` only. This applies to implementation code, tests, and any shell command run while working on this plan.
 - **Counts must state their unit.** Status columns live on `sentences`; the rows this tool lists are `videos`. 568 baked videos span 555 sentences; 410 baked videos with `mcp_status_tijd_annotatie = 'Klaar'` span 406 sentences. Never report a bare number.
 - **Directory index is built by `scandir`, never per-row `glob()`.** Measured: `scandir` of `fbx/` is 86,768 entries in 0.93 s; `post_processed/` is 1,567 entries in 0.02 s. Per-row `glob()` across 568 rows on this mount is the dominant cost and is prohibited.
+- **Takes are ordered by `(date, take)`, never by take number alone.** Take numbers restart per session date: `M20250610_9187` has sessions `251105` (takes 0-5), `260211` (0-1) and `260713` (0-1). `baked`/`glbUrl` come from the newest take that actually has a GLB, which differs from the newest take for 20 of the 568 baked videos; those rows carry `glbIsLatestTake: false`. Rows with a NULL `m_file` (9 of them) are skipped, not passed to `basename()`.
 - **Take filename grammar:** `{base}_{yymmdd}_{take}.{fbx|glb}`, parsed with the non-greedy regex `/^(.+?)_(\d+)_(\d+)\.(fbx|glb)$/`. Verified against live filenames: `M20240925_1824_251217_2.fbx` → base `M20240925_1824`, take `2`; `#A_241120_0.fbx` → base `#A`, take `0`; `#EUD.fbx` and `#A_241120_0_GlassesGuyRecord_C_1.fbx` correctly do not match.
 - **Paths:** FBX takes `/web/gebarenoverleg_media/fbx/`; baked GLBs `/web/gebarenoverleg_media/fbx/post_processed/`; SRTs `/web/zin/eaf/zin/`; public SRT base URL `https://signcollect.nl/zin/eaf/zin/`; public GLB base URL `/gebarenoverleg_media/fbx/post_processed/`.
 - **DB credentials** come from `include '/web/mysql_config.php'` which defines `$servername`, `$username`, `$password`, `$database`. Never hardcode them; never commit them.
@@ -1318,7 +1319,7 @@ cd /web/blendBaking && php scripts/dump_base_glosses.php > /tmp/base_glosses.tsv
 wc -l /tmp/base_glosses.tsv
 head -20 /tmp/base_glosses.tsv
 ```
-Expected: about 1,519 lines; the head shows `PT-1hand`, `nvt`, `PO`, `EVEN`, `WILLEN` with high counts.
+Expected: about 1,513 lines; the head shows `PT-1hand`, `nvt`, `PO`, `EVEN`, `WILLEN` with high counts.
 
 - [ ] **Step 3: Generate `categories.json`**
 
