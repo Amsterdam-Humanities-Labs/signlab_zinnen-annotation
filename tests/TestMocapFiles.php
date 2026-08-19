@@ -124,6 +124,42 @@ class TestMocapFiles {
         rmdir($tmp . '/fbx'); rmdir($tmp . '/glb'); rmdir($tmp);
     }
 
+    public function testBuildIndexDistinguishesFailedScanFromEmptyDir() {
+        $tmp = sys_get_temp_dir() . '/mocapempty_' . getmypid();
+        @mkdir($tmp . '/fbx', 0777, true);
+        @mkdir($tmp . '/glb', 0777, true);
+
+        // A directory that scans cleanly and simply has nothing in it: ok, no bases.
+        $empty = mocap_build_index($tmp . '/fbx', $tmp . '/glb');
+        $this->assertEquals(true, $empty['ok'], "an empty but scannable pair of directories is ok");
+        $this->assertEquals([], $empty['bases'], "empty directories yield no bases");
+
+        rmdir($tmp . '/fbx'); rmdir($tmp . '/glb'); rmdir($tmp);
+
+        // The same directories, now gone entirely: scandir() fails, must be
+        // reported as not ok, not silently treated as an empty corpus.
+        $missing = mocap_build_index($tmp . '/fbx', $tmp . '/glb');
+        $this->assertEquals(false, $missing['ok'], "a scandir() failure is reported as not ok");
+        $this->assertEquals([], $missing['bases'], "a failed scan still returns an empty bases array, not null");
+    }
+
+    public function testGetIndexNeverCachesAFailedScan() {
+        $tmp = sys_get_temp_dir() . '/mocapfailcache_' . getmypid();
+        $cache = $tmp . '.json';
+        @unlink($cache);
+
+        $first = mocap_get_index($cache, $tmp . '/nope-fbx', $tmp . '/nope-glb', 600, false);
+        $this->assertEquals(false, $first['ok'], "a failed scan reports ok=false");
+        $this->assertTrue(!file_exists($cache), "a failed scan must never be written to the shared cache");
+
+        // A second call must retry the scan (nothing to trust in the cache),
+        // and must keep reporting the failure rather than silently serving a
+        // cached empty success.
+        $second = mocap_get_index($cache, $tmp . '/nope-fbx', $tmp . '/nope-glb', 600, false);
+        $this->assertEquals(false, $second['ok'], "repeated calls keep reporting failure, not a cached empty success");
+        $this->assertTrue(!file_exists($cache), "still no cache file after a second failed attempt");
+    }
+
     public function testGetIndexUsesAndRefreshesCache() {
         $tmp = sys_get_temp_dir() . '/mocapcache_' . getmypid();
         @mkdir($tmp . '/fbx', 0777, true);

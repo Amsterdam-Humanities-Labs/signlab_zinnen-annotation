@@ -1,0 +1,7 @@
+# Deny all direct web access to the test suite. TestRunner.php opens a
+# production DB connection and forces a full scandir() of the rclone mount on
+# every anonymous GET; it must only ever be run from the CLI (php
+# tests/TestRunner.php). Matches the house pattern used in
+# /web/animMIDI/.htaccess.
+Order allow,deny
+Deny from all

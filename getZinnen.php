@@ -4016,6 +4016,18 @@ function listMocapFiles($conn) {
     $force = ($_GET['refreshIndex'] ?? '') === '1';
     $index = mocap_get_index(MOCAP_CACHE, MOCAP_FBX_DIR, MOCAP_GLB_DIR, MOCAP_CACHE_TTL, $force);
 
+    // A failed directory scan (rclone mount hiccup, permissions, etc.) must
+    // never be reported as "success: true, total: 0" — that is
+    // indistinguishable in the UI from a genuinely unbaked corpus. See
+    // mocap_build_index()'s 'ok' flag in mocapFiles.php.
+    if (empty($index['ok'])) {
+        echo json_encode([
+            'success' => false,
+            'error'   => 'Kon de mocap-bestandenindex niet opbouwen (map-scan mislukte); probeer het later opnieuw.',
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+        exit();
+    }
+
     $result = mocap_file_list($conn, $index, [
         'mcpStatusTijdAnnotatie'    => $_GET['mcpStatusTijdAnnotatie'] ?? null,
         'mcpStatusTijdAnnotatieGvg' => $_GET['mcpStatusTijdAnnotatieGvg'] ?? null,
@@ -4028,7 +4040,7 @@ function listMocapFiles($conn) {
     ]);
 
     $result['success'] = !isset($result['error']);
-    echo json_encode($result, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    echo json_encode($result, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
     exit();
 }
 
