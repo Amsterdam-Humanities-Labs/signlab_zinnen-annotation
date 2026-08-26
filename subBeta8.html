@@ -590,9 +590,23 @@
       const sub = getSelectedSub();
       if (sub) {
         if (opts.snapPlayhead) setCanvasTime(sub.start, 'select');
-        const box = document.querySelector('.subtitle-box[data-id="' + id + '"]');
-        if (box && box.scrollIntoView) box.scrollIntoView({block:'nearest', inline:'nearest'});
+        // Center the selected box horizontally in the timeline viewport —
+        // only for keyboard (Tab) navigation; mouse clicks keep the view still.
+        if (opts.center) {
+          const boxCenter = timeToPx((sub.start + sub.end) / 2);
+          timelineContainer.scrollLeft = Math.max(0, boxCenter - timelineContainer.clientWidth / 2);
+        }
         updateThreeCanvases(sub);
+        // Auto-show spotter results for the active Signbank-glossen segment.
+        // Cached results reopen instantly; otherwise the spot runs once and is cached on the sub.
+        if (sub.tier === 2 && videoBlob) {
+          const boxEl = document.querySelector('.subtitle-box[data-id="' + id + '"]');
+          if (boxEl) {
+            const rect = boxEl.getBoundingClientRect();
+            if (sub.spotState === 'done' && sub.spotResults) showSpotPopover(sub, rect);
+            else if (sub.spotState !== 'loading') openSpotPopover(sub, rect);
+          }
+        }
       }
     }
     let autoLoopEnabled = true, loopSubtitle = null;
@@ -770,7 +784,16 @@
     // timeline container's overflow, and shown immediately (with a spinner) the
     // moment a Spot button is clicked. Anchored to the segment box; auto-clamped
     // to the viewport so the full top-10 is always visible.
-    let _spotPopSub = null, _spotPopRect = null, _spotHideTimer = null;
+    let _spotPopSub = null, _spotPopRect = null, _spotHideTimer = null, _spotHoverTimer = null;
+    // After hovering away from a box, fall back to the selected segment's results (if any).
+    function revertSpotPopoverToSelection() {
+      const sel = getSelectedSub();
+      if (sel && sel.tier === 2 && sel.spotState === 'done' && sel.spotResults) {
+        const boxEl = document.querySelector('.subtitle-box[data-id="' + sel.id + '"]');
+        if (boxEl) { showSpotPopover(sel, boxEl.getBoundingClientRect()); return; }
+      }
+      hideSpotPopover();
+    }
     function spotPopoverEl() {
       let p = document.getElementById('spotPopover');
       if (p) return p;
@@ -856,13 +879,14 @@
       renderSpotPopover(_spotPopSub);
       p.style.display = 'block';
       const r = _spotPopRect, pad = 6, w = p.offsetWidth || 260;
+      const dropGap = 46;   // extra vertical gap so the popover clears the segment's action buttons (e.g. delete)
       const h = Math.min(p.offsetHeight || 200, window.innerHeight * 0.6);
       // Anchor BELOW the box, left-aligned, floating on top of the timeline.
       // Clamp horizontally; flip above the box only if there is no room below.
       let left = r.left;
       if (left + w > window.innerWidth - pad) left = Math.max(pad, window.innerWidth - w - pad);
       if (left < pad) left = pad;
-      let top = r.bottom + pad;
+      let top = r.bottom + pad + dropGap;
       if (top + h > window.innerHeight - pad) top = Math.max(pad, r.top - h - pad);
       if (top < pad) top = pad;
       p.style.left = left + 'px'; p.style.top = top + 'px';
@@ -1497,6 +1521,19 @@ function nudgeWholeBlock(sub, frames) {
                 busyMoving = 1;
                 updateThreeCanvases(sub);
             }
+            // Hover: show this segment's spotter results. Cached results appear
+            // instantly; un-spotted segments spot after a short dwell so sweeping
+            // the mouse across boxes doesn't fire a request per box.
+            if (sub.tier === 2 && videoBlob) {
+                clearTimeout(_spotHideTimer);
+                clearTimeout(_spotHoverTimer);
+                const spotRect = box.getBoundingClientRect();
+                if (sub.spotState === 'done' && sub.spotResults) {
+                    showSpotPopover(sub, spotRect);
+                } else if (sub.spotState !== 'loading') {
+                    _spotHoverTimer = setTimeout(() => openSpotPopover(sub, spotRect), 300);
+                }
+            }
         });
         box.addEventListener('mousemove', updateCanvasTimeByEvent); // Keep updating time
         box.addEventListener('mouseleave', () => {
@@ -1518,8 +1555,13 @@ function nudgeWholeBlock(sub, frames) {
              // Explicitly clear hover loop state
              loopSubtitle = null;
              loopDirection = 1; // Reset direction
-             // Let the cursor move into the spot popover before hiding it.
-             if (sub.tier === 2) _spotHideTimer = setTimeout(hideSpotPopover, 200);
+             // Let the cursor move into the spot popover before hiding it
+             // (popover sits lower now, so allow more travel time). After the
+             // grace period, fall back to the selected segment's results.
+             if (sub.tier === 2) {
+                 clearTimeout(_spotHoverTimer);
+                 _spotHideTimer = setTimeout(revertSpotPopoverToSelection, 500);
+             }
              hideVideoPreview(); // Hide the gloss video preview on mouse leave
         });
 
@@ -2424,7 +2466,13 @@ function nudgeWholeBlock(sub, frames) {
                 setCanvasTime(newTime, "playing-hover-loop-speed-change");
             } else { // Normal playback (adjust time increment with playbackSpeed)
                 newTime = currentTime + (playbackSpeed / fps); // Use playbackSpeed
-                if (newTime >= videoDuration) newTime = 0; // Loop full video
+                const activeSub = getSelectedSub();
+                if (activeSub) {
+                    // Loop only the active subtitle's range
+                    if (newTime >= activeSub.end || newTime < activeSub.start) newTime = activeSub.start;
+                } else if (newTime >= videoDuration) {
+                    newTime = 0; // Loop full video
+                }
                 setCanvasTime(newTime, "playing-speed-change");
             }
           }, 1000 / fps); // Interval delay remains based on base fps
@@ -3533,7 +3581,11 @@ function nudgeWholeBlock(sub, frames) {
                     setCanvasTime(newTime, "playing-hover-loop");
                 } else { // Normal playback
                     newTime = currentTime + (playbackSpeed / fps);
-                    if (newTime >= videoDuration) {
+                    const activeSub = getSelectedSub();
+                    if (activeSub) {
+                        // Loop only the active subtitle's range
+                        if (newTime >= activeSub.end || newTime < activeSub.start) newTime = activeSub.start;
+                    } else if (newTime >= videoDuration) {
                         newTime = 0; // Loop full video back to start
                         // Optionally stop playback when looping full video:
                         // playing = false;
@@ -3592,6 +3644,13 @@ function nudgeWholeBlock(sub, frames) {
             document.getElementById('zoomOutBtn').click();
         }
 
+        // Escape deselects the active subtitle box (returns playback to full-video loop)
+        if (e.key === 'Escape' && !waitingForEnd && selectedSubId !== null) {
+            selectedSubId = null;
+            applySelectionHighlight();
+            hideSpotPopover();
+        }
+
         // Escape cancels pending subtitle end-time selection
         if (e.key === 'Escape' && waitingForEnd) {
             e.preventDefault();
@@ -3623,14 +3682,14 @@ function nudgeWholeBlock(sub, frames) {
             if (!subtitles.length) return;
             const nearest = subtitles.slice().sort((a, b) =>
               Math.abs(a.start - currentTime) - Math.abs(b.start - currentTime))[0];
-            selectSub(nearest.id, {snapPlayhead: true});
+            selectSub(nearest.id, {snapPlayhead: true, center: true});
             return;
           }
           const tierBlocks = subtitles.filter(s => s.tier === cur.tier).sort((a, b) => a.start - b.start);
           const idx = tierBlocks.findIndex(s => s.id === cur.id);
           const nextIdx = e.shiftKey ? idx - 1 : idx + 1;
           if (nextIdx < 0 || nextIdx >= tierBlocks.length) return; // clamp at ends
-          selectSub(tierBlocks[nextIdx].id, {snapPlayhead: true});
+          selectSub(tierBlocks[nextIdx].id, {snapPlayhead: true, center: true});
           return;
         }
 
