@@ -34,3 +34,33 @@ __pycache__/
 
 # generated mocap take index (rebuilt on a TTL by mocapFiles.php)
 cache/mocap_index.json
+
+# --- logs, backups, caches and generated data (added 2026-08-26 cleanup) ---
+*.log
+*.bak
+*.bak.*
+*.bak-*
+*.bak_*
+*.backup
+*.backup.*
+*.backup_*
+*_backup_*
+*.orig
+*.old
+*.outdated
+*.tmp
+__pycache__/
+*.pyc
+.claude/
+.mcp.json
+.playwright-mcp/
+.superpowers/
+cache/*.json
+zinnen_feed.json
+znn_videos/all_videos.json
+migration_report_*.json
+*_back
+debug_log.txt
+*.xlsx
+*.pkl
+*_backup_*.sql
