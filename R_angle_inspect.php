@@ -1,4 +1,9 @@
 <?php
+
+// signcollect-lib's install-root resolver: sc_path(), sc_dir(), sc_root().
+// Vendored shim - it finds /web/lib/paths.php, or falls back to /web.
+require_once __DIR__ . '/sc_paths.php';
+
 /**
  * R-angle (right camera) inspection + manual-delete tool for the M20241216 session.
  *
@@ -33,7 +38,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action'])) {
 
 /* ---- Page render ---- */
 $POST_URL  = 'https://signcollect.nl/gebarenoverleg_media/studioFilesMini/post/';
-$POST_DISK = '/web/gebarenoverleg_media/studioFilesMini/post/';
+$POST_DISK = sc_dir('media_post');
 
 $filter = $_GET['filter'] ?? 'active';
 $cond = match ($filter) {

@@ -1,4 +1,9 @@
 <?php
+
+// signcollect-lib's install-root resolver: sc_path(), sc_dir(), sc_root().
+// Vendored shim - it finds /web/lib/paths.php, or falls back to /web.
+require_once __DIR__ . '/sc_paths.php';
+
 include('../mysql_config.php');
 
 // Set the JSON content type header
@@ -189,8 +194,8 @@ function searchInSignbankAndCollect($conn, $senseOrGlosID, $isSense = true) {
     // it is rebuilt - /web is not writable by the web server, so the file that
     // has to be replaced atomically cannot live at the docroot root. The old
     // location is still honoured for a host that predates the connector.
-    $signbankJson = '/web/signbank_data/glosses_transformed.json';
-    if (!is_readable($signbankJson)) $signbankJson = '/web/glosses_transformed.json';
+    $signbankJson = sc_path('signbank_data/glosses_transformed.json');
+    if (!is_readable($signbankJson)) $signbankJson = sc_path('glosses_transformed.json');
     $signbank = json_decode(file_get_contents($signbankJson), true);
 
     foreach ($signbank as $entry) {

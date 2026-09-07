@@ -1,4 +1,9 @@
 <?php
+
+// signcollect-lib's install-root resolver: sc_path(), sc_dir(), sc_root().
+// Vendored shim - it finds /web/lib/paths.php, or falls back to /web.
+require_once __DIR__ . '/sc_paths.php';
+
 /**
  * getHandshapes.php
  *
@@ -39,7 +44,7 @@ if ($endTime <= $startTime) {
 }
 
 // Construct .hamer file path
-$rawDir = '/web/gebarenoverleg_media/studioFilesMini/raw/';
+$rawDir = sc_dir('media_raw');
 $hamerPath = $rawDir . $videoId . '.hamer';
 
 // Check if .hamer file exists
