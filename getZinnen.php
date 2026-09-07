@@ -1,4 +1,9 @@
 <?php
+
+// signcollect-lib's install-root resolver: sc_path(), sc_dir(), sc_root().
+// Vendored shim - it finds /web/lib/paths.php, or falls back to /web.
+require_once __DIR__ . '/sc_paths.php';
+
 header('Content-Type: application/json');
 
 // Include the MySQL configuration file
@@ -1506,7 +1511,7 @@ function fetchSentences($conn) {
             $srt_gebaar_voor_gebaar = __DIR__ . '/eaf/zin/' . $video_basename . '_Gebaar-voor-gebaar.srt';
             if(file_exists($srt_nederlands))
             {
-                $video_row['srt_nederlands'] = str_replace('/web/zin/eaf/zin/', 'https://signcollect.nl/zin/eaf/zin/', $srt_nederlands);
+                $video_row['srt_nederlands'] = str_replace(sc_dir('zin/eaf/zin'), 'https://signcollect.nl/zin/eaf/zin/', $srt_nederlands);
             }
             else
             {
@@ -1514,7 +1519,7 @@ function fetchSentences($conn) {
             }
             if(file_exists($srt_signbank_id_glossen))
             {
-                $video_row['srt_signbank_id_glossen']  = str_replace('/web/zin/eaf/zin/', 'https://signcollect.nl/zin/eaf/zin/', $srt_signbank_id_glossen);
+                $video_row['srt_signbank_id_glossen']  = str_replace(sc_dir('zin/eaf/zin'), 'https://signcollect.nl/zin/eaf/zin/', $srt_signbank_id_glossen);
             }
             else
             {
@@ -1522,7 +1527,7 @@ function fetchSentences($conn) {
             }
             if(file_exists($srt_gebaar_voor_gebaar))
             {
-                $video_row['srt_gebaar_voor_gebaar']  = str_replace('/web/zin/eaf/zin/', 'https://signcollect.nl/zin/eaf/zin/', $srt_gebaar_voor_gebaar);
+                $video_row['srt_gebaar_voor_gebaar']  = str_replace(sc_dir('zin/eaf/zin'), 'https://signcollect.nl/zin/eaf/zin/', $srt_gebaar_voor_gebaar);
             }
             else
             {
@@ -3829,7 +3834,7 @@ function processSegmentation($conn) {
     $baseFilename = preg_replace('/[^a-zA-Z0-9_-]/', '', $baseFilename);
 
     // Construct .hamer file path
-    $rawDir = '/web/gebarenoverleg_media/studioFilesMini/raw/';
+    $rawDir = sc_dir('media_raw');
     $hamerPath = $rawDir . $baseFilename . '.hamer';
 
     // Check if .hamer file exists
@@ -3912,7 +3917,7 @@ function processSegmentationStreaming($conn) {
     $baseFilename = preg_replace('/[^a-zA-Z0-9_-]/', '', $baseFilename);
 
     // Construct .hamer file path
-    $rawDir = '/web/gebarenoverleg_media/studioFilesMini/raw/';
+    $rawDir = sc_dir('media_raw');
     $hamerPath = $rawDir . $baseFilename . '.hamer';
 
     // Check if .hamer file exists
@@ -3955,7 +3960,7 @@ function processSegmentationStreaming($conn) {
             $debugInfo .= "Result keys: " . implode(', ', array_keys($result)) . "\n";
             $debugInfo .= "VTT preview: " . substr($result['vtt_content'] ?? '', 0, 200) . "\n";
             $debugInfo .= "About to send completed message...\n";
-            file_put_contents('/web/zin/debug_segmentation.log', $debugInfo, FILE_APPEND);
+            file_put_contents(sc_path('zin/debug_segmentation.log'), $debugInfo, FILE_APPEND);
 
             // Send completed message
             $completedMessage = [
@@ -3964,13 +3969,13 @@ function processSegmentationStreaming($conn) {
                 'metadata' => $result['metadata'] ?? []
             ];
 
-            file_put_contents('/web/zin/debug_segmentation.log',
+            file_put_contents(sc_path('zin/debug_segmentation.log'),
                 "Completed message JSON: " . json_encode($completedMessage) . "\n",
                 FILE_APPEND);
 
             sendSSE($completedMessage);
 
-            file_put_contents('/web/zin/debug_segmentation.log',
+            file_put_contents(sc_path('zin/debug_segmentation.log'),
                 "Completed message SENT\n===========================\n",
                 FILE_APPEND);
         } else {
@@ -4059,7 +4064,7 @@ function getLatestMocapFile($conn) {
     $baseFilename = preg_replace('/\.(wav|mp4)$/i', '', $mFile);
 
     // FBX directory path
-    $fbxDir = '/web/gebarenoverleg_media/fbx/';
+    $fbxDir = sc_dir('media_fbx');
 
     // Find all FBX files matching pattern: {baseFilename}_*_*.fbx
     $pattern = $fbxDir . $baseFilename . '_*_*.fbx';
@@ -4100,8 +4105,8 @@ function getLatestMocapFile($conn) {
         // $glbUrl and the older editor when ccGlbUrl is null.
         $baseName = preg_replace('/\.fbx$/i', '', $latestFile);
         $ccGlbFilename = $baseName . '_anim.glb';
-        $ccGlbPath = '/web/gebarenoverleg_media/fbx/cc_pipeline/' . $ccGlbFilename;
-        $ccShapekeysPath = '/web/gebarenoverleg_media/fbx/cc_pipeline/' . $baseName . '_shapekeys.json';
+        $ccGlbPath = sc_dir('media_fbx', 'cc_pipeline') . $ccGlbFilename;
+        $ccShapekeysPath = sc_dir('media_fbx', 'cc_pipeline') . $baseName . '_shapekeys.json';
 
         // Require both halves: a GLB without its sidecar would load with a frozen face.
         $ccGlbUrl = null;

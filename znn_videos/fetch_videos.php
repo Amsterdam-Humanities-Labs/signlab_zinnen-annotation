@@ -1,4 +1,9 @@
 <?php
+
+// signcollect-lib's install-root resolver: sc_path(), sc_dir(), sc_root().
+// Vendored shim - it finds /web/lib/paths.php, or falls back to /web.
+require_once __DIR__ . '/../sc_paths.php';
+
 /**
  * Fetch all video URLs from the database.
  * Outputs JSON array of sentences with their video file URLs.
@@ -34,7 +39,7 @@ if (!$result) {
     exit(1);
 }
 
-$localBase = '/web/gebarenoverleg_media/studioFilesMini/post/';
+$localBase = sc_dir('media_post');
 $webBase = 'https://media.signcollect.nl/';
 $sentences = [];
 

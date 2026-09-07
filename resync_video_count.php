@@ -1,4 +1,9 @@
 <?php
+
+// signcollect-lib's install-root resolver: sc_path(), sc_dir(), sc_root().
+// Vendored shim - it finds /web/lib/paths.php, or falls back to /web.
+require_once __DIR__ . '/sc_paths.php';
+
 /**
  * resync_video_count.php
  * Recomputes the cached sentences.video_count column from matched_transcriptions
@@ -10,7 +15,7 @@
  * Safe to run repeatedly; it only updates rows whose cached count is wrong.
  */
 
-include '/web/mysql_config.php';
+include sc_path('mysql_config.php');
 $conn = new mysqli($servername, $username, $password, $database);
 $conn->set_charset("utf8");
 if ($conn->connect_error) {

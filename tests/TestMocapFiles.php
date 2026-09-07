@@ -1,4 +1,9 @@
 <?php
+
+// signcollect-lib's install-root resolver: sc_path(), sc_dir(), sc_root().
+// Vendored shim - it finds /web/lib/paths.php, or falls back to /web.
+require_once __DIR__ . '/../sc_paths.php';
+
 /**
  * Unit tests for mocapFiles.php — take parsing and directory indexing.
  */
@@ -184,7 +189,7 @@ class TestMocapFiles {
     }
 
     private function liveConn() {
-        include '/web/mysql_config.php';
+        include sc_path('mysql_config.php');
         $c = new mysqli($servername, $username, $password, $database);
         if ($c->connect_error) { return null; }
         $c->set_charset('utf8');
