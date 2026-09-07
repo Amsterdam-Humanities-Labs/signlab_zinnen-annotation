@@ -4093,11 +4093,28 @@ function getLatestMocapFile($conn) {
         // which lives in fbx/post_processed/ under the same filename.
         $glbFilename = preg_replace('/\.fbx$/i', '.glb', $latestFile);
         $glbUrl = '/gebarenoverleg_media/fbx/post_processed/' . $glbFilename;
+
+        // Preferred output: the FBXtoGLBCompression pipeline's GLB plus its facial
+        // shape-key sidecar (see viconSync/cc_pipeline/README.md). It only exists for
+        // captures whose CC export has been converted, so the caller falls back to
+        // $glbUrl and the older editor when ccGlbUrl is null.
+        $baseName = preg_replace('/\.fbx$/i', '', $latestFile);
+        $ccGlbFilename = $baseName . '_anim.glb';
+        $ccGlbPath = '/web/gebarenoverleg_media/fbx/cc_pipeline/' . $ccGlbFilename;
+        $ccShapekeysPath = '/web/gebarenoverleg_media/fbx/cc_pipeline/' . $baseName . '_shapekeys.json';
+
+        // Require both halves: a GLB without its sidecar would load with a frozen face.
+        $ccGlbUrl = null;
+        if (is_readable($ccGlbPath) && is_readable($ccShapekeysPath)) {
+            $ccGlbUrl = '/gebarenoverleg_media/fbx/cc_pipeline/' . $ccGlbFilename;
+        }
+
         echo json_encode([
             'success' => true,
             'hasMocap' => true,
             'fbxFilename' => $latestFile,
             'glbUrl' => $glbUrl,
+            'ccGlbUrl' => $ccGlbUrl,
             'takeNumber' => $maxTake
         ]);
     } else {
