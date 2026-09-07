@@ -1,4 +1,9 @@
 <?php
+
+// signcollect-lib's install-root resolver: sc_path(), sc_dir(), sc_root().
+// Vendored shim - it finds /web/lib/paths.php, or falls back to /web.
+require_once __DIR__ . '/sc_paths.php';
+
 /**
  * Read-only inspection page for sentences.videoTop (M20241216 scope).
  *
@@ -13,7 +18,7 @@ $conn = new mysqli($servername, $username, $password, $database);
 if ($conn->connect_error) { http_response_code(500); die("DB connection failed."); }
 
 $POST_URL  = 'https://signcollect.nl/gebarenoverleg_media/studioFilesMini/post/';
-$POST_DISK = '/web/gebarenoverleg_media/studioFilesMini/post/';
+$POST_DISK = sc_dir('media_post');
 
 // Optional filter: ?filter=deleted shows only sentences whose chosen take is deleted.
 $filter = $_GET['filter'] ?? 'all';

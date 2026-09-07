@@ -1,4 +1,9 @@
 <?php
+
+// signcollect-lib's install-root resolver: sc_path(), sc_dir(), sc_root().
+// Vendored shim - it finds /web/lib/paths.php, or falls back to /web.
+require_once __DIR__ . '/sc_paths.php';
+
 // Resolve the razer 2D studio recording for an animation basename.
 // The mkv filenames carry a capture timestamp that is not derivable from the
 // basename, so the browser asks us to glob it:
@@ -22,7 +27,7 @@ if (!in_array($view, ['LEFT', 'MIDDLE', 'RIGHT'], true)) {
     exit();
 }
 
-$dir = '/web/gebarenoverleg_media/razerFiles/';
+$dir = sc_dir('media', 'razerFiles');
 $matches = glob($dir . $base . '_' . $view . '_*.mkv');
 if (!$matches) {
     echo json_encode(['success' => false, 'error' => 'not_found']);

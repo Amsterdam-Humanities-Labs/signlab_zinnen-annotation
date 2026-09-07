@@ -1,4 +1,9 @@
 <?php
+
+// signcollect-lib's install-root resolver: sc_path(), sc_dir(), sc_root().
+// Vendored shim - it finds /web/lib/paths.php, or falls back to /web.
+require_once __DIR__ . '/sc_paths.php';
+
 /**
  * Compare SRT file contents against sentences table values.
  * Checks Nederlands, Gebaar-voor-gebaar, and Signbank ID glossen.
@@ -25,7 +30,7 @@ if (!$result) {
     die("Query failed: " . $conn->error . "\n");
 }
 
-$eafDir = '/web/zin/eaf/zin/';
+$eafDir = sc_dir('zin/eaf/zin');
 
 function parseSrt($path) {
     if (!file_exists($path)) {

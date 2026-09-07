@@ -22,7 +22,7 @@ echo "Progress file: $PROGRESS_FILE"
 echo ""
 
 # Run worker in background with modified progress directory
-python3 /web/zin/iss_client/iss_worker.py "$REQUEST_ID" "$HAMER_URL" "$FPS" &
+python3 "${SC_WEB_ROOT:-/web}/zin/iss_client/iss_worker.py" "$REQUEST_ID" "$HAMER_URL" "$FPS" &
 WORKER_PID=$!
 
 echo "Worker PID: $WORKER_PID"
