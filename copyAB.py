@@ -32,7 +32,18 @@ try:
                     if new_name.upper().endswith(".MP4"):
                         new_name = new_name[:-4] + ".mp4"
                     dst = os.path.join(DEST_DIR, new_name)
-                    shutil.copy2(src, dst)
+                    # Already copied and complete -> skip. Without this the job
+                    # re-copies every file on every run and can never finish.
+                    if os.path.exists(dst) and os.path.getsize(dst) == os.path.getsize(src):
+                        continue
+                    # copy2() also copies timestamps/mode, which the destination
+                    # mount rejects with EPERM. Copy the data, then apply the
+                    # metadata on a best-effort basis.
+                    shutil.copyfile(src, dst)
+                    try:
+                        shutil.copystat(src, dst)
+                    except OSError:
+                        pass
                     print(f"Copied {src} -> {dst}")
                     files_copied += 1
         # Prevent recursion into the post folder

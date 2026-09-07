@@ -1446,7 +1446,7 @@ function addEventListeners() {
 
         }
 
-        // Redirect to 3DAnn1.html for Motion Capture editing
+        // Redirect to the Motion Capture annotation editor
         if (e.target && e.target.classList.contains('editMocap-btn')) {
             const filename = e.target.getAttribute('data-filename');
 
@@ -1455,12 +1455,26 @@ function addEventListeners() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success && data.hasMocap) {
-                        // Backend returns the post-processed glb URL (fbx/post_processed/).
-                        const glbUrl = data.glbUrl
-                            || `/gebarenoverleg_media/fbx/post_processed/${data.fbxFilename.replace(/\.fbx$/i, '.glb')}`;
                         saveCurrentState();
-                        // 3DAnn2.html is the timeline/annotation editor; it reads the glb via the "glb" param.
-                        window.location.href = `3DAnn2.html?glb=${encodeURIComponent(glbUrl)}`;
+
+                        // 3DAnn3 is the primary editor: it reads the FBXtoGLBCompression
+                        // output (<name>_anim.glb, 118 joints, plus a _shapekeys.json
+                        // sidecar for the face). The backend sets ccGlbUrl only when both
+                        // files exist.
+                        //
+                        // Captures whose CC export has not been converted fall back to
+                        // 3DAnn2 and the legacy post-processed glb. The two editors are
+                        // not interchangeable: 3DAnn2 hardcodes POS_SCALE=100 for the
+                        // legacy metre-based GLBs and would render pipeline output at
+                        // 100x, so each URL must go to its own editor.
+                        if (data.ccGlbUrl) {
+                            window.location.href = `3DAnn3.html?glb=${encodeURIComponent(data.ccGlbUrl)}`;
+                        } else {
+                            const glbUrl = data.glbUrl
+                                || `/gebarenoverleg_media/fbx/post_processed/${data.fbxFilename.replace(/\.fbx$/i, '.glb')}`;
+                            console.log(`[mocap] no cc_pipeline output for ${data.fbxFilename}, using 3DAnn2 with ${glbUrl}`);
+                            window.location.href = `3DAnn2.html?glb=${encodeURIComponent(glbUrl)}`;
+                        }
                     } else {
                         alert('No motion capture file found for this video.');
                     }
