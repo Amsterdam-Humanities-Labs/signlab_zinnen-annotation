@@ -1434,7 +1434,7 @@ function addEventListeners() {
             const videoIndex = e.target.getAttribute('data-videoindex');
             const filename = e.target.getAttribute('data-filename');
             saveCurrentState();
-            window.location.href = `subBeta4.html?filename=${filename}`;
+            window.location.href = `/annotation-editors/subBeta8/zin/subBeta8.html?filename=${filename}`;
 
         }
 
@@ -1442,7 +1442,7 @@ function addEventListeners() {
         if (e.target && e.target.classList.contains('editEAF-AI-btn')){
             const filename = e.target.getAttribute('data-filename');
             saveCurrentState();
-            window.location.href = `https://signcollect.nl/zin/subBeta8.html?filename=${filename}`;
+            window.location.href = `/annotation-editors/subBeta8/zin/subBeta8.html?filename=${filename}`;
 
         }
 
@@ -1457,23 +1457,25 @@ function addEventListeners() {
                     if (data.success && data.hasMocap) {
                         saveCurrentState();
 
-                        // 3DAnn3 is the primary editor: it reads the FBXtoGLBCompression
-                        // output (<name>_anim.glb, 118 joints, plus a _shapekeys.json
-                        // sidecar for the face). The backend sets ccGlbUrl only when both
-                        // files exist.
+                        // The editors live in signlab_annotation-editors, not here.
                         //
-                        // Captures whose CC export has not been converted fall back to
-                        // 3DAnn2 and the legacy post-processed glb. The two editors are
-                        // not interchangeable: 3DAnn2 hardcodes POS_SCALE=100 for the
-                        // legacy metre-based GLBs and would render pipeline output at
-                        // 100x, so each URL must go to its own editor.
+                        // 3DAnn3 is the only mocap editor. It reads the
+                        // FBXtoGLBCompression output (<name>_anim.glb, 118 joints, plus a
+                        // _shapekeys.json sidecar for the face); the backend sets
+                        // ccGlbUrl only when both files exist.
+                        //
+                        // A capture with no cc_pipeline output cannot be opened. It used
+                        // to fall back to 3DAnn2 and the legacy post-processed glb, but
+                        // that editor is retired, and 3DAnn3 is not a substitute - 3DAnn2
+                        // hardcoded POS_SCALE=100 for legacy metre-based GLBs, so 3DAnn3
+                        // would render one at 100x.
                         if (data.ccGlbUrl) {
-                            window.location.href = `3DAnn3.html?glb=${encodeURIComponent(data.ccGlbUrl)}`;
+                            window.location.href = `/annotation-editors/3DAnn3/zin/3DAnn3.html?glb=${encodeURIComponent(data.ccGlbUrl)}`;
                         } else {
-                            const glbUrl = data.glbUrl
-                                || `/gebarenoverleg_media/fbx/post_processed/${data.fbxFilename.replace(/\.fbx$/i, '.glb')}`;
-                            console.log(`[mocap] no cc_pipeline output for ${data.fbxFilename}, using 3DAnn2 with ${glbUrl}`);
-                            window.location.href = `3DAnn2.html?glb=${encodeURIComponent(glbUrl)}`;
+                            console.log(`[mocap] no cc_pipeline output for ${data.fbxFilename}`);
+                            alert('This capture has not been through the FBX-to-GLB conversion yet, '
+                                + 'so it cannot be opened in the mocap editor. Run the conversion '
+                                + 'pipeline for this recording first.');
                         }
                     } else {
                         alert('No motion capture file found for this video.');
