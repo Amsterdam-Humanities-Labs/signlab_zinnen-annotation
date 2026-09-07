@@ -1,10 +1,15 @@
 <?php
+
+// signcollect-lib's install-root resolver: sc_path(), sc_dir(), sc_root().
+// Vendored shim - it finds /web/lib/paths.php, or falls back to /web.
+require_once __DIR__ . '/sc_paths.php';
+
 /**
  * Full backup of `sentences` and `matched_transcriptions` before the Dec-16 video reset.
  * Run FIRST:  php /web/zin/backup_before_dec16.php
  * Writes timestamped .sql dumps to /web/zin/backups/.
  */
-include '/web/mysql_config.php';
+include sc_path('mysql_config.php');
 
 $ts  = date('Ymd_His');
 $dir = __DIR__ . '/backups';

@@ -1,4 +1,9 @@
 <?php
+
+// signcollect-lib's install-root resolver: sc_path(), sc_dir(), sc_root().
+// Vendored shim - it finds /web/lib/paths.php, or falls back to /web.
+require_once __DIR__ . '/sc_paths.php';
+
 /**
  * Mocap file index and lookup.
  *
@@ -10,12 +15,12 @@
  * returns nothing. Enumeration here uses scandir only.
  */
 
-if (!defined('MOCAP_FBX_DIR'))   define('MOCAP_FBX_DIR', '/web/gebarenoverleg_media/fbx/');
-if (!defined('MOCAP_GLB_DIR'))   define('MOCAP_GLB_DIR', '/web/gebarenoverleg_media/fbx/post_processed/');
+if (!defined('MOCAP_FBX_DIR'))   define('MOCAP_FBX_DIR', sc_dir('media_fbx'));
+if (!defined('MOCAP_GLB_DIR'))   define('MOCAP_GLB_DIR', sc_dir('media_fbx', 'post_processed'));
 if (!defined('MOCAP_GLB_URL'))   define('MOCAP_GLB_URL', '/gebarenoverleg_media/fbx/post_processed/');
-if (!defined('MOCAP_EAF_DIR'))   define('MOCAP_EAF_DIR', '/web/zin/eaf/zin/');
+if (!defined('MOCAP_EAF_DIR'))   define('MOCAP_EAF_DIR', sc_dir('zin/eaf/zin'));
 if (!defined('MOCAP_SRT_URL'))   define('MOCAP_SRT_URL', 'https://signcollect.nl/zin/eaf/zin/');
-if (!defined('MOCAP_CACHE'))     define('MOCAP_CACHE', '/web/zin/cache/mocap_index.json');
+if (!defined('MOCAP_CACHE'))     define('MOCAP_CACHE', sc_path('zin/cache/mocap_index.json'));
 if (!defined('MOCAP_CACHE_TTL')) define('MOCAP_CACHE_TTL', 600);
 
 /**

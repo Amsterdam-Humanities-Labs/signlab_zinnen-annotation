@@ -1,4 +1,9 @@
 <?php
+
+// signcollect-lib's install-root resolver: sc_path(), sc_dir(), sc_root().
+// Vendored shim - it finds /web/lib/paths.php, or falls back to /web.
+require_once __DIR__ . '/sc_paths.php';
+
 /**
  * Dec-16 video reset.
  * - Sets the 67 R-file videos listed in r20250527.html (all zOg='zin', added=1) to added=0.
@@ -10,7 +15,7 @@
  *
  * Safe to re-run: idempotent, and aborts unless scope is exactly 67 rows / 60 sentences.
  */
-include '/web/mysql_config.php';
+include sc_path('mysql_config.php');
 $conn = new mysqli($servername, $username, $password, $database);
 $conn->set_charset('utf8');
 if ($conn->connect_error) { die("DB connect failed: " . $conn->connect_error . "\n"); }

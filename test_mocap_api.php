@@ -1,4 +1,9 @@
 <?php
+
+// signcollect-lib's install-root resolver: sc_path(), sc_dir(), sc_root().
+// Vendored shim - it finds /web/lib/paths.php, or falls back to /web.
+require_once __DIR__ . '/sc_paths.php';
+
 /**
  * Test script for Motion Capture API endpoint
  *
@@ -133,7 +138,7 @@ function testGetLatestMocapFile($mFile) {
     $baseFilename = preg_replace('/\.(wav|mp4)$/i', '', $mFile);
 
     // FBX directory path
-    $fbxDir = '/web/gebarenoverleg_media/fbx/';
+    $fbxDir = sc_dir('media_fbx');
 
     // Find all FBX files matching pattern
     $pattern = $fbxDir . $baseFilename . '_*_*.fbx';

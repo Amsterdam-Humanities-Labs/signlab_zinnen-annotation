@@ -1,4 +1,9 @@
 <?php
+
+// signcollect-lib's install-root resolver: sc_path(), sc_dir(), sc_root().
+// Vendored shim - it finds /web/lib/paths.php, or falls back to /web.
+require_once __DIR__ . '/sc_paths.php';
+
 /**
  * Estimate total file size of sentence videos and thumbnails.
  * Queries matched_transcriptions where added='1' AND zOg='Zin',
@@ -24,8 +29,8 @@ if (!$result) {
 }
 
 $basePaths = [
-    1 => '/web/gebarenoverleg_media/studioFilesMini/post/',
-    0 => '/web/gebarenoverleg_media/studioFilesMini/raw/',
+    1 => sc_dir('media_post'),
+    0 => sc_dir('media_raw'),
 ];
 
 $cameras = ['m_file' => 'M', 'l_file' => 'L', 'r_file' => 'R'];
