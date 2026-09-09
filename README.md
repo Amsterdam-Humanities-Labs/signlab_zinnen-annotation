@@ -105,10 +105,12 @@ annotation monitor described in `MONITOR_README.md`.
   `signlab_sCAPI` its own `repos.tsv` row.*
 - **There is a lot of cruft in the docroot.** Dozens of one-off `test_*.php`
   and `check_*.php` scripts, dated report snapshots (`.txt`, `.csv`, `.json`),
-  four variant chunked-video loader prototypes, `zinnen.html_back`, and large
-  binaries (`glassesGuySignLab.glb`, `SKATEBOARD.usdz`). None of it is part of
-  the running app, and it is all publicly served. *TODO: decide what to delete;
-  `phpinfo.php` in particular should not be on a production docroot.*
+  four variant chunked-video loader prototypes, and `zinnen.html_back`. None of
+  it is part of the running app, and it is all publicly served. *TODO: decide
+  what to delete; `phpinfo.php` in particular should not be on a production
+  docroot.* The large binaries this list used to name are gone — 26 MB of GLB,
+  USDZ, a stray log and a two-file video test fixture, none of them referenced
+  by anything.
 - Only two Python files survive the docroot cleanup (`copyAB.py`,
   `iss_client/iss_worker.py`). `DOWNLOAD_README.md` and `MONITOR_README.md`
   still describe `.py` scripts that were removed.
