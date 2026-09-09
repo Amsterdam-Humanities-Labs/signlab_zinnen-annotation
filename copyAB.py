@@ -2,8 +2,15 @@ import os
 import shutil
 import re
 import sys
-sys.path.insert(0, '/home/gomer/pythonCron')
-from python_client import ClientMonitor
+# The heartbeat client. Prefer the installed signlab-client-monitor package,
+# and fall back to the copy in pythonCron's checkout - which is what this line
+# has always done, and what still happens on any host where the package has
+# not been installed.
+try:
+    from signlab_client_monitor import ClientMonitor
+except ImportError:
+    sys.path.insert(0, '/home/gomer/pythonCron')
+    from python_client import ClientMonitor
 
 # Initialize Client Monitor
 monitor = ClientMonitor(
