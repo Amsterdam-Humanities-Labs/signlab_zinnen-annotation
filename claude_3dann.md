@@ -2,6 +2,15 @@
 
 This document describes the key functions in 3DAnn.html for animation, retargeting, and annotation.
 
+> **Stale in two places.** 3DAnn.html itself is no longer in this repository —
+> it lives in `signlab_annotation-editors` as `3DAnn3/zin/3DAnn3.html`, which
+> is what `/annotation-editors/` deploys. And it no longer loads
+> `blendAnims/glassesGuySignLab.glb`: its base character is
+> `/animMIDI/babyloncc/dist/PalmerPolo1024uastc.glb`
+> (`3DAnn3.html:813`). That is why the GLB this file names is not in this
+> repository any more. The function-by-function notes below still describe the
+> editor accurately.
+
 ## Overview
 
 3DAnn.html is a Babylon.js-based 3D annotation editor that loads sign language animations onto a base character model and provides timeline-based subtitle/annotation editing.
