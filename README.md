@@ -10,7 +10,8 @@ The Zinnen sentence-annotation interface: studio videos of signed sentences → 
 
 ## Where it runs
 - Production VPS: `<root>/zin`, `https://signcollect.nl/zin/`. Demo hosts: dev2 `/web/zin`, dev-1 `/srv/signcollect/web/zin`.
-- `<root>` comes from `sc_paths.php` (vendored `signcollect-lib` resolver, falls back to `/web`).
+- `<root>` comes from `sc_paths.php` / `sc_paths.py` (`copyAB.py`) (vendored `signcollect-lib` resolvers, fall back to `/web`).
+- `getMT.php` rewrites SRT paths only under `SC_LEGACY_WEB_ROOT` (default `/var/www/html`) to `SC_LEGACY_BASE_URL` (default `https://leffe.science.uva.nl:8043`); env or `/web/.env`.
 - Cron (user `gomer`, not in any repo): `30 3 * * * php /web/zin/resync_video_count.php`.
 
 ## Status
