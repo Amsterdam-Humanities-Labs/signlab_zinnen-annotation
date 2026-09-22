@@ -2,6 +2,7 @@ import os
 import shutil
 import re
 import sys
+from sc_paths import sc_path
 # The heartbeat client. Prefer the installed signlab-client-monitor package,
 # and fall back to the copy in pythonCron's checkout - which is what this line
 # has always done, and what still happens on any host where the package has
@@ -21,8 +22,8 @@ monitor = ClientMonitor(
     heartbeat_interval=21600  # 360 minutes (6 hours)
 )
 
-SOURCE_ROOT = "/web/gebarenoverleg_media/studioFiles"
-DEST_DIR = os.path.join("/web/gebarenoverleg_media/studioFilesMini", "post")
+SOURCE_ROOT = sc_path("media", "studioFiles")
+DEST_DIR = sc_path("media_post")
 os.makedirs(DEST_DIR, exist_ok=True)
 
 try:
