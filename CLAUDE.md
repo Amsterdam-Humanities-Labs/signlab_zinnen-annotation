@@ -6,8 +6,7 @@ This is a web-based sign language annotation tool for creating and editing subti
 ## Key Files
 
 ### Frontend Components
-- **subBeta3.html**: Main subtitle editor interface with video canvas and timeline editing capabilities
-- **subBeta4.html**: (Referenced but not yet created - likely next version iteration)
+- **zinnen.html**: the sentence table. The editors (subBeta8, 3DAnn3) live in `signlab_annotation-editors`.
 
 ### Backend API
 - **getZinnen.php**: Core PHP API handling all database operations and file management
