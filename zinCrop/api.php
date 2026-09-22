@@ -152,7 +152,14 @@ $conn->close();
  * Read crop fixes from the videoFix JSON file
  */
 function readCropFixes() {
-    $file = __DIR__ . '/../../videoFix/crop_fixes.json';
+    // videoFix keeps its queue outside its checkout (videofix_data/) since
+    // signlab_videoFix#2; the old in-checkout path is the fallback for a host
+    // that has not been migrated yet.
+    require_once __DIR__ . '/../sc_paths.php';
+    $file = sc_path('videofix_data', 'crop_fixes.json');
+    if (!file_exists($file)) {
+        $file = __DIR__ . '/../../videoFix/crop_fixes.json';
+    }
     if (!file_exists($file)) {
         return [];
     }
