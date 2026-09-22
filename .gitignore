@@ -64,3 +64,6 @@ debug_log.txt
 *.xlsx
 *.pkl
 *_backup_*.sql
+
+# sCAPI is deployed into api/ as its own component (repos.tsv), not a submodule.
+/api/
