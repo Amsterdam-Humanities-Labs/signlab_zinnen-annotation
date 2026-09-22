@@ -1,6 +1,32 @@
 <?php
 // Include the MySQL configuration file
 include '../mysql_config.php';
+require_once __DIR__ . '/sc_paths.php';   // loads signcollect-lib, and so sc_env(), when installed
+
+// A setting from the environment, else from the env file signcollect-lib's
+// sc_env() reads (/web/.env), else $default. signlab_signcollect-stack#23.
+$legacySetting = function ($key, $default) {
+    $value = getenv($key);
+    if (is_string($value) && $value !== '') {
+        return $value;
+    }
+    if (function_exists('sc_env')) {
+        try {
+            $vars = sc_env();
+            if (isset($vars[$key]) && $vars[$key] !== '') {
+                return $vars[$key];
+            }
+        } catch (RuntimeException $e) {
+            // No env file: use the default.
+        }
+    }
+    return $default;
+};
+// SRT disk paths were only rewritten to URLs on the retired leffe host, whose
+// docroot was /var/www/html. The defaults are the old literals, so on a /web
+// host the prefix does not match and the disk path comes back unchanged.
+$srtDiskDir = rtrim($legacySetting('SC_LEGACY_WEB_ROOT', '/var/www/html'), '/') . '/zin/eaf/zin/';
+$srtUrlDir  = rtrim($legacySetting('SC_LEGACY_BASE_URL', 'https://leffe.science.uva.nl:8043'), '/') . '/zin/eaf/zin/';
 //disable warnings
 error_reporting(E_ERROR | E_PARSE);
 // Set content type to JSON for all responses
@@ -64,7 +90,7 @@ if ($result && $result->num_rows > 0) {
     $srt_gebaar_voor_gebaar = __DIR__ . '/eaf/zin/' . $base_srt . '_Gebaar-voor-gebaar.srt';
     if(file_exists($srt_nederlands))
     {
-        $srt_nederlands = str_replace('/var/www/html/zin/eaf/zin/', 'https://leffe.science.uva.nl:8043/zin/eaf/zin/', $srt_nederlands);
+        $srt_nederlands = str_replace($srtDiskDir, $srtUrlDir, $srt_nederlands);
     }
     else
     {
@@ -72,7 +98,7 @@ if ($result && $result->num_rows > 0) {
     }
     if(file_exists($srt_signbank_id_glossen))
     {
-        $srt_signbank_id_glossen  = str_replace('/var/www/html/zin/eaf/zin/', 'https://leffe.science.uva.nl:8043/zin/eaf/zin/', $srt_signbank_id_glossen);
+        $srt_signbank_id_glossen  = str_replace($srtDiskDir, $srtUrlDir, $srt_signbank_id_glossen);
     }
     else
     {
@@ -80,7 +106,7 @@ if ($result && $result->num_rows > 0) {
     }
     if(file_exists($srt_gebaar_voor_gebaar))
     {
-        $srt_gebaar_voor_gebaar  = str_replace('/var/www/html/zin/eaf/zin/', 'https://leffe.science.uva.nl:8043/zin/eaf/zin/', $srt_gebaar_voor_gebaar);
+        $srt_gebaar_voor_gebaar  = str_replace($srtDiskDir, $srtUrlDir, $srt_gebaar_voor_gebaar);
     }
     else
     {
