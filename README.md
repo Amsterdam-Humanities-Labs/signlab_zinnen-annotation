@@ -38,7 +38,7 @@ The mocap filter needs the index `idx_mocap_filter` on `matched_transcriptions` 
 ## Dependencies
 - MySQL `admin_gebarenoverleg` (`sentences`, `matched_transcriptions`, `lemmaTable`, `mocap_files` and more).
 - signlab_annotation-editors at `<root>/annotation-editors`. Without it the edit buttons return 404. `/userProtect.js` comes from the stack's `web_extra/`.
-- [signlab_sCAPI](https://github.com/Amsterdam-Humanities-Labs/signlab_sCAPI), which the stack deploys into `api/` (gitignored here). Apache aliases it to `/api`.
+- [signlab_signCollect-API-TYD](https://github.com/Amsterdam-Humanities-Labs/signlab_signCollect-API-TYD), which the stack deploys into `api/` (gitignored here). Apache aliases it to `/api`.
 - Video: `<root>/gebarenoverleg_media/studioFilesMini/{raw,post}`. This is an rclone mount where `find` returns nothing, so use `scandir` or `glob`.
 - Signbank dump `<root>/signbank_data/glosses_transformed.json`, from [signlab_signCollect-v2](https://github.com/Amsterdam-Humanities-Labs/signlab_signCollect-v2). `getSenses.php` and `webapp.html` call `leffe.science.uva.nl:8043`.
 - WebSocket services: handshape `ws://localhost:9000`, sign segmentation `ws://localhost:8765`.
