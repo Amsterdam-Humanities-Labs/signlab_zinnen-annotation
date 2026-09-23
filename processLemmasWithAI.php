@@ -18,8 +18,17 @@ if ($isWeb) {
     header('Access-Control-Allow-Origin: *');
 }
 
-// Configuration
-define('GEMINI_API_KEY', 'AIzaSyDBM82HiINTy5_l_RS1eh314d8ECYsPG4U');
+// Configuration. The Gemini key comes from the environment or GEMINI_API_KEY
+// in the untracked .env next to this file (see .env.example). Never a literal.
+function gemini_api_key(): string {
+    $key = getenv('GEMINI_API_KEY');
+    if ($key !== false && $key !== '') return $key;
+    foreach (@file(__DIR__ . '/.env', FILE_IGNORE_NEW_LINES) ?: [] as $line) {
+        if (preg_match('/^\s*GEMINI_API_KEY\s*=\s*(.*)$/', $line, $m)) return trim($m[1], "\"' ");
+    }
+    return '';
+}
+define('GEMINI_API_KEY', gemini_api_key());
 define('GEMINI_MODEL', 'gemini-2.5-flash');
 define('BATCH_SIZE', 10); // Number of sentences to process at once
 define('RATE_LIMIT_DELAY', 1); // Seconds between API calls
