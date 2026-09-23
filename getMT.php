@@ -1,32 +1,17 @@
 <?php
 // Include the MySQL configuration file
 include '../mysql_config.php';
-require_once __DIR__ . '/sc_paths.php';   // loads signcollect-lib, and so sc_env(), when installed
+require_once __DIR__ . '/sc_paths.php';   // sc_url(): disk path under the web root -> browser URL
 
-// A setting from the environment, else from the env file signcollect-lib's
-// sc_env() reads (/web/.env), else $default. signlab_signcollect-stack#23.
-$legacySetting = function ($key, $default) {
-    $value = getenv($key);
-    if (is_string($value) && $value !== '') {
-        return $value;
+// Browser URL of a file under the web root: /web/zin/eaf/zin/x.srt -> /zin/eaf/zin/x.srt.
+// null when it is missing or outside the root. signlab_signcollect-stack#23.
+$srtUrl = function ($diskPath) {
+    if (!file_exists($diskPath)) {
+        return null;
     }
-    if (function_exists('sc_env')) {
-        try {
-            $vars = sc_env();
-            if (isset($vars[$key]) && $vars[$key] !== '') {
-                return $vars[$key];
-            }
-        } catch (RuntimeException $e) {
-            // No env file: use the default.
-        }
-    }
-    return $default;
+    $url = sc_url($diskPath);
+    return $url !== '' ? $url : null;
 };
-// SRT disk paths were only rewritten to URLs on the retired leffe host, whose
-// docroot was /var/www/html. The defaults are the old literals, so on a /web
-// host the prefix does not match and the disk path comes back unchanged.
-$srtDiskDir = rtrim($legacySetting('SC_LEGACY_WEB_ROOT', '/var/www/html'), '/') . '/zin/eaf/zin/';
-$srtUrlDir  = rtrim($legacySetting('SC_LEGACY_BASE_URL', 'https://leffe.science.uva.nl:8043'), '/') . '/zin/eaf/zin/';
 //disable warnings
 error_reporting(E_ERROR | E_PARSE);
 // Set content type to JSON for all responses
@@ -88,30 +73,9 @@ if ($result && $result->num_rows > 0) {
     $srt_nederlands = __DIR__ . '/eaf/zin/' . $base_srt . '_Nederlands.srt';
     $srt_signbank_id_glossen = __DIR__ . '/eaf/zin/' . $base_srt . '_Signbank_ID_glossen.srt';
     $srt_gebaar_voor_gebaar = __DIR__ . '/eaf/zin/' . $base_srt . '_Gebaar-voor-gebaar.srt';
-    if(file_exists($srt_nederlands))
-    {
-        $srt_nederlands = str_replace($srtDiskDir, $srtUrlDir, $srt_nederlands);
-    }
-    else
-    {
-        $srt_nederlands = null;
-    }
-    if(file_exists($srt_signbank_id_glossen))
-    {
-        $srt_signbank_id_glossen  = str_replace($srtDiskDir, $srtUrlDir, $srt_signbank_id_glossen);
-    }
-    else
-    {
-        $srt_signbank_id_glossen = null;
-    }
-    if(file_exists($srt_gebaar_voor_gebaar))
-    {
-        $srt_gebaar_voor_gebaar  = str_replace($srtDiskDir, $srtUrlDir, $srt_gebaar_voor_gebaar);
-    }
-    else
-    {
-        $srt_gebaar_voor_gebaar = null;
-    }
+    $srt_nederlands          = $srtUrl($srt_nederlands);
+    $srt_signbank_id_glossen = $srtUrl($srt_signbank_id_glossen);
+    $srt_gebaar_voor_gebaar  = $srtUrl($srt_gebaar_voor_gebaar);
 
 
     // Generate the thumbnail path by replacing the video extension with .jpg
