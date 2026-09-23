@@ -22,18 +22,13 @@ Production. The annotators use it every day.
 ## How to run / deploy
 There is no build step: plain PHP/mysqli and static HTML/JS. The stack deploys `main` into `<root>/zin` (`repos.tsv`); see
 [signlab_signcollect-stack](https://github.com/Amsterdam-Humanities-Labs/signlab_signcollect-stack).
-Two optional side services. The app runs without them.
-```bash
-npm install && node websocket-server.js      # timecode relay on port 8766, proxied at /zin_wss
-(cd iss_client && composer install)          # ISS segmentation client
-```
+`archive/` holds retired files (old corpora, the ISS client, the WebSocket relay). Apache denies it; see `archive/README.md`.
 
 ## Configuration
 | File | What |
 |---|---|
 | `<root>/mysql_config.php` | DB credentials (`$servername`, `$username`, `$password`, `$database`), included as `../mysql_config.php` (`../../mysql_config.php` from `zinCrop/`). Gitignored, no template |
-| `iss_client/config.php` | ISS client settings. Gitignored; create it on each host |
-| `.env` | `WS_PORT` for `websocket-server.js`. Template: `.env.example` |
+| `.env` | Credentials that [signlab_pythonCron](https://github.com/Amsterdam-Humanities-Labs/signlab_pythonCron) scripts read from `<root>/zin/.env`. Template: `.env.example` |
 | `SC_LEGACY_WEB_ROOT`, `SC_LEGACY_BASE_URL` | env or `/web/.env`. `getMT.php` rewrites SRT paths under the first (default `/var/www/html`) to URLs under the second (default `https://leffe.science.uva.nl:8043`) |
 | `eaf/`, `record3D/`, `backups/` | host-local content, gitignored. `eaf/zin/` must exist and be writable by the web user |
 | `cache/mocap_index.json` | written by `mocapFiles.php`, kept for 600 s. `cache/` must be writable by the web user |
@@ -46,4 +41,4 @@ The mocap filter needs the index `idx_mocap_filter` on `matched_transcriptions` 
 - [signlab_sCAPI](https://github.com/Amsterdam-Humanities-Labs/signlab_sCAPI), which the stack deploys into `api/` (gitignored here). Apache aliases it to `/api`.
 - Video: `<root>/gebarenoverleg_media/studioFilesMini/{raw,post}`. This is an rclone mount where `find` returns nothing, so use `scandir` or `glob`.
 - Signbank dump `<root>/signbank_data/glosses_transformed.json`, from [signlab_signCollect-v2](https://github.com/Amsterdam-Humanities-Labs/signlab_signCollect-v2). `getSenses.php` and `webapp.html` call `leffe.science.uva.nl:8043`.
-- WebSocket services: handshape `ws://localhost:9000`, sign segmentation `ws://localhost:8765`, ISS `wss://signcollect.nl/ISS_Server/ws` (not on demo hosts).
+- WebSocket services: handshape `ws://localhost:9000`, sign segmentation `ws://localhost:8765`.
