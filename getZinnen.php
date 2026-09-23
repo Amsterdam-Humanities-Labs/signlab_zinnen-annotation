@@ -48,9 +48,20 @@ if ($conn->connect_error) {
 // Determine the action to perform based on GET or POST parameters
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
-// Write actions used by the 3DAnn3 editor (annotation-editors) require a login.
-if (in_array($action, ['saveSubtitlesAndEAFFiles', 'saveMcpStatusPostprocessing',
-        'saveMcpStatusTijdAnnotatie', 'saveMcpStatusTijdAnnotatieGvg'], true)) {
+// Every action that changes the database or stored EAF files requires a login
+// (zinnen.html, zinnenVideoStatus.html, undelete_videos.html, no_video_worklist.html
+// and the 3DAnn3/subBeta8 editors). Read-only actions stay open; actions that
+// only write caches/temp files (downloadEAF/MP4/ZIP, generateJSONFeed,
+// countZinnen, listMocapFiles, fetchSubtitles) count as read-only here.
+$zin_write_actions = [
+    'duplicate', 'editZin', 'saveComments', 'uploadEAF',
+    'delete', 'deleteVideo', 'restoreVideo', 'permanentDeleteVideo',
+    'deleteZin', 'deleteEAF', 'updateStatusForThema',
+    'saveStatusVideo', 'saveStatusAnnotatie', 'saveStatusGlos', 'saveStatusGvg',
+    'saveMcpStatusPostprocessing', 'saveMcpStatusTijdAnnotatie', 'saveMcpStatusTijdAnnotatieGvg',
+    'saveSubtitlesAndEAFFiles',
+];
+if (in_array($action, $zin_write_actions, true)) {
     zin_require_session();
 }
 
