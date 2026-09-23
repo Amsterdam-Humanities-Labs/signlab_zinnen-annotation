@@ -153,7 +153,7 @@ $conn->close();
  */
 function readCropFixes() {
     // videoFix keeps its queue outside its checkout (videofix_data/) since
-    // signlab_videoFix#2; the old in-checkout path is the fallback for a host
+    // signlab_crop-fix-manager#2; the old in-checkout path is the fallback for a host
     // that has not been migrated yet.
     require_once __DIR__ . '/../sc_paths.php';
     $file = sc_path('videofix_data', 'crop_fixes.json');
