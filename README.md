@@ -3,10 +3,11 @@ The Zinnen interface: annotators turn studio videos of signed sentences (zinnen)
 
 ## What it does
 - `zinnen.html` is a filterable table of every sentence with its videos, EAF/SRT status, mocap takes and Signbank glosses.
-- `getZinnen.php` is the one large endpoint behind it. It dispatches on `action`: `fetchSentences`, `fetchRow`, `saveSubtitlesAndEAFFiles`, `editZin`, `uploadEAF`/`downloadEAF`, `delete*`, `findGloss`/`findgvg`, `listMocapFiles`.
+- `getZinnen.php` is the one large endpoint behind it. It dispatches on `action`. No `action` means `fetchSentences`; others include `fetchRow`, `saveSubtitlesAndEAFFiles`, `editZin`, `uploadEAF`/`downloadEAF`, `delete*`, `findGloss`/`findgvg`, `listMocapFiles`.
 - Per video it writes one `.eaf` and one `.srt` per tier (Nederlands, Signbank ID glossen, Gebaar-voor-gebaar) to `eaf/zin/`, served at `/zin/eaf/zin/`.
 - Side pages: `dashboard.html`, `addZinnen.html`, `webapp.html`, `zinnenVideoStatus.html`, `no_video_worklist.html`, `undelete_videos.html`, `action_stats.html`, `lemmaProcessingMonitor.html`.
 - Lemmas: `sentences.lemmaList` holds a JSON array of `lemmaTable` ids (`lemmaTable.sql`). `getLemmas.php?page=N` returns 10 sentences with lemma strings; `updateLemmas.php` takes a POST of `{"sentenceId", "lemmas"}`. Neither checks a login.
+- `zinCrop/` lists sentence videos with their crop-fix status. It reads the queue of [signlab_videoFix](https://github.com/Amsterdam-Humanities-Labs/signlab_videoFix) (`<root>/videofix_data/crop_fixes.json`) and adds fixes through `/videoFix/api.php`.
 - The editors (subBeta8, 3DAnn3) live in [signlab_annotation-editors](https://github.com/Amsterdam-Humanities-Labs/signlab_annotation-editors). `zinnen.html` links to `/annotation-editors/…`.
 
 ## Where it runs
@@ -29,12 +30,12 @@ npm install && node websocket-server.js      # timecode relay on port 8766, prox
 ## Configuration
 | File | What |
 |---|---|
-| `<root>/mysql_config.php` | DB credentials (`$servername`, `$username`, `$password`, `$database`), included as `../mysql_config.php`. Gitignored, no template |
+| `<root>/mysql_config.php` | DB credentials (`$servername`, `$username`, `$password`, `$database`), included as `../mysql_config.php` (`../../mysql_config.php` from `zinCrop/`). Gitignored, no template |
 | `iss_client/config.php` | ISS client settings. Gitignored; create it on each host |
 | `.env` | `WS_PORT` for `websocket-server.js`. Template: `.env.example` |
 | `SC_LEGACY_WEB_ROOT`, `SC_LEGACY_BASE_URL` | env or `/web/.env`. `getMT.php` rewrites SRT paths under the first (default `/var/www/html`) to URLs under the second (default `https://leffe.science.uva.nl:8043`) |
 | `eaf/`, `record3D/`, `backups/` | host-local content, gitignored. `eaf/zin/` must exist and be writable by the web user |
-| `cache/mocap_index.json` | written by `mocapFiles.php`, kept for 600 s |
+| `cache/mocap_index.json` | written by `mocapFiles.php`, kept for 600 s. `cache/` must be writable by the web user |
 
 The mocap filter needs the index `idx_mocap_filter` on `matched_transcriptions` (`migrations/add_mocap_index.sql`).
 
