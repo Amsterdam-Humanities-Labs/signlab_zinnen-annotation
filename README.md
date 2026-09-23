@@ -1,4 +1,4 @@
-# signlab_zin
+# signlab_zinnen-annotation
 The Zinnen interface: annotators turn studio videos of signed sentences (zinnen) into time-aligned ELAN annotation.
 
 ## What it does
@@ -7,7 +7,7 @@ The Zinnen interface: annotators turn studio videos of signed sentences (zinnen)
 - Per video it writes one `.eaf` and one `.srt` per tier (Nederlands, Signbank ID glossen, Gebaar-voor-gebaar) to `eaf/zin/`, served at `/zin/eaf/zin/`.
 - Side pages: `dashboard.html`, `addZinnen.html`, `webapp.html`, `zinnenVideoStatus.html`, `no_video_worklist.html`, `undelete_videos.html`, `action_stats.html`, `lemmaProcessingMonitor.html`.
 - Lemmas: `sentences.lemmaList` holds a JSON array of `lemmaTable` ids (`lemmaTable.sql`). `getLemmas.php?page=N` returns 10 sentences with lemma strings; `updateLemmas.php` takes a POST of `{"sentenceId", "lemmas"}`. Neither checks a login.
-- `zinCrop/` lists sentence videos with their crop-fix status. It reads the queue of [signlab_videoFix](https://github.com/Amsterdam-Humanities-Labs/signlab_videoFix) (`<root>/videofix_data/crop_fixes.json`) and adds fixes through `/videoFix/api.php`.
+- `zinCrop/` lists sentence videos with their crop-fix status. It reads the queue of [signlab_crop-fix-manager](https://github.com/Amsterdam-Humanities-Labs/signlab_crop-fix-manager) (`<root>/videofix_data/crop_fixes.json`) and adds fixes through `/videoFix/api.php`.
 - The editors (subBeta8, 3DAnn3) live in [signlab_annotation-editors](https://github.com/Amsterdam-Humanities-Labs/signlab_annotation-editors). `zinnen.html` links to `/annotation-editors/…`.
 
 ## Where it runs
