@@ -10,6 +10,29 @@ header('Content-Type: application/json');
 include '../mysql_config.php';
 require_once __DIR__ . '/mocapFiles.php';
 
+// Writes need a logged-in user. The session verifier is signCollect-v2's
+// (menu_beta/php_api/session.php, the one login_sc.php signs with), loaded the
+// same way as in annotation-tool's clusters/edit/data.php.
+$zin_session_lib = sc_path('menu_beta/php_api/session.php');
+if (is_readable($zin_session_lib)) {
+    require_once dirname($zin_session_lib) . '/db.php';
+    require_once $zin_session_lib;
+}
+unset($zin_session_lib);
+
+// 401 unless the request carries a valid session. Fails closed when the
+// session library is not installed.
+function zin_require_session() {
+    if (!function_exists('current_session')) {
+        error_log('getZinnen: menu_beta/php_api/session.php missing - refusing write');
+    } elseif (current_session() !== null) {
+        return;
+    }
+    http_response_code(401);
+    echo json_encode(['success' => false, 'error' => 'not logged in']);
+    exit;
+}
+
 //disable php warnings
 error_reporting(E_ERROR | E_PARSE);
 // Create a new MySQLi connection
@@ -24,6 +47,12 @@ if ($conn->connect_error) {
 
 // Determine the action to perform based on GET or POST parameters
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
+
+// Write actions used by the 3DAnn3 editor (annotation-editors) require a login.
+if (in_array($action, ['saveSubtitlesAndEAFFiles', 'saveMcpStatusPostprocessing',
+        'saveMcpStatusTijdAnnotatie', 'saveMcpStatusTijdAnnotatieGvg'], true)) {
+    zin_require_session();
+}
 
 // Handle actions based on the 'action' parameter
 switch ($action) {
