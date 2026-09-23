@@ -12,7 +12,8 @@ The Zinnen interface: annotators turn studio videos of signed sentences (zinnen)
 
 ## Where it runs
 - Production: core server, `<root>/zin`, <https://signcollect.nl/zin/>. Demo hosts: dev2 `/web/zin`, dev-1 `/srv/signcollect/web/zin`.
-- `<root>` comes from the vendored signcollect-lib resolvers `sc_paths.php` and `sc_paths.py` (used by `copyAB.py`). They fall back to `/web`.
+- `<root>` comes from the vendored signcollect-lib resolvers `sc_paths.php` and `sc_paths.py` They fall back to `/web`.
+- [signlab_pythonCron](https://github.com/Amsterdam-Humanities-Labs/signlab_pythonCron) runs `copy_ab_to_post.py` (service `copy_ab_files`). It copies the MP4s in the studio `AB/` folders to `studioFilesMini/post/`. `copyAB.py` is the old name and imports it.
 - Cron (user `gomer`, not in any repo): `30 3 * * * php /web/zin/resync_video_count.php`.
 
 ## Status
