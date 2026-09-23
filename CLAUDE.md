@@ -1,4 +1,4 @@
-# ZIN Project - Sign Language Annotation Tool
+# signlab_zinnen-annotation - Sign Language Annotation Tool
 
 ## Overview
 This is a web-based sign language annotation tool for creating and editing subtitle/gloss tracks for sign language videos. The system allows users to synchronize Dutch text, Signbank glosses, and gesture-by-gesture annotations with video timelines.
