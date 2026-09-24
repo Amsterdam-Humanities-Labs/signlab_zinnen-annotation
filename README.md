@@ -41,3 +41,10 @@ The mocap filter needs the index `idx_mocap_filter` on `matched_transcriptions` 
 - Video: `<root>/gebarenoverleg_media/studioFilesMini/{raw,post}`. This is an rclone mount where `find` returns nothing, so use `scandir` or `glob`.
 - Signbank dump `<root>/signbank_data/glosses_transformed.json`, from [signlab_signCollect-v2](https://github.com/Amsterdam-Humanities-Labs/signlab_signCollect-v2). `getSenses.php` and `webapp.html` call `leffe.science.uva.nl:8043`.
 - WebSocket services: handshape `ws://localhost:9000`, sign segmentation `ws://localhost:8765`.
+
+## License and citation
+
+Apache License 2.0, copyright University of Amsterdam: see [LICENSE](LICENSE) and
+[NOTICE](NOTICE). You may use it, also commercially, as long as you credit
+Gomer Otterspeer / University of Amsterdam as the source. To cite it, use
+[CITATION.cff](CITATION.cff) (the *Cite this repository* button on GitHub) or the DOI [10.21942/uva.33980401](https://doi.org/10.21942/uva.33980401).
